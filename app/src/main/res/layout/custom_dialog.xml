@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_dialog">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvMessage"
+        style="@style/MediumTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/medium_size"
+        android:gravity="start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/medium_size"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvMessage">
+
+        <RelativeLayout
+            android:id="@+id/rlCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/small_size"
+            android:layout_marginVertical="@dimen/medium_size"
+            android:layout_weight="0.33">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvNo"
+                style="@style/SmallBoldTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@drawable/bg_rounded_rectangle_stroke_red"
+                android:gravity="center"
+                android:paddingHorizontal="@dimen/small_size"
+                android:paddingVertical="@dimen/x_small_size"
+                android:text="@string/label_no"
+                android:textColor="@color/red_E92228" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlOk"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/small_size"
+            android:layout_marginVertical="@dimen/medium_size"
+            android:layout_weight="0.33">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvOk"
+                style="@style/MediumTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@drawable/bg_rounded_rectangle_stroke_green"
+                android:gravity="center"
+                android:paddingHorizontal="@dimen/small_size"
+                android:paddingVertical="@dimen/x_small_size"
+                android:text="@string/label_ok"
+                android:textColor="@color/green_21BF73" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

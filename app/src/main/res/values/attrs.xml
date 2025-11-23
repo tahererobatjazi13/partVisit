@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Custom attr color -->
+    <attr name="colorRipple" format="color" />
+    <attr name="colorIcon" format="color" />
+    <attr name="colorError" format="color" />
+    <attr name="colorSuccess" format="color" />
+    <attr name="colorWarning" format="color" />
+    <attr name="colorHeaderFooter" format="color" />
+    <attr name="colorPassive" format="color" />
+    <attr name="colorBorder" format="color" />
+    <attr name="colorShadow" format="color" />
+    <attr name="colorSurface" format="color" />
+    <attr name="colorSurfaceVariant" format="color" />
+    <attr name="colorBox" format="color" />
+    <attr name="colorBasic" format="color" />
+    <attr name="colorLine" format="color" />
+    <attr name="colorHeader" format="color" />
+    <attr name="colorBackSurface" format="color" />
+
+    <declare-styleable name="TryAgain">
+        <attr name="message" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="Info">
+        <attr name="messageInfo" format="string" />
+        <attr name="iconDrawable" format="integer" />
+        <attr name="iconColor" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="DotLoading">
+        <attr name="count" format="integer" />
+        <attr name="dotDrawable" format="integer" />
+        <attr name="dotMargin" format="integer" />
+        <attr name="dotSize" format="integer" />
+        <attr name="dotColor" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="BottomMainBtn">
+        <attr name="isShowBtnTwoBottom" format="boolean" />
+        <attr name="isShowSeparator" format="boolean" />
+        <attr name="isShowMessage" format="boolean" />
+        <attr name="textLabel" format="string" />
+        <attr name="textBtnOne" format="string" />
+        <attr name="textBtnTwo" format="string" />
+        <attr name="backColorBottom" format="color" />
+        <attr name="backColorBtnTwo" format="color" />
+        <attr name="backColorBtnOne" format="color" />
+        <attr name="badgeTextColorBtnTwo" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="HeaderField">
+        <attr name="isShowBadge" format="boolean" />
+        <attr name="textBadge" format="string" />
+        <attr name="isShowImgOneHeader" format="boolean" />
+        <attr name="isShowImgTwoHeader" format="boolean" />
+        <attr name="isShowSeparatorHeader" format="boolean" />
+        <attr name="textTitleHeader" format="string" />
+        <attr name="backgroundColorHeader" format="color" />
+        <attr name="labelColorHeader" format="color" />
+        <attr name="imgOneColorHeader" format="color" />
+        <attr name="imgTwoColorHeader" format="color" />
+        <attr name="drawableImgOneHeader" format="integer" />
+        <attr name="drawableImgTwoHeader" format="integer" />
+        <attr name="isShowLabelHeader" format="boolean" />
+        <attr name="textLabelHeader" format="string" />
+
+    </declare-styleable>
+
+////////////////////////////
+    <declare-styleable name="PersianMaterialAlertDialog">
+            <attr name="backgroundInsetStart" format="dimension"/>
+            <attr name="backgroundInsetTop" format="dimension"/>
+            <attr name="backgroundInsetEnd" format="dimension"/>
+            <attr name="backgroundInsetBottom" format="dimension"/>
+        </declare-styleable>
+        <declare-styleable name="PersianMaterialCalendarItem">
+            <attr name="android:insetLeft"/>
+            <attr name="android:insetTop"/>
+            <attr name="android:insetRight"/>
+            <attr name="android:insetBottom"/>
+            <attr name="itemFillColor" format="color"/>
+            <attr name="itemTextColor" format="color"/>
+            <attr name="itemStrokeColor" format="color"/>
+            <attr name="itemStrokeWidth" format="dimension"/>
+            <attr name="itemShape" format="enum">
+                <enum name="circle" value="0"/>
+                <enum name="square" value="1"/>
+            </attr>
+            <attr name="itemShapeCornerRadius" format="float"/>
+        </declare-styleable>
+        <declare-styleable name="PersianMaterialCalendar">
+            <attr name="dayStyle" format="reference"/>
+            <attr name="dayInvalidStyle" format="reference"/>
+            <attr name="daySelectedStyle" format="reference"/>
+            <attr name="dayTodayStyle" format="reference"/>
+            <attr name="yearStyle" format="reference"/>
+            <attr name="yearSelectedStyle" format="reference"/>
+            <attr name="yearTodayStyle" format="reference"/>
+            <attr name="rangeFillColor" format="color"/>
+        </declare-styleable>
+        <declare-styleable name="SimpleTextView">
+            <attr name="typeface" format="reference"/>
+            <attr name="textColor" format="color"/>
+            <attr name="textSize" format="dimension"/>
+        </declare-styleable>
+        <attr name="persianMaterialCalendarTheme" format="reference"/>
+        <attr name="persianMaterialCalendarStyle" format="reference"/>
+        <attr name="navigationToggleStyle" format="reference"/>
+        <attr name="navigationButtonStyle" format="reference"/>
+        <attr name="dayTextAppearance" format="reference"/>
+        <attr name="positiveButtonStyle" format="reference"/>
+        <attr name="cancelButtonStyle" format="reference"/>
+        <attr name="headerTitleTextStyle" format="reference"/>
+        <attr name="headerSelectionTextStyle" format="reference"/>
+        <attr name="headerBackgroundColor" format="color"/>
+
+</resources>

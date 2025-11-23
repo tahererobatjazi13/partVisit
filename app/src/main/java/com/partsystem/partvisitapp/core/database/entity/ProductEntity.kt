@@ -1,0 +1,70 @@
+package com.partsystem.partvisitapp.core.database.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+
+@Entity(tableName = "product_table")
+data class ProductEntity(
+    @PrimaryKey val id: Int,
+    val code: String?,
+    val name: String?,
+    val kind: Int?,
+    val groupProductId: Int?,
+    val groupProductDetailId: Int?,
+    val rastehId: Int?,
+    val unitId: Int?,
+    val unit2Id: Int?,
+    val technicalNumber: String?,
+    val excludeVat: Boolean?,
+    val vatPercent: Double?,
+    val excludeToll: Boolean?,
+    val tollPercent: Double?,
+    val productSerial: Boolean?,
+    val description: String?,
+    val productKindId: Int?,
+    val impureWeight: Double?,
+    val pureWeight: Double?,
+    val unitCode: Int?,
+    val unitName: String?,
+    val unit2Code: Int?,
+    val unit2Name: String?,
+    val sabt: Boolean?,
+    val isSalable: Boolean?,
+    val saleName: String?,
+    val saleGroupId: Int?,
+    val saleGroupDetailId: Int?,
+    val saleRastehId: Int?,
+)
+
+/*{
+    "id": 1,
+    "code": "1033001",
+    "name": "سبد محصولات",
+    "kind": 5,
+    "groupProductId": 300,
+    "groupProductDetailId": 342,
+    "rastehId": 358,
+    "unitId": 3110,
+    "unit2Id": null,
+    "technicalNumber": null,
+    "excludeVat": false,
+    "vatPercent": 0.0,
+    "excludeToll": false,
+    "tollPercent": 0.0,
+    "productSerial": false,
+    "description": null,
+    "productKindId": null,
+    "impureWeight": 0.0,
+    "pureWeight": 0.0,
+    "unitCode": 7,
+    "unitName": "عدد",
+    "unit2Code": null,
+    "unit2Name": null,
+    "sabt": false,
+    "isSalable": false,
+    "saleName": "سبد محصولات",
+    "saleGroupId": 78,
+    "saleGroupDetailId": 170,
+    "saleRastehId": 272
+}*/

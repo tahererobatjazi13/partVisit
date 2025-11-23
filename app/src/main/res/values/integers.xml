@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="calendar_selection_text_lines">1</integer>
+    <integer name="calendar_year_selector_span">3</integer>
+    <integer name="calendar_header_orientation">1</integer>
+</resources>

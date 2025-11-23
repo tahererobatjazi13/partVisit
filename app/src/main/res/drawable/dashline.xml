@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="line">
+
+    <stroke
+        android:width="0.5dp"
+        android:color="@color/gray_474747"
+        android:dashWidth="@dimen/xx_small_size"
+        android:dashGap="@dimen/xxx_small_size"/>
+</shape>

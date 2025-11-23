@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorBackSurface">
+
+    <!-- line header -->
+    <com.partsystem.partvisitapp.core.utils.componenet.Header
+        android:id="@+id/hfOrders"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:drawableImgTwoHeader="@drawable/ic_back"
+        app:isShowImgTwoHeader="true"
+        app:isShowSeparatorHeader="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:textTitleHeader="@string/label_orders_sent" />
+
+    <!-- line list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvOrderList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/small_size"
+        android:layout_marginTop="@dimen/medium_size"
+        android:elevation="@dimen/xx_small_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hfOrders"
+        tools:itemCount="10"
+        tools:listitem="@layout/item_order_list" />
+
+    <!-- line retry -->
+    <com.partsystem.partvisitapp.core.utils.componenet.TryAgain
+        android:id="@+id/tryAgain"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:translationZ="@dimen/_20sdp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hfOrders" />
+
+    <!-- line loading -->
+    <com.partsystem.partvisitapp.core.utils.componenet.DotLoading
+        android:id="@+id/loading"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:translationZ="2dp"
+        android:visibility="gone"
+        app:dotSize="18"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hfOrders" />
+
+    <!-- line info -->
+    <com.partsystem.partvisitapp.core.utils.componenet.Info
+        android:id="@+id/info"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:translationZ="2dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hfOrders"
+        app:message="@string/msg_no_data" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
