@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
+import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
@@ -46,6 +47,16 @@ class HomeViewModel @Inject constructor(
         )
     }
 
+    private val _applicationSetting =
+        MutableLiveData<NetworkResult<List<ApplicationSettingEntity>>>()
+    val applicationSetting: LiveData<NetworkResult<List<ApplicationSettingEntity>>> =
+        _applicationSetting
+
+    fun fetchApplicationSetting() = viewModelScope.launch {
+        _applicationSetting.value = NetworkResult.Loading
+        _applicationSetting.value = homeRepository.fetchAndSaveApplicationSetting()
+    }
+
     private val _groupProducts = MutableLiveData<NetworkResult<List<GroupProductEntity>>>()
     val groupProducts: LiveData<NetworkResult<List<GroupProductEntity>>> = _groupProducts
 
@@ -62,6 +73,13 @@ class HomeViewModel @Inject constructor(
         _products.value = homeRepository.fetchAndSaveProducts()
     }
 
+    private val _productImages = MutableLiveData<NetworkResult<List<ProductImageEntity>>>()
+    val productImages: LiveData<NetworkResult<List<ProductImageEntity>>> = _productImages
+
+    fun fetchProductImages() = viewModelScope.launch {
+        _productImages.value = NetworkResult.Loading
+        _productImages.value = homeRepository.fetchAndSaveImages()
+    }
 
     private val _customers = MutableLiveData<NetworkResult<List<CustomerEntity>>>()
     val customers: LiveData<NetworkResult<List<CustomerEntity>>> = _customers
@@ -71,14 +89,15 @@ class HomeViewModel @Inject constructor(
         _customers.value = homeRepository.fetchAndSaveCustomers()
     }
 
-    private val _customerDirections = MutableLiveData<NetworkResult<List<CustomerDirectionEntity>>>()
-    val customerDirections: LiveData<NetworkResult<List<CustomerDirectionEntity>>> = _customerDirections
+    private val _customerDirections =
+        MutableLiveData<NetworkResult<List<CustomerDirectionEntity>>>()
+    val customerDirections: LiveData<NetworkResult<List<CustomerDirectionEntity>>> =
+        _customerDirections
 
     fun fetchCustomerDirections() = viewModelScope.launch {
         _customerDirections.value = NetworkResult.Loading
         _customerDirections.value = homeRepository.fetchAndSaveCustomerDirections()
     }
-
 
     private val _invoiceCategory = MutableLiveData<NetworkResult<List<InvoiceCategoryEntity>>>()
     val invoiceCategory: LiveData<NetworkResult<List<InvoiceCategoryEntity>>> = _invoiceCategory
@@ -96,22 +115,13 @@ class HomeViewModel @Inject constructor(
         _pattern.value = homeRepository.fetchAndSavePattern()
     }
 
-    private val _act= MutableLiveData<NetworkResult<List<ActEntity>>>()
+    private val _act = MutableLiveData<NetworkResult<List<ActEntity>>>()
     val act: LiveData<NetworkResult<List<ActEntity>>> = _act
 
     fun fetchAct() = viewModelScope.launch {
         _act.value = NetworkResult.Loading
         _act.value = homeRepository.fetchAndSaveAct()
     }
-    private val _productImages = MutableLiveData<NetworkResult<List<ProductImageEntity>>>()
-    val productImages: LiveData<NetworkResult<List<ProductImageEntity>>> = _productImages
-
-    fun fetchProductImages() = viewModelScope.launch {
-        _productImages.value = NetworkResult.Loading
-        _productImages.value = homeRepository.fetchAndSaveImages()
-    }
-
-
 }
 
 

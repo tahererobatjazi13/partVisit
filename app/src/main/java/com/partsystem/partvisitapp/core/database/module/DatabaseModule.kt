@@ -22,6 +22,14 @@ object DatabaseModule {
             .build()
 
     @Provides
+    fun provideApplicationSettingDao(db: AppDatabase): ApplicationSettingDao =
+        db.applicationSettingDao()
+
+    @Provides
+    fun provideOrderDao(db: AppDatabase): OrderDao =
+        db.orderDao()
+
+    @Provides
     fun provideGroupProductDao(db: AppDatabase): GroupProductDao =
         db.groupProductDao()
 
@@ -37,9 +45,6 @@ object DatabaseModule {
     fun provideCustomerDirectionDao(db: AppDatabase): CustomerDirectionDao =
         db.customerDirectionDao()
 
-    @Provides
-    fun provideOrderDao(db: AppDatabase): OrderDao =
-        db.orderDao()
 
     @Provides
     fun provideProductImageDao(db: AppDatabase): ProductImageDao =
@@ -52,7 +57,8 @@ object DatabaseModule {
     @Provides
     fun providePatternDao(db: AppDatabase): PatternDao =
         db.patternDao()
+
     @Provides
-    fun provideActDaoDao(db: AppDatabase): ActDao =
+    fun provideActDao(db: AppDatabase): ActDao =
         db.actDao()
 }

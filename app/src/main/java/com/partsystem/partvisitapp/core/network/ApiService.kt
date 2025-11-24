@@ -1,10 +1,10 @@
 package com.partsystem.partvisitapp.core.network
 
 
-import com.partsystem.partvisitapp.core.database.dao.PatternDao
 import com.partsystem.partvisitapp.feature.main.home.model.GroupProductDto
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.feature.main.home.model.ActDto
+import com.partsystem.partvisitapp.feature.main.home.model.ApplicationSettingDto
 import com.partsystem.partvisitapp.feature.main.home.model.CustomerDirectionDto
 import com.partsystem.partvisitapp.feature.main.home.model.CustomerDto
 import com.partsystem.partvisitapp.feature.main.home.model.InvoiceCategoryDto
@@ -25,17 +25,20 @@ interface ApiService {
         @Query("Password") password: String
     ): Response<LoginResponse>
 
+    @GET("ApplicationSetting")
+    suspend fun getApplicationSetting(): Response<List<ApplicationSettingDto>>
+
     @GET("GroupProduct")
     suspend fun getGroupProducts(): Response<List<GroupProductDto>>
 
     @GET("Product")
     suspend fun getProducts(): Response<List<ProductDto>>
 
-    @GET("Customer")
-    suspend fun getCustomers(@Query("visitorId") visitorId: Int): Response<List<CustomerDto>>
-
     @GET("ProductImage")
     suspend fun getProductImages(): Response<List<ProductImageDto>>
+
+    @GET("Customer")
+    suspend fun getCustomers(@Query("visitorId") visitorId: Int): Response<List<CustomerDto>>
 
     @GET("CustomerDirection")
     suspend fun getCustomerDirections(@Query("visitorId") visitorId: Int): Response<List<CustomerDirectionDto>>

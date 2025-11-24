@@ -3,6 +3,7 @@ package com.partsystem.partvisitapp.feature.main.home.repository
 import android.content.Context
 import android.util.Log
 import com.partsystem.partvisitapp.core.database.dao.ActDao
+import com.partsystem.partvisitapp.core.database.dao.ApplicationSettingDao
 import com.partsystem.partvisitapp.core.database.dao.CustomerDao
 import com.partsystem.partvisitapp.core.database.dao.CustomerDirectionDao
 import com.partsystem.partvisitapp.core.database.dao.GroupProductDao
@@ -11,6 +12,7 @@ import com.partsystem.partvisitapp.core.database.dao.PatternDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
 import com.partsystem.partvisitapp.core.database.dao.ProductImageDao
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
+import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
@@ -30,17 +32,41 @@ import javax.inject.Inject
 class HomeRepository @Inject constructor(
     private val api: ApiService,
     private val userPreferences: UserPreferences,
+    private val applicationSettingDao: ApplicationSettingDao,
     private val groupProductDao: GroupProductDao,
     private val productDao: ProductDao,
+    private val productImageDao: ProductImageDao,
     private val customerDao: CustomerDao,
     private val customerDirectionDao: CustomerDirectionDao,
     private val invoiceCategoryDao: InvoiceCategoryDao,
     private val patternDao: PatternDao,
     private val actDao: ActDao,
-    private val productImageDao: ProductImageDao,
 
     @ApplicationContext private val context: Context
 ) {
+    suspend fun fetchAndSaveApplicationSetting(): NetworkResult<List<ApplicationSettingEntity>> {
+        return try {
+            val response = api.getApplicationSetting()
+            val body = response.body()
+
+            if (!response.isSuccessful || body == null) {
+                return NetworkResult.Error("Server Error: ${response.code()}")
+            }
+
+            // تبدیل با mapper
+            val applicationSettingList = body.map { it.toEntity() }
+
+            applicationSettingDao.clearAll()
+            applicationSettingDao.insertAll(applicationSettingList)
+
+            NetworkResult.Success(applicationSettingList)
+
+        } catch (e: Exception) {
+            Log.e("NetworkError", e.toString())
+            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun fetchAndSaveGroups(): NetworkResult<List<GroupProductEntity>> {
         return try {
             val response = api.getGroupProducts()
@@ -85,6 +111,29 @@ class HomeRepository @Inject constructor(
 
         } catch (e: Exception) {
             Log.e("NetworkError", e.toString())
+            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun fetchAndSaveImages(): NetworkResult<List<ProductImageEntity>> {
+        return try {
+            val response = api.getProductImages()
+            val body = response.body()
+
+            if (!response.isSuccessful || body == null) {
+                return NetworkResult.Error("Server error: ${response.code()}")
+            }
+
+            // تبدیل با mapper و ذخیره عکس‌ها
+            val imageList = body.map { it.toEntity(context) }
+
+            // پاک کردن جدول و ذخیره
+            productImageDao.clearAll()
+            productImageDao.insertImages(imageList)
+
+            NetworkResult.Success(imageList)
+
+        } catch (e: Exception) {
             NetworkResult.Error("Network error: ${e.localizedMessage}")
         }
     }
@@ -139,6 +188,30 @@ class HomeRepository @Inject constructor(
         }
     }
 
+    suspend fun fetchAndSaveInvoiceCategory(): NetworkResult<List<InvoiceCategoryEntity>> {
+        return try {
+            val response = api.getInvoiceCategories()
+            val body = response.body()
+
+            if (!response.isSuccessful || body == null) {
+                return NetworkResult.Error("Server Error: ${response.code()}")
+            }
+
+            // تبدیل با mapper
+            val categoryList = body.map { it.toEntity() }
+
+            // پاک کردن جدول و ذخیره
+            invoiceCategoryDao.clearAll()
+            invoiceCategoryDao.insertAll(categoryList)
+
+            NetworkResult.Success(categoryList)
+
+        } catch (e: Exception) {
+            Log.e("NetworkError", e.toString())
+            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun fetchAndSavePattern(): NetworkResult<List<PatternEntity>> {
         return try {
             val visitorId = userPreferences.personnelId.first() ?: 0
@@ -157,53 +230,6 @@ class HomeRepository @Inject constructor(
             patternDao.insertAll(patternList)
 
             NetworkResult.Success(patternList)
-
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
-        }
-    }
-
-    suspend fun fetchAndSaveImages(): NetworkResult<List<ProductImageEntity>> {
-        return try {
-            val response = api.getProductImages()
-            val body = response.body()
-
-            if (!response.isSuccessful || body == null) {
-                return NetworkResult.Error("Server error: ${response.code()}")
-            }
-
-            // تبدیل با mapper و ذخیره عکس‌ها
-            val imageList = body.map { it.toEntity(context) }
-
-            // پاک کردن جدول و ذخیره
-            productImageDao.clearAll()
-            productImageDao.insertImages(imageList)
-
-            NetworkResult.Success(imageList)
-
-        } catch (e: Exception) {
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
-        }
-    }
-
-    suspend fun fetchAndSaveInvoiceCategory(): NetworkResult<List<InvoiceCategoryEntity>> {
-        return try {
-            val response = api.getInvoiceCategories()
-            val body = response.body()
-
-            if (!response.isSuccessful || body == null) {
-                return NetworkResult.Error("Server Error: ${response.code()}")
-            }
-
-            // تبدیل با mapper
-            val categoryList = body.map { it.toEntity() }
-
-            // پاک کردن جدول و ذخیره
-            invoiceCategoryDao.clearAll()
-            invoiceCategoryDao.insertAll(categoryList)
-
-            NetworkResult.Success(categoryList)
 
         } catch (e: Exception) {
             Log.e("NetworkError", e.toString())

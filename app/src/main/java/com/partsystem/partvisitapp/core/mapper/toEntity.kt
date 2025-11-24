@@ -3,6 +3,7 @@ package com.partsystem.partvisitapp.core.mapper
 import android.content.Context
 import com.partsystem.partvisitapp.core.database.entity.ActDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
+import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
@@ -13,6 +14,7 @@ import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.utils.saveBase64ImageToFile
 import com.partsystem.partvisitapp.feature.main.home.model.ActDetailDto
 import com.partsystem.partvisitapp.feature.main.home.model.ActDto
+import com.partsystem.partvisitapp.feature.main.home.model.ApplicationSettingDto
 import com.partsystem.partvisitapp.feature.main.home.model.CustomerDirectionDto
 import com.partsystem.partvisitapp.feature.main.home.model.CustomerDto
 import com.partsystem.partvisitapp.feature.main.home.model.GroupProductDto
@@ -21,59 +23,74 @@ import com.partsystem.partvisitapp.feature.main.home.model.PatternDto
 import com.partsystem.partvisitapp.feature.main.home.model.ProductDto
 import com.partsystem.partvisitapp.feature.main.home.model.ProductImageDto
 
+fun ApplicationSettingDto.toEntity(): ApplicationSettingEntity {
+    return ApplicationSettingEntity(
+        id = id,
+        moduleId = moduleId,
+        code = code,
+        name = name,
+        description = description,
+        controlType = controlType,
+        itemSource = itemSource,
+        defaultValue = defaultValue,
+        value = value
+    )
+}
+
 fun GroupProductDto.toEntity(): GroupProductEntity {
     return GroupProductEntity(
-        id = this.id,
-        parentId = this.parentId,
-        code = this.code,
-        name = this.name,
-        groupLevel = this.groupLevel,
-        kind = this.kind
+        id = id,
+        parentId = parentId,
+        code = code,
+        name = name,
+        groupLevel = groupLevel,
+        kind = kind
     )
 }
 
 
 fun ProductDto.toEntity(): ProductEntity {
     return ProductEntity(
-        id = this.id,
-        code = this.code,
-        name = this.name,
-        kind = this.kind,
-        groupProductId = this.groupProductId,
-        groupProductDetailId = this.groupProductDetailId,
-        rastehId = this.rastehId,
-        unitId = this.unitId,
-        unit2Id = this.unit2Id,
-        technicalNumber = this.technicalNumber,
-        excludeVat = this.excludeVat,
-        vatPercent = this.vatPercent,
-        excludeToll = this.excludeToll,
-        tollPercent = this.tollPercent,
-        productSerial = this.productSerial,
-        description = this.description,
-        productKindId = this.productKindId,
-        impureWeight = this.impureWeight,
-        pureWeight = this.pureWeight,
-        unitCode = this.unitCode,
-        unitName = this.unitName,
-        unit2Code = this.unit2Code,
-        unit2Name = this.unit2Name,
-        sabt = this.sabt,
-        isSalable = this.isSalable,
-        saleName = this.saleName,
-        saleGroupId = this.saleGroupId,
-        saleGroupDetailId = this.saleGroupDetailId,
-        saleRastehId = this.saleRastehId
+        id = id,
+        code = code,
+        name = name,
+        kind = kind,
+        groupProductId = groupProductId,
+        groupProductDetailId = groupProductDetailId,
+        rastehId = rastehId,
+        unitId = unitId,
+        unit2Id = unit2Id,
+        technicalNumber = technicalNumber,
+        excludeVat = excludeVat,
+        vatPercent = vatPercent,
+        excludeToll = excludeToll,
+        tollPercent = tollPercent,
+        productSerial = productSerial,
+        description = description,
+        productKindId = productKindId,
+        impureWeight = impureWeight,
+        pureWeight = pureWeight,
+        unitCode = unitCode,
+        unitName = unitName,
+        unit2Code = unit2Code,
+        unit2Name = unit2Name,
+        sabt = sabt,
+        isSalable = isSalable,
+        saleName = saleName,
+        saleGroupId = saleGroupId,
+        saleGroupDetailId = saleGroupDetailId,
+        saleRastehId = saleRastehId
     )
 }
+
 suspend fun ProductImageDto.toEntity(context: Context): ProductImageEntity {
-    val localPath = saveBase64ImageToFile(this.fileData, "image_${this.id}", context)
+    val localPath = saveBase64ImageToFile(fileData, "image_${id}", context)
     return ProductImageEntity(
-        id = this.id,
-        ownerId = this.ownerId,
-        tableName = this.tableName,
-        fileName = this.fileName,
-        fileData = this.fileData,
+        id = id,
+        ownerId = ownerId,
+        tableName = tableName,
+        fileName = fileName,
+        fileData = fileData,
         localPath = localPath ?: ""
     )
 }
@@ -81,88 +98,88 @@ suspend fun ProductImageDto.toEntity(context: Context): ProductImageEntity {
 
 fun InvoiceCategoryDto.toEntity(): InvoiceCategoryEntity {
     return InvoiceCategoryEntity(
-        id = this.id,
-        code = this.code,
-        name = this.name,
-        kind = this.kind,
-        fromSerial = this.fromSerial,
-        toSerial = this.toSerial,
-        hasVatToll = this.hasVatToll,
-        isVatEditable = this.isVatEditable
+        id = id,
+        code = code,
+        name = name,
+        kind = kind,
+        fromSerial = fromSerial,
+        toSerial = toSerial,
+        hasVatToll = hasVatToll,
+        isVatEditable = isVatEditable
     )
 }
 
 fun CustomerDto.toEntity(): CustomerEntity {
     return CustomerEntity(
-        id = this.id,
-        code = this.code,
-        name = this.name,
-        groupId = this.groupId,
-        groupDetailId = this.groupDetailId,
-        tafsiliNationalId = this.tafsiliNationalId,
-        saleCenterId = this.saleCenterId,
-        degreeId = this.degreeId,
-        processKindId = this.processKindId,
-        customerKindId = this.customerKindId,
-        isCustomerDeactive = this.isCustomerDeactive,
-        deactivePersianDate = this.deactivePersianDate,
-        deactiveDate = this.deactiveDate,
-        customerSabt = this.customerSabt,
-        tafsiliPhone1 = this.tafsiliPhone1,
-        tafsiliPhone2 = this.tafsiliPhone2,
-        tafsiliMobile = this.tafsiliMobile
+        id = id,
+        code = code,
+        name = name,
+        groupId = groupId,
+        groupDetailId = groupDetailId,
+        tafsiliNationalId = tafsiliNationalId,
+        saleCenterId = saleCenterId,
+        degreeId = degreeId,
+        processKindId = processKindId,
+        customerKindId = customerKindId,
+        isCustomerDeactive = isCustomerDeactive,
+        deactivePersianDate = deactivePersianDate,
+        deactiveDate = deactiveDate,
+        customerSabt = customerSabt,
+        tafsiliPhone1 = tafsiliPhone1,
+        tafsiliPhone2 = tafsiliPhone2,
+        tafsiliMobile = tafsiliMobile
     )
 }
 
 
 fun CustomerDirectionDto.toEntity(): CustomerDirectionEntity {
     return CustomerDirectionEntity(
-        id = this.id,
-        customerId = this.customerId,
-        fullAddress = this.fullAddress,
-        cityName = this.cityName,
-        mainStreet = this.mainStreet,
-        subStreet = this.subStreet,
-        phone1 = this.phone1,
-        latitude = this.latitude,
-        longitude = this.longitude,
-        isMainAddress = this.isMainAddress
+        id = id,
+        customerId = customerId,
+        fullAddress = fullAddress,
+        cityName = cityName,
+        mainStreet = mainStreet,
+        subStreet = subStreet,
+        phone1 = phone1,
+        latitude = latitude,
+        longitude = longitude,
+        isMainAddress = isMainAddress
     )
 }
 
 
 fun PatternDto.toEntity(): PatternEntity {
     return PatternEntity(
-        id = this.id,
-        code = this.code,
-        name = this.name,
-        createDate = this.createDate,
-        persianDate = this.persianDate,
-        fromDate = this.fromDate,
-        fromPersianDate = this.fromPersianDate,
-        toDate = this.toDate,
-        toPersianDate = this.toPersianDate,
-        arzId = this.arzId,
-        description = this.description,
-        settelmentKind = this.settelmentKind,
-        creditDuration = this.creditDuration,
-        discountInclusionKind = this.discountInclusionKind,
-        groupInclusionKind = this.groupInclusionKind,
-        centerInclusionKind = this.centerInclusionKind,
-        customerInclusionKind = this.customerInclusionKind,
-        processInclusionKind = this.processInclusionKind,
-        regionInclusionKind = this.regionInclusionKind,
-        sabt = this.sabt,
-        fromSaleAmount = this.fromSaleAmount,
-        toSaleAmount = this.toSaleAmount,
-        hasCash = this.hasCash,
-        hasMaturityCash = this.hasMaturityCash,
-        hasSanad = this.hasSanad,
-        hasSanadAndCash = this.hasSanadAndCash,
-        hasCredit = this.hasCredit,
-        dayCount = this.dayCount,
-        hasAndroid = this.hasAndroid,
-        patternDetails = this.patternDetails?.toString()
+        id = id,
+        code = code,
+        name = name,
+        createDate = createDate,
+        persianDate = persianDate,
+        fromDate = fromDate,
+        fromPersianDate = fromPersianDate,
+        toDate = toDate,
+        toPersianDate = toPersianDate,
+        arzId = arzId,
+        description = description,
+        settelmentKind = settelmentKind,
+        creditDuration = creditDuration,
+        discountInclusionKind = discountInclusionKind,
+        groupInclusionKind = groupInclusionKind,
+        centerInclusionKind = centerInclusionKind,
+        customerInclusionKind = customerInclusionKind,
+        processInclusionKind = processInclusionKind,
+        regionInclusionKind = regionInclusionKind,
+        sabt = sabt,
+        fromSaleAmount = fromSaleAmount,
+        toSaleAmount = toSaleAmount,
+        hasCash = hasCash,
+        hasMaturityCash = hasMaturityCash,
+        hasSanad = hasSanad,
+        hasSanadAndCash = hasSanadAndCash,
+        hasCredit = hasCredit,
+        dayCount = dayCount,
+        hasAndroid = hasAndroid,
+        patternDetails = patternDetails?.toString()
     )
 }
 
