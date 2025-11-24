@@ -15,3 +15,15 @@ data class ApplicationSettingEntity(
     val defaultValue: String?,
     val value: String?
 )
+/*
+{
+    "id": 420,
+    "moduleId": 0,
+    "code": 12,
+    "name": "TransferWeighingBillInfo",
+    "description": "اطلاعات قبض باسکول به اطلاعات تکمیلی رسید منتقل شود؟",
+    "controlType": 0,
+    "itemSource": null,
+    "defaultValue": "False",
+    "value": "False"
+}*/

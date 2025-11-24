@@ -1,16 +1,17 @@
 package com.partsystem.partvisitapp.core.network
 
 
-import com.partsystem.partvisitapp.feature.main.home.model.GroupProductDto
+import com.partsystem.partvisitapp.core.network.modelDto.GroupProductDto
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
-import com.partsystem.partvisitapp.feature.main.home.model.ActDto
-import com.partsystem.partvisitapp.feature.main.home.model.ApplicationSettingDto
-import com.partsystem.partvisitapp.feature.main.home.model.CustomerDirectionDto
-import com.partsystem.partvisitapp.feature.main.home.model.CustomerDto
-import com.partsystem.partvisitapp.feature.main.home.model.InvoiceCategoryDto
-import com.partsystem.partvisitapp.feature.main.home.model.PatternDto
-import com.partsystem.partvisitapp.feature.main.home.model.ProductDto
-import com.partsystem.partvisitapp.feature.main.home.model.ProductImageDto
+import com.partsystem.partvisitapp.core.network.modelDto.ActDto
+import com.partsystem.partvisitapp.core.network.modelDto.ApplicationSettingDto
+import com.partsystem.partvisitapp.core.network.modelDto.CustomerDirectionDto
+import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
+import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
+import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
+import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
+import com.partsystem.partvisitapp.core.network.modelDto.ProductImageDto
+import com.partsystem.partvisitapp.core.network.modelDto.ProductPackingDto
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -36,6 +37,9 @@ interface ApiService {
 
     @GET("ProductImage")
     suspend fun getProductImages(): Response<List<ProductImageDto>>
+
+    @GET("ProductPacking")
+    suspend fun getProductPacking(): Response<List<ProductPackingDto>>
 
     @GET("Customer")
     suspend fun getCustomers(@Query("visitorId") visitorId: Int): Response<List<CustomerDto>>

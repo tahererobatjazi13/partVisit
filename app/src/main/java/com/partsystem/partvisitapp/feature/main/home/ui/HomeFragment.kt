@@ -144,6 +144,52 @@ class HomeFragment : Fragment() {
         }
         viewModel.fetchProducts()
 
+        viewModel.productImages.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Loading -> {
+                    // show progress
+                }
+
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "تصاویرکالا با موفقیت دریافت شد",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is NetworkResult.Error -> {
+                    Log.d("NetworkError6", result.message)
+
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        viewModel.fetchProductImages()
+
+        viewModel.productPacking.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Loading -> {
+                    // show progress
+                }
+
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "بسته بندی با موفقیت دریافت شد",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is NetworkResult.Error -> {
+                    Log.d("NetworkError6", result.message)
+
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        viewModel.fetchProductPacking()
+
         viewModel.customers.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is NetworkResult.Loading -> {
@@ -189,6 +235,7 @@ class HomeFragment : Fragment() {
             }
         }
         viewModel.fetchCustomerDirections()
+
         viewModel.invoiceCategory.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is NetworkResult.Loading -> {
@@ -258,28 +305,6 @@ class HomeFragment : Fragment() {
         }
         viewModel.fetchAct()
 
-        viewModel.productImages.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
-                is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "تصاویرکالا با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-
-                is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchProductImages()
     }
 
     private fun initAdapter() {

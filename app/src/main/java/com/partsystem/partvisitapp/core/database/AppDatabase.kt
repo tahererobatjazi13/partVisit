@@ -6,7 +6,9 @@ import com.partsystem.partvisitapp.core.database.dao.*
 import com.partsystem.partvisitapp.core.database.entity.*
 
 @Database(
-    entities = [ApplicationSettingEntity::class, OrderEntity::class, GroupProductEntity::class, ProductEntity::class, ProductImageEntity::class, CustomerEntity::class, CustomerDirectionEntity::class,
+    entities = [ApplicationSettingEntity::class, OrderEntity::class, GroupProductEntity::class,
+        ProductEntity::class, ProductImageEntity::class, ProductPackingEntity::class,
+        CustomerEntity::class, CustomerDirectionEntity::class,
         InvoiceCategoryEntity::class, PatternEntity::class,
         ActEntity::class, ActDetailEntity::class],
     version = 1,
@@ -20,6 +22,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun groupProductDao(): GroupProductDao
     abstract fun productDao(): ProductDao
     abstract fun productImageDao(): ProductImageDao
+    abstract fun productPackingDao(): ProductPackingDao
     abstract fun customerDao(): CustomerDao
     abstract fun customerDirectionDao(): CustomerDirectionDao
     abstract fun invoiceCategoryDao(): InvoiceCategoryDao

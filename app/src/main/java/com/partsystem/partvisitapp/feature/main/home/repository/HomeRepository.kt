@@ -11,6 +11,7 @@ import com.partsystem.partvisitapp.core.database.dao.InvoiceCategoryDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
 import com.partsystem.partvisitapp.core.database.dao.ProductImageDao
+import com.partsystem.partvisitapp.core.database.dao.ProductPackingDao
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
@@ -20,7 +21,8 @@ import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
-import com.partsystem.partvisitapp.core.mapper.toEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
+import com.partsystem.partvisitapp.core.database.mapper.toEntity
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
@@ -36,6 +38,7 @@ class HomeRepository @Inject constructor(
     private val groupProductDao: GroupProductDao,
     private val productDao: ProductDao,
     private val productImageDao: ProductImageDao,
+    private val productPackingDao: ProductPackingDao,
     private val customerDao: CustomerDao,
     private val customerDirectionDao: CustomerDirectionDao,
     private val invoiceCategoryDao: InvoiceCategoryDao,
@@ -53,7 +56,6 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل با mapper
             val applicationSettingList = body.map { it.toEntity() }
 
             applicationSettingDao.clearAll()
@@ -76,10 +78,8 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل با mapper
             val groupList = body.map { it.toEntity() }
 
-            // پاک کردن جدول و ذخیره
             groupProductDao.clearAll()
             groupProductDao.insertAll(groupList)
 
@@ -100,10 +100,8 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل با mapper
             val productList = body.map { it.toEntity() }
 
-            // پاک کردن جدول و ذخیره
             productDao.clearAll()
             productDao.insertProducts(productList)
 
@@ -124,16 +122,36 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server error: ${response.code()}")
             }
 
-            // تبدیل با mapper و ذخیره عکس‌ها
             val imageList = body.map { it.toEntity(context) }
 
-            // پاک کردن جدول و ذخیره
             productImageDao.clearAll()
             productImageDao.insertImages(imageList)
 
             NetworkResult.Success(imageList)
 
         } catch (e: Exception) {
+            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun fetchAndSaveProductPacking(): NetworkResult<List<ProductPackingEntity>> {
+        return try {
+            val response = api.getProductPacking()
+            val body = response.body()
+
+            if (!response.isSuccessful || body == null) {
+                return NetworkResult.Error("Server Error: ${response.code()}")
+            }
+
+            val productPackingList = body.map { it.toEntity() }
+
+            productPackingDao.clearAll()
+            productPackingDao.insertAll(productPackingList)
+
+            NetworkResult.Success(productPackingList)
+
+        } catch (e: Exception) {
+            Log.e("NetworkError", e.toString())
             NetworkResult.Error("Network error: ${e.localizedMessage}")
         }
     }
@@ -148,10 +166,8 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل با mapper
             val customerList = body.map { it.toEntity() }
 
-            // پاک کردن جدول و ذخیره
             customerDao.clearAll()
             customerDao.insertCustomers(customerList)
 
@@ -173,10 +189,8 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل با mapper
             val customerDirectionList = body.map { it.toEntity() }
 
-            // پاک کردن جدول و ذخیره
             customerDirectionDao.clearAll()
             customerDirectionDao.insertAll(customerDirectionList)
 
@@ -197,14 +211,12 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل با mapper
-            val categoryList = body.map { it.toEntity() }
+            val invoiceCategoryList = body.map { it.toEntity() }
 
-            // پاک کردن جدول و ذخیره
             invoiceCategoryDao.clearAll()
-            invoiceCategoryDao.insertAll(categoryList)
+            invoiceCategoryDao.insertAll(invoiceCategoryList)
 
-            NetworkResult.Success(categoryList)
+            NetworkResult.Success(invoiceCategoryList)
 
         } catch (e: Exception) {
             Log.e("NetworkError", e.toString())
@@ -222,10 +234,8 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل Pattern ها با mapper
             val patternList = body.map { it.toEntity() }
 
-            // پاک کردن جدول و ذخیره
             patternDao.clearAll()
             patternDao.insertAll(patternList)
 
@@ -246,19 +256,15 @@ class HomeRepository @Inject constructor(
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
 
-            // تبدیل ACT ها
             val actList = body.map { it.toEntity() }
 
-            // تبدیل جزئیات ACT ها
             val actDetailList = body.flatMap { act ->
                 act.actDetails?.map { it.toEntity() } ?: emptyList()
             }
 
-            // پاک کردن جداول
             actDao.clearAct()
             actDao.clearActDetails()
 
-            // ذخیره در دیتابیس
             actDao.insertActs(actList)
             actDao.insertActDetails(actDetailList)
 

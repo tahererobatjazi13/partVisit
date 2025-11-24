@@ -51,6 +51,10 @@ object DatabaseModule {
         db.productImageDao()
 
     @Provides
+    fun provideProductPackingDao(db: AppDatabase): ProductPackingDao =
+        db.productPackingDao()
+
+    @Provides
     fun provideInvoiceCategoryDao(db: AppDatabase): InvoiceCategoryDao =
         db.invoiceCategoryDao()
 

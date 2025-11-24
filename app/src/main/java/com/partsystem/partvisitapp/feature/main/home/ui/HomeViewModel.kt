@@ -14,6 +14,7 @@ import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.feature.main.home.model.HomeMenuItem
 import com.partsystem.partvisitapp.feature.main.home.repository.HomeRepository
@@ -81,6 +82,13 @@ class HomeViewModel @Inject constructor(
         _productImages.value = homeRepository.fetchAndSaveImages()
     }
 
+    private val _productPacking = MutableLiveData<NetworkResult<List<ProductPackingEntity>>>()
+    val productPacking: LiveData<NetworkResult<List<ProductPackingEntity>>> = _productPacking
+
+    fun fetchProductPacking() = viewModelScope.launch {
+        _productPacking.value = NetworkResult.Loading
+        _productPacking.value = homeRepository.fetchAndSaveProductPacking()
+    }
     private val _customers = MutableLiveData<NetworkResult<List<CustomerEntity>>>()
     val customers: LiveData<NetworkResult<List<CustomerEntity>>> = _customers
 

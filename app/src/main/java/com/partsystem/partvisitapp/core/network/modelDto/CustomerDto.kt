@@ -1,4 +1,4 @@
-package com.partsystem.partvisitapp.feature.main.home.model
+package com.partsystem.partvisitapp.core.network.modelDto
 
 data class CustomerDto(
     val id: Int,
