@@ -4,6 +4,7 @@ import android.content.Context
 import com.partsystem.partvisitapp.core.database.entity.ActDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
+import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
@@ -12,10 +13,17 @@ import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
+import com.partsystem.partvisitapp.core.database.entity.SaleCenterAnbarEntity
+import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
+import com.partsystem.partvisitapp.core.database.entity.SaleCenterUserEntity
+import com.partsystem.partvisitapp.core.database.entity.VatDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.VatEntity
+import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.utils.saveBase64ImageToFile
 import com.partsystem.partvisitapp.core.network.modelDto.ActDetailDto
 import com.partsystem.partvisitapp.core.network.modelDto.ActDto
 import com.partsystem.partvisitapp.core.network.modelDto.ApplicationSettingDto
+import com.partsystem.partvisitapp.core.network.modelDto.AssignDirectionCustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDirectionDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.GroupProductDto
@@ -24,6 +32,10 @@ import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductImageDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductPackingDto
+import com.partsystem.partvisitapp.core.network.modelDto.SaleCenterDto
+import com.partsystem.partvisitapp.core.network.modelDto.VatDetailDto
+import com.partsystem.partvisitapp.core.network.modelDto.VatDto
+import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
 
 fun ApplicationSettingDto.toEntity() = ApplicationSettingEntity(
     id = id,
@@ -37,6 +49,23 @@ fun ApplicationSettingDto.toEntity() = ApplicationSettingEntity(
     value = value
 )
 
+fun VisitorDto.toEntity(): VisitorEntity {
+    return VisitorEntity(
+        id = id,
+        tafsiliFullName = tafsiliFullName,
+        tafsiliLastName = tafsiliLastName,
+        tafsiliFirstName = tafsiliFirstName,
+        saleCenterId = saleCenterId,
+        isVisitorDeactive = isVisitorDeactive,
+        deactivePersianDate = deactivePersianDate,
+        deactiveDate = deactiveDate,
+        description = description,
+        visitorSabt = visitorSabt,
+        saleCenterCode = saleCenterCode,
+        saleCenterName = saleCenterName,
+        userId = userId
+    )
+}
 
 fun GroupProductDto.toEntity() = GroupProductEntity(
     id = id,
@@ -151,6 +180,27 @@ fun CustomerDirectionDto.toEntity() = CustomerDirectionEntity(
     isMainAddress = isMainAddress
 )
 
+fun AssignDirectionCustomerDto.toEntity() = AssignDirectionCustomerEntity(
+    id = id,
+    assignDirectionId = assignDirectionId,
+    tafsiliId = tafsiliId,
+    mainCode = mainCode,
+    code = code,
+    createDate = createDate,
+    persianDate = persianDate,
+    isVisit = isVisit,
+    isDistribution = isDistribution,
+    isDemands = isDemands,
+    isActive = isActive,
+    customerId = customerId,
+    saleCenterId = saleCenterId,
+    isVisitorDeactive = isVisitorDeactive,
+    customerCode = customerCode,
+    customerName = customerName,
+    tafsiliCode = tafsiliCode,
+    tafsiliName = tafsiliName
+)
+
 
 fun InvoiceCategoryDto.toEntity() = InvoiceCategoryEntity(
     id = id,
@@ -224,3 +274,41 @@ fun ActDetailDto.toEntity() = ActDetailEntity(
     saleRate = saleRate,
     dataDictionaryId = dataDictionaryId
 )
+
+fun VatDto.toEntity() = VatEntity(
+    id = id,
+    code = code,
+    createDate = createDate,
+    validDate = validDate,
+    serviceCalculateKind = serviceCalculateKind,
+    productCalculateKind = productCalculateKind,
+    vatPercent = vatPercent,
+    tollPercent = tollPercent,
+    description = description,
+    sabt = sabt,
+    kind = kind
+)
+
+fun VatDetailDto.toEntity() = VatDetailEntity(
+    id = id,
+    vatId = vatId,
+    productId = productId,
+    vatPercent = vatPercent,
+    tollPercent = tollPercent,
+    taxPercent = taxPercent
+)
+
+fun SaleCenterDto.toEntity(): SaleCenterEntity =
+    SaleCenterEntity(id = id, code = code, name = name, saleRateKind = saleRateKind)
+
+fun SaleCenterDto.toAnbarEntities(): List<SaleCenterAnbarEntity> =
+    saleCenterAnbars.map {
+        SaleCenterAnbarEntity(
+            saleCenterId = it.saleCenterId,
+            anbarId = it.anbarId,
+            isActive = it.isActive
+        )
+    }
+
+fun SaleCenterDto.toUserEntities(): List<SaleCenterUserEntity> =
+    saleCenterUsers.map { SaleCenterUserEntity(saleCenterId = it.saleCenterId, userId = it.userId) }
