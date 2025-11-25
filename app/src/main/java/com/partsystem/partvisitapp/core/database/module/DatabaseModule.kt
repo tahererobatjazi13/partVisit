@@ -26,6 +26,10 @@ object DatabaseModule {
         db.applicationSettingDao()
 
     @Provides
+    fun provideVisitorDao(db: AppDatabase): VisitorDao =
+        db.visitorDao()
+
+    @Provides
     fun provideOrderDao(db: AppDatabase): OrderDao =
         db.orderDao()
 
@@ -44,6 +48,10 @@ object DatabaseModule {
     @Provides
     fun provideCustomerDirectionDao(db: AppDatabase): CustomerDirectionDao =
         db.customerDirectionDao()
+
+    @Provides
+    fun provideAssignDirectionCustomerDao(db: AppDatabase): AssignDirectionCustomerDao =
+        db.assignDirectionCustomerDao()
 
 
     @Provides
@@ -65,4 +73,12 @@ object DatabaseModule {
     @Provides
     fun provideActDao(db: AppDatabase): ActDao =
         db.actDao()
+
+    @Provides
+    fun provideVatDao(db: AppDatabase): VatDao =
+        db.vatDao()
+
+    @Provides
+    fun provideSaleCenterDao(db: AppDatabase): SaleCenterDao =
+        db.saleCenterDao()
 }

@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.main.home.ui
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -55,6 +56,7 @@ class HomeFragment : Fragment() {
         //  setupObserver()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun init() {
         customDialog = CustomDialog.instance
         val jalaliDate = JalaliCalendar()
@@ -97,6 +99,29 @@ class HomeFragment : Fragment() {
             }
         }
         viewModel.fetchApplicationSetting()
+
+        viewModel.visitor.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Loading -> {
+                    // show progress
+                }
+
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "ویزیتور با موفقیت دریافت شد",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is NetworkResult.Error -> {
+                    Log.d("NetworkError6", result.message)
+
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        viewModel.fetchVisitors()
 
         viewModel.groupProducts.observe(viewLifecycleOwner) { result ->
             when (result) {
@@ -236,6 +261,29 @@ class HomeFragment : Fragment() {
         }
         viewModel.fetchCustomerDirections()
 
+        viewModel.assignDirectionCustome.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Loading -> {
+                    // show progress
+                }
+
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "مسیر مشتری با موفقیت دریافت شد",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is NetworkResult.Error -> {
+                    Log.d("NetworkError6", result.message)
+
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        viewModel.fetchAssignDirectionCustomer()
+
         viewModel.invoiceCategory.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is NetworkResult.Loading -> {
@@ -304,6 +352,50 @@ class HomeFragment : Fragment() {
             }
         }
         viewModel.fetchAct()
+
+        viewModel.vat.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Loading -> {
+                    // show progress
+                }
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "مالیات و عوارض با موفقیت دریافت شد",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is NetworkResult.Error -> {
+                    Log.d("NetworkError6", result.message)
+
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        viewModel.fetchVat()
+
+        viewModel.saleCenter.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Loading -> {
+                    // show progress
+                }
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "مراکز فروش با موفقیت دریافت شد",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is NetworkResult.Error -> {
+                    Log.d("NetworkError6", result.message)
+
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        viewModel.fetchSaleCenter()
 
     }
 
