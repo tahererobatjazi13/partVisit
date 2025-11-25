@@ -1,0 +1,39 @@
+package com.partsystem.partvisitapp.core.database.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "discount_table")
+data class DiscountEntity(
+    @PrimaryKey val id: Int,
+    val formType: Int,
+    val code: Int,
+    val name: String,
+    val kind: Int,
+    val isAutoCalculate: Boolean,
+    val applyKind: Int,
+    val calculationKind: Int,
+    val inclusionKind: Int,
+    val paymentKind: Int,
+    val priceAmount: Double,
+    val priceKind: Int,
+    val sabt: Boolean,
+    val beginDate: String,
+    val persianBeginDate: String,
+    val hasCash: Boolean,
+    val hasMaturityCash: Boolean,
+    val hasSanad: Boolean,
+    val hasSanadAndCash: Boolean,
+    val hasCredit: Boolean,
+    val dayCount: Int,
+    val isSystem: Boolean,
+    val hasUseToolsPercnet: Boolean,
+    val hasUseToolsPrice: Double?,
+    val unitKind: Int?,
+    val hasLastControl: Boolean,
+    val executeKind: Int,
+    val maxPrice: Double,
+    val customerFilterKind: Int,
+    val toDate: String?,
+    val toPersianDate: String?
+)

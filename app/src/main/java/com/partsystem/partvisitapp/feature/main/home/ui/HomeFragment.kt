@@ -358,6 +358,7 @@ class HomeFragment : Fragment() {
                 is NetworkResult.Loading -> {
                     // show progress
                 }
+
                 is NetworkResult.Success -> {
                     Toast.makeText(
                         requireContext(),
@@ -380,6 +381,7 @@ class HomeFragment : Fragment() {
                 is NetworkResult.Loading -> {
                     // show progress
                 }
+
                 is NetworkResult.Success -> {
                     Toast.makeText(
                         requireContext(),
@@ -396,6 +398,29 @@ class HomeFragment : Fragment() {
             }
         }
         viewModel.fetchSaleCenter()
+
+        viewModel.discount.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Loading -> {
+                    // show progress
+                }
+
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "تخفیفات با موفقیت دریافت شد",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is NetworkResult.Error -> {
+                    Log.d("NetworkError6", result.message)
+
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        viewModel.fetchDiscount()
 
     }
 

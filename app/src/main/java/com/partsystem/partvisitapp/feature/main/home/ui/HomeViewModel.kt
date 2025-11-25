@@ -10,6 +10,7 @@ import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
@@ -170,6 +171,14 @@ class HomeViewModel @Inject constructor(
     fun fetchSaleCenter() = viewModelScope.launch {
         _saleCenter.value = NetworkResult.Loading
         _saleCenter.value = homeRepository.fetchAndSaveSaleCenter()
+    }
+
+    private val _discount = MutableLiveData<NetworkResult<List<DiscountEntity>>>()
+    val discount: LiveData<NetworkResult<List<DiscountEntity>>> = _discount
+
+    fun fetchDiscount() = viewModelScope.launch {
+        _discount.value = NetworkResult.Loading
+        _discount.value = homeRepository.fetchAndSaveDiscount()
     }
 }
 
