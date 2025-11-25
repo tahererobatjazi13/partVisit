@@ -8,6 +8,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.ApplicationSettingDto
 import com.partsystem.partvisitapp.core.network.modelDto.AssignDirectionCustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDirectionDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
+import com.partsystem.partvisitapp.core.network.modelDto.DiscountDto
 import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
@@ -71,4 +72,7 @@ interface ApiService {
 
     @GET("SaleCenter")
     suspend fun getSaleCenters(): Response<List<SaleCenterDto>>
+
+    @GET("Discount")
+    suspend fun getDiscounts(): Response<List<DiscountDto>>
 }

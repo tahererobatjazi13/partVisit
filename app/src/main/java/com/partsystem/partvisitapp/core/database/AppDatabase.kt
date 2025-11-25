@@ -8,11 +8,11 @@ import com.partsystem.partvisitapp.core.database.entity.*
 @Database(
     entities = [ApplicationSettingEntity::class, VisitorEntity::class, OrderEntity::class, GroupProductEntity::class,
         ProductEntity::class, ProductImageEntity::class, ProductPackingEntity::class,
-        CustomerEntity::class, CustomerDirectionEntity::class,AssignDirectionCustomerEntity::class,
+        CustomerEntity::class, CustomerDirectionEntity::class, AssignDirectionCustomerEntity::class,
         InvoiceCategoryEntity::class, PatternEntity::class,
         ActEntity::class, ActDetailEntity::class,
         VatEntity::class, VatDetailEntity::class,
-        SaleCenterEntity::class, SaleCenterAnbarEntity::class, SaleCenterUserEntity::class],
+        SaleCenterEntity::class, SaleCenterAnbarEntity::class, SaleCenterUserEntity::class, DiscountEntity::class],
     version = 1,
     exportSchema = false
 )
@@ -34,5 +34,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun actDao(): ActDao
     abstract fun vatDao(): VatDao
     abstract fun saleCenterDao(): SaleCenterDao
+    abstract fun discountDao(): DiscountDao
 }
 

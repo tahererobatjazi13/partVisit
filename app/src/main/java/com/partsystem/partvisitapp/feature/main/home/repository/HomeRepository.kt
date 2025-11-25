@@ -7,6 +7,7 @@ import com.partsystem.partvisitapp.core.database.dao.ApplicationSettingDao
 import com.partsystem.partvisitapp.core.database.dao.AssignDirectionCustomerDao
 import com.partsystem.partvisitapp.core.database.dao.CustomerDao
 import com.partsystem.partvisitapp.core.database.dao.CustomerDirectionDao
+import com.partsystem.partvisitapp.core.database.dao.DiscountDao
 import com.partsystem.partvisitapp.core.database.dao.GroupProductDao
 import com.partsystem.partvisitapp.core.database.dao.InvoiceCategoryDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDao
@@ -21,6 +22,7 @@ import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
@@ -58,6 +60,7 @@ class HomeRepository @Inject constructor(
     private val actDao: ActDao,
     private val vatDao: VatDao,
     private val saleCenterDao: SaleCenterDao,
+    private val discountDao: DiscountDao,
 
     @ApplicationContext private val context: Context
 ) {
@@ -403,6 +406,29 @@ class HomeRepository @Inject constructor(
             saleCenterDao.insertUsers(saleCenterUsersList)
 
             return NetworkResult.Success(saleCenterList)
+
+        } catch (e: Exception) {
+            Log.e("NetworkError", e.toString())
+            return NetworkResult.Error("Network error: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun fetchAndSaveDiscount(): NetworkResult<List<DiscountEntity>> {
+        try {
+            val response = api.getDiscounts()
+            val body = response.body()
+
+            if (!response.isSuccessful || body == null) {
+                return NetworkResult.Error("Server Error: ${response.code()}")
+            }
+
+            val discountList = body.map { it.toEntity() }
+
+            discountDao.clearDiscounts()
+
+            discountDao.insertDiscounts(discountList)
+
+            return NetworkResult.Success(discountList)
 
         } catch (e: Exception) {
             Log.e("NetworkError", e.toString())

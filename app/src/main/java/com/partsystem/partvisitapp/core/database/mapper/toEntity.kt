@@ -7,6 +7,7 @@ import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
@@ -26,6 +27,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.ApplicationSettingDto
 import com.partsystem.partvisitapp.core.network.modelDto.AssignDirectionCustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDirectionDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
+import com.partsystem.partvisitapp.core.network.modelDto.DiscountDto
 import com.partsystem.partvisitapp.core.network.modelDto.GroupProductDto
 import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
@@ -312,3 +314,38 @@ fun SaleCenterDto.toAnbarEntities(): List<SaleCenterAnbarEntity> =
 
 fun SaleCenterDto.toUserEntities(): List<SaleCenterUserEntity> =
     saleCenterUsers.map { SaleCenterUserEntity(saleCenterId = it.saleCenterId, userId = it.userId) }
+
+
+fun DiscountDto.toEntity() = DiscountEntity(
+        id = id,
+        formType = formType,
+        code = code,
+        name = name,
+        kind = kind,
+        isAutoCalculate = isAutoCalculate,
+        applyKind = applyKind,
+        calculationKind = calculationKind,
+        inclusionKind = inclusionKind,
+        paymentKind = paymentKind,
+        priceAmount = priceAmount,
+        priceKind = priceKind,
+        sabt = sabt,
+        beginDate = beginDate,
+        persianBeginDate = persianBeginDate,
+        hasCash = hasCash,
+        hasMaturityCash = hasMaturityCash,
+        hasSanad = hasSanad,
+        hasSanadAndCash = hasSanadAndCash,
+        hasCredit = hasCredit,
+        dayCount = dayCount,
+        isSystem = isSystem,
+        hasUseToolsPercnet = hasUseToolsPercnet,
+        hasUseToolsPrice = hasUseToolsPrice,
+        unitKind = unitKind,
+        hasLastControl = hasLastControl,
+        executeKind = executeKind,
+        maxPrice = maxPrice,
+        customerFilterKind = customerFilterKind,
+        toDate = toDate,
+        toPersianDate = toPersianDate
+    )

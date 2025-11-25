@@ -81,4 +81,8 @@ object DatabaseModule {
     @Provides
     fun provideSaleCenterDao(db: AppDatabase): SaleCenterDao =
         db.saleCenterDao()
+
+    @Provides
+    fun provideDiscountDao(db: AppDatabase): DiscountDao =
+        db.discountDao()
 }
