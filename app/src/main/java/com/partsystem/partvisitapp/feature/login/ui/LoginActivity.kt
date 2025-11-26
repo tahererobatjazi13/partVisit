@@ -152,9 +152,7 @@ class LoginActivity : AppCompatActivity() {
      * رفتن به صفحه اصلی پس از ورود موفق
      */
     private fun navigateToHome() {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_NO_HISTORY)
-        }
+        val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
     }
 

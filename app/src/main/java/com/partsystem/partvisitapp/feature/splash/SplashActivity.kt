@@ -12,6 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.BuildConfig
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.feature.login.ui.LoginActivity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,18 +41,18 @@ class SplashActivity : AppCompatActivity() {
         val versionName = BuildConfig.VERSION_NAME
         binding.tvVersion.text = "نسخه $versionName"
     }
-
     private fun checkLoginStatus() {
-        // بررسی وضعیت لاگین
         lifecycleScope.launch {
-            userPreferences.isLoggedIn.collect { loggedIn ->
-                if (loggedIn == true) {
-                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-                } else {
-                    startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
-                }
-                finish()
+            val loggedIn = userPreferences.isLoggedIn.first()
+
+            if (loggedIn == true) {
+                startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            } else {
+                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
             }
+            finish()
         }
     }
+
+
 }
