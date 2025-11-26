@@ -75,4 +75,8 @@ interface ApiService {
 
     @GET("Discount")
     suspend fun getDiscounts(): Response<List<DiscountDto>>
+
+   /* ReportFactor?type=0&VisitorId=2471
+    @GET("Discount")
+    suspend fun getDiscounts(): Response<List<DiscountDto>>*/
 }
