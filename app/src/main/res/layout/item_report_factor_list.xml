@@ -13,9 +13,9 @@
         android:orientation="vertical"
         android:padding="@dimen/small_size">
 
-        <!-- شماره سفارش  -->
+        <!-- شماره فاکتور  -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clOrderNumber"
+            android:id="@+id/clFactorNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/xx_small_size"
@@ -25,24 +25,24 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitleOrderNumber"
+                android:id="@+id/tvTitleFactorNumber"
                 style="@style/SmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_order_number"
+                android:text="@string/label_factor_number"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvOrderNumber"
+                android:id="@+id/tvFactorNumber"
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
                 android:textColor="@color/colorPrimary"
                 android:textDirection="rtl"
-                app:layout_constraintEnd_toStartOf="@+id/tvTitleOrderNumber"
+                app:layout_constraintEnd_toStartOf="@+id/tvTitleFactorNumber"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -91,7 +91,6 @@
             android:id="@+id/clPatternName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
             android:layout_marginTop="@dimen/xx_small_size">
 
             <com.google.android.material.textview.MaterialTextView
@@ -121,7 +120,6 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clDateTime"
             android:layout_width="match_parent"
-
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/xx_small_size">
 
@@ -154,31 +152,31 @@
             android:layout_marginVertical="@dimen/xxx_small_size"
             android:background="@drawable/dashline" />
 
-        <!-- مبلغ کل-->
+        <!-- مبلغ نهایی-->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clTotalPrice"
+            android:id="@+id/clFinalPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitleTotalPrice"
+                android:id="@+id/tvTitleFinalPrice"
                 style="@style/SmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_total_factor"
+                android:text="@string/label_final_factor"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTotalPrice"
+                android:id="@+id/tvFinalPrice"
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
                 android:textColor="@color/orange_FF5722"
                 android:textDirection="rtl"
-                app:layout_constraintEnd_toStartOf="@+id/tvTitleTotalPrice"
+                app:layout_constraintEnd_toStartOf="@+id/tvTitleFinalPrice"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 

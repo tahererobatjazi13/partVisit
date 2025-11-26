@@ -44,9 +44,9 @@
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorDetailFragment"
         android:label="ReportFactorDetailFragment"
         tools:layout="@layout/fragment_report_factor_detail">
-     <!--   <argument
-            android:name="type"
-            app:argType="string" />-->
+        <argument
+            android:name="id"
+            app:argType="integer" />
     </fragment>
     <fragment
         android:id="@+id/customerListFragment"

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
+import com.partsystem.partvisitapp.core.utils.extensions.clean
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemReportFactorDetailBinding
@@ -38,9 +39,9 @@ class ReportFactorDetailAdapter :
             }
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
             tvPackingName.text =item.packingName
-            tvPackingValue.text = item.packingValue.toString()
+            tvPackingValue.text = item.packingValue!!.clean()
             tvUnitName.text =item.unitName
-            tvUnitValue.text = item.unit1Value.toString()
+            tvUnitValue.text = item.unit1Value!!.clean()
 
             if (item.discountPrice != null && item.discountPrice > 0) {
                 tvDiscountPrice.show()

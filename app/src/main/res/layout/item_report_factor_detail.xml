@@ -39,7 +39,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvProductName"
-                style="@style/MediumBoldTextStyle"
+                style="@style/SmallBoldTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
@@ -111,7 +111,7 @@
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvUnitName"
-                    style="@style/MediumBoldTextStyle"
+                    style="@style/SmallBoldTextStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/xx_small_size"
@@ -177,14 +177,14 @@
                     style="@style/SmallTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_packing_type"
+                    android:text="@string/label_packing"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvPackingName"
-                    style="@style/MediumBoldTextStyle"
+                    style="@style/SmallBoldTextStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/xx_small_size"

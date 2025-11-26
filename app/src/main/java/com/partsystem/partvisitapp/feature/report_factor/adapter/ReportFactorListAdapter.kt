@@ -12,7 +12,9 @@ import java.text.DecimalFormat
 
 class ReportFactorListAdapter(
     private val onClick: (ReportFactorDto) -> Unit = {},
-) : ListAdapter<ReportFactorDto, ReportFactorListAdapter.ReportFactorListViewHolder>(ReportFactorListDiffCallback()) {
+) : ListAdapter<ReportFactorDto, ReportFactorListAdapter.ReportFactorListViewHolder>(
+    ReportFactorListDiffCallback()
+) {
 
     private val formatter = DecimalFormat("#,###")
 
@@ -24,10 +26,10 @@ class ReportFactorListAdapter(
         fun bind(item: ReportFactorDto) = with(binding) {
             binding.apply {
                 tvCustomerName.text = item.customerName
-                tvDateTime.text = item.persianDate +" _ "+item.createTime
+                tvDateTime.text = item.persianDate + " _ " + item.createTime
                 tvPatternName.text = item.patternName
-                tvOrderNumber.text = item.id.toString()
-                tvTotalPrice.text = formatter.format(item.finalPrice) + " ریال"
+                tvFactorNumber.text = item.id.toString()
+                tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
 
                 root.setOnClickListener { onClick(item) }
             }

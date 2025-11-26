@@ -21,7 +21,7 @@
     <string name="label_orders_sent">سفارشات ارسال شده</string>
     <string name="label_date_item">تاریخ:</string>
     <string name="label_number">تعداد:</string>
-    <string name="label_order_number">شماره سفارش:</string>
+    <string name="label_factor_number">شماره فاکتور:</string>
     <string name="label_agent">نماینده:</string>
     <string name="label_customer_list">لیست مشتریان</string>
     <string name="label_customer_name">نام مشتری:</string>
@@ -41,10 +41,9 @@
     <string name="label_date_time">تاریخ و زمان:</string>
     <string name="label_header_order">هدر سفارش</string>
     <string name="label_total_order">مبلغ سفارش:</string>
-    <string name="label_total_factor">مبلغ نهایی:</string>
-    <string name="label_order_detail">جزییات سفارش</string>
+    <string name="label_final_factor">مبلغ نهایی:</string>
     <string name="label_product_detail">جزییات محصول</string>
-    <string name="label_order_information">اطلاعات سفارش:</string>
+    <string name="label_factor_information">اطلاعات فاکتور:</string>
     <string name="label_product_information">اطلاعات محصول :</string>
     <string name="label_description">توضیحات</string>
     <string name="label_product_description">توضیحات محصول :</string>
@@ -83,7 +82,7 @@
     <string name="label_payment_type">نحوه تسویه :</string>
     <string name="label_cancel">لغو</string>
     <string name="label_register">ثبت</string>
-    <string name="label_packing_type">نوع بسته بندی</string>
+    <string name="label_packing">بسته بندی: </string>
 
 
     <!-- date picker -->

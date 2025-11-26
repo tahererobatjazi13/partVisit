@@ -8,7 +8,7 @@
 
     <!-- line header -->
     <com.partsystem.partvisitapp.core.utils.componenet.Header
-        android:id="@+id/hfOrders"
+        android:id="@+id/hfFactorList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:drawableImgTwoHeader="@drawable/ic_back"
@@ -21,7 +21,7 @@
 
     <!-- line list -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvReportFactor"
+        android:id="@+id/rvFactorList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/small_size"
@@ -29,7 +29,7 @@
         android:elevation="@dimen/xx_small_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfOrders"
+        app:layout_constraintTop_toBottomOf="@+id/hfFactorList"
         tools:itemCount="10"
         tools:listitem="@layout/item_report_factor_list" />
 
@@ -43,7 +43,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfOrders" />
+        app:layout_constraintTop_toBottomOf="@+id/hfFactorList" />
 
     <!-- line loading -->
     <com.partsystem.partvisitapp.core.utils.componenet.DotLoading
@@ -56,7 +56,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfOrders" />
+        app:layout_constraintTop_toBottomOf="@+id/hfFactorList" />
 
     <!-- line info -->
     <com.partsystem.partvisitapp.core.utils.componenet.Info
@@ -68,7 +68,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfOrders"
+        app:layout_constraintTop_toBottomOf="@+id/hfFactorList"
         app:message="@string/msg_no_data" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -58,13 +58,15 @@ class ReportFactorListFragment : Fragment() {
     }
 
     private fun initAdapter() {
-        binding.rvReportFactor.apply {
+        binding.rvFactorList.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true)
 
-            reportFactorListAdapter = ReportFactorListAdapter { orders ->
+            reportFactorListAdapter = ReportFactorListAdapter { factors ->
                 val action =
-                    ReportFactorListFragmentDirections.actionReportFactorListFragmentToReportFactorDetailFragment()
+                    ReportFactorListFragmentDirections.actionReportFactorListFragmentToReportFactorDetailFragment(
+                        factors.id
+                    )
                 findNavController().navigate(action)
             }
             adapter = reportFactorListAdapter
@@ -77,7 +79,7 @@ class ReportFactorListFragment : Fragment() {
             binding.tryAgain.gone()
         }
 
-        binding.hfOrders.setOnClickImgTwoListener {
+        binding.hfFactorList.setOnClickImgTwoListener {
             findNavController().navigateUp()
         }
     }
@@ -96,10 +98,10 @@ class ReportFactorListFragment : Fragment() {
                         if (groups.isEmpty()) {
                             info.show()
                             info.message(getString(R.string.msg_no_data))
-                            rvReportFactor.gone()
+                            rvFactorList.gone()
                         } else {
                             info.gone()
-                            rvReportFactor.show()
+                            rvFactorList.show()
                             reportFactorListAdapter.submitList(groups)
                         }
                     }

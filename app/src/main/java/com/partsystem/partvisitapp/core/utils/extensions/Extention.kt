@@ -32,3 +32,19 @@ fun View.setSafeOnClickListener(onClick: (View) -> Unit): Disposable {
             onClick(this)
         }
 }
+
+fun Double.clean(): String {
+    return if (this % 1 == 0.0) {
+        this.toInt().toString()
+    } else {
+        this.toString()
+    }
+}
+
+fun Float.clean(): String {
+    return if (this % 1 == 0f) {
+        this.toInt().toString()
+    } else {
+        this.toString()
+    }
+}
