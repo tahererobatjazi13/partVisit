@@ -12,8 +12,8 @@
         tools:layout="@layout/fragment_home">
 
         <action
-            android:id="@+id/action_homeFragment_to_onlineOrderListFragment"
-            app:destination="@id/onlineOrderListFragment" />
+            android:id="@+id/action_homeFragment_to_reportFactorListFragment"
+            app:destination="@id/reportFactorListFragment" />
         <action
             android:id="@+id/action_homeFragment_to_customerListFragment"
             app:destination="@id/customerListFragment" />
@@ -31,22 +31,22 @@
             app:destination="@id/productListFragment" />
     </fragment>
     <fragment
-        android:id="@+id/onlineOrderListFragment"
-        android:name="com.partsystem.partvisitapp.feature.order_online.ui.OnlineOrderListFragment"
-        android:label="OnlineOrderListFragment"
-        tools:layout="@layout/fragment_online_order_list">
+        android:id="@+id/reportFactorListFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorListFragment"
+        android:label="ReportFactorListFragment"
+        tools:layout="@layout/fragment_report_factor_list">
         <action
-            android:id="@+id/action_onlineOrderListFragment_to_onlineOrderDetailFragment"
-            app:destination="@id/onlineOrderDetailFragment" />
+            android:id="@+id/action_reportFactorListFragment_to_reportFactorDetailFragment"
+            app:destination="@id/reportFactorDetailFragment" />
     </fragment>
     <fragment
-        android:id="@+id/onlineOrderDetailFragment"
-        android:name="com.partsystem.partvisitapp.feature.order_online.ui.OnlineOrderDetailFragment"
-        android:label="OnlineOrderDetailFragment"
-        tools:layout="@layout/fragment_online_order_detail">
-        <argument
+        android:id="@+id/reportFactorDetailFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorDetailFragment"
+        android:label="ReportFactorDetailFragment"
+        tools:layout="@layout/fragment_report_factor_detail">
+     <!--   <argument
             android:name="type"
-            app:argType="string" />
+            app:argType="string" />-->
     </fragment>
     <fragment
         android:id="@+id/customerListFragment"
@@ -74,8 +74,8 @@
             android:id="@+id/action_customerDetailFragment_to_headerOrderFragment"
             app:destination="@id/headerOrderFragment" />
         <action
-            android:id="@+id/action_customerDetailFragment_to_onlineOrderListFragment"
-            app:destination="@id/onlineOrderListFragment" />
+            android:id="@+id/action_customerDetailFragment_to_reportFactorListFragment"
+            app:destination="@id/reportFactorListFragment" />
     </fragment>
     <fragment
         android:id="@+id/groupProductFragment"

@@ -14,6 +14,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductImageDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductPackingDto
+import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.network.modelDto.SaleCenterDto
 import com.partsystem.partvisitapp.core.network.modelDto.VatDto
 import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
@@ -76,7 +77,17 @@ interface ApiService {
     @GET("Discount")
     suspend fun getDiscounts(): Response<List<DiscountDto>>
 
-   /* ReportFactor?type=0&VisitorId=2471
-    @GET("Discount")
-    suspend fun getDiscounts(): Response<List<DiscountDto>>*/
+
+    @GET("ReportFactor")
+    suspend fun getReportFactorVisitor(
+        @Query("type") type: Int,
+        @Query("VisitorId") visitorId: Int
+    ): Response<List<ReportFactorDto>>
+
+    @GET("ReportFactor")
+    suspend fun getReportFactorCustomer(
+        @Query("type") type: Int,
+        @Query("CustomerId") visitorId: Int
+    ): Response<List<ReportFactorDto>>
+
 }

@@ -20,6 +20,7 @@
     <string name="label_logout">خروج از حساب کاربری</string>
     <string name="label_orders_sent">سفارشات ارسال شده</string>
     <string name="label_date_item">تاریخ:</string>
+    <string name="label_number">تعداد:</string>
     <string name="label_order_number">شماره سفارش:</string>
     <string name="label_agent">نماینده:</string>
     <string name="label_customer_list">لیست مشتریان</string>
@@ -37,8 +38,10 @@
     <string name="label_customer_search">جستجو مشتری ...</string>
     <string name="label_phone">تلفن:</string>
     <string name="label_address">آدرس:</string>
+    <string name="label_date_time">تاریخ و زمان:</string>
     <string name="label_header_order">هدر سفارش</string>
     <string name="label_total_order">مبلغ سفارش:</string>
+    <string name="label_total_factor">مبلغ نهایی:</string>
     <string name="label_order_detail">جزییات سفارش</string>
     <string name="label_product_detail">جزییات محصول</string>
     <string name="label_order_information">اطلاعات سفارش:</string>
@@ -51,7 +54,7 @@
     <string name="label_amount_1">مقدار1</string>
     <string name="label_amount_2">مقدار 2</string>
     <string name="label_product_name_header">نام محصول</string>
-    <string name="label_product_name">نام محصول :</string>
+    <string name="label_product_name">نام کالا :</string>
     <string name="label_product_search">جستجو محصولات ...</string>
     <string name="label_products">محصولات</string>
     <string name="label_close">بستن</string>
@@ -80,6 +83,7 @@
     <string name="label_payment_type">نحوه تسویه :</string>
     <string name="label_cancel">لغو</string>
     <string name="label_register">ثبت</string>
+    <string name="label_packing_type">نوع بسته بندی</string>
 
 
     <!-- date picker -->

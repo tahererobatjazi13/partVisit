@@ -1,255 +1,239 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/RoundedCardViewStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/small_size"
-    app:rippleColor="?attr/colorRipple">
+    android:background="?attr/colorSurfaceVariant">
 
     <LinearLayout
+        android:id="@+id/llMain"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/small_size">
+        android:padding="@dimen/small_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <!-- شماره سفارش و تاریخ -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clProductName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/xx_small_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvTitleProductName"
+                style="@style/SmallTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_product_name"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvProductName"
+                style="@style/MediumBoldTextStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/xx_small_size"
+                android:textColor="@color/colorPrimary"
+                android:textDirection="rtl"
+                app:layout_constraintEnd_toStartOf="@+id/tvTitleProductName"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/xx_small_size">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clOrderDate"
+                android:id="@+id/clUnitValue"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/clOrderNumber"
+                app:layout_constraintEnd_toStartOf="@id/clUnitName"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvTitleOrderDate"
+                    android:id="@+id/tvTitleUnitValue"
                     style="@style/SmallTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_date_item"
+                    android:text="@string/label_number"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvOrderDate"
+                    android:id="@+id/tvUnitValue"
                     style="@style/SmallBoldTextStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/xx_small_size"
                     android:textDirection="rtl"
-                    app:layout_constraintEnd_toStartOf="@+id/tvTitleOrderDate"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTitleUnitValue"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clOrderNumber"
+                android:id="@+id/clUnitName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_weight="1"
-                app:layout_constraintStart_toEndOf="@id/clOrderDate"
+                app:layout_constraintStart_toEndOf="@id/clUnitValue"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvTitleOrderNumber"
+                    android:id="@+id/tvTitleUnitName"
                     style="@style/SmallTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_order_number"
+                    android:text="@string/label_unit_name"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvOrderNumber"
+                    android:id="@+id/tvUnitName"
                     style="@style/MediumBoldTextStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/xx_small_size"
                     android:textColor="@color/colorPrimary"
                     android:textDirection="rtl"
-                    app:layout_constraintEnd_toStartOf="@+id/tvTitleOrderNumber"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTitleUnitName"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- نام مشتری و نام نماینده -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/xx_small_size">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clAgentName"
+                android:id="@+id/clPackingValue"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/clCustomerName"
+                app:layout_constraintEnd_toStartOf="@id/clPackingName"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">>
+                app:layout_constraintTop_toTopOf="parent">
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvTitleAgentName"
+                    android:id="@+id/tvTitlePackingValue"
                     style="@style/SmallTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_agent"
+                    android:text="@string/label_number"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvAgentName"
+                    android:id="@+id/tvPackingValue"
                     style="@style/SmallBoldTextStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/xx_small_size"
                     android:textDirection="rtl"
-                    app:layout_constraintEnd_toStartOf="@+id/tvTitleAgentName"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTitlePackingValue"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clCustomerName"
+                android:id="@+id/clPackingName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_weight="1"
-                app:layout_constraintStart_toEndOf="@id/clAgentName"
+                app:layout_constraintStart_toEndOf="@id/clPackingValue"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvCustomerName"
-                    style="@style/SmallBoldTextStyle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/xx_small_size"
-                    android:textDirection="rtl"
-                    app:layout_constraintEnd_toStartOf="@+id/tvTitleCustomerName"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvTitleCustomerName"
+                    android:id="@+id/tvTitlePackingName"
                     style="@style/SmallTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_customer_name"
+                    android:text="@string/label_packing_type"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvPackingName"
+                    style="@style/MediumBoldTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/xx_small_size"
+                    android:textColor="@color/colorPrimary"
+                    android:textDirection="rtl"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTitlePackingName"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- تلفن -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clPhone"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitlePhone"
-                style="@style/SmallTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_phone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvPhone"
+                android:id="@+id/tvDiscountPrice"
                 style="@style/SmallBoldTextStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/xx_small_size"
-                android:textDirection="rtl"
-                app:layout_constraintEnd_toStartOf="@+id/tvTitlePhone"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- آدرس -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitleAddress"
-                style="@style/SmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_address"
+                android:layout_marginStart="@dimen/medium_size"
+                android:gravity="center"
+                android:text="120000 ریال"
+                android:textColor="@color/red_E92228"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvPrice"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvAddress"
+                android:id="@+id/tvPrice"
                 style="@style/SmallBoldTextStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/xx_small_size"
-                android:textDirection="rtl"
-                app:layout_constraintEnd_toStartOf="@+id/tvTitleAddress"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/xx_small_size"
-            android:layout_marginVertical="@dimen/xxx_small_size"
-            android:background="@drawable/dashline" />
-
-        <!-- مبلغ -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clOrderPrice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitleOrderPrice"
-                style="@style/SmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_total_order"
+                android:layout_marginStart="@dimen/medium_size"
+                android:gravity="center"
+                android:text="120000 ریال"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvPriceAfterDiscount"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvOrderPrice"
-                style="@style/MediumBoldTextStyle"
-                android:layout_width="0dp"
+                android:id="@+id/tvPriceAfterDiscount"
+                style="@style/SmallBoldTextStyle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/xx_small_size"
-                android:textColor="@color/orange_FF5722"
-                android:textDirection="rtl"
-                app:layout_constraintEnd_toStartOf="@+id/tvTitleOrderPrice"
+                android:gravity="center"
+                android:text="120000 ریال"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -257,4 +241,21 @@
 
     </LinearLayout>
 
-</com.google.android.material.card.MaterialCardView>
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="0.7dp"
+        android:background="?attr/colorLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clMain" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+
+

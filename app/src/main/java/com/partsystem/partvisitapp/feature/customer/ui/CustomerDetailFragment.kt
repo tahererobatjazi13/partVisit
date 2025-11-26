@@ -84,7 +84,7 @@ class CustomerDetailFragment : Fragment() {
 
             btnOrdersList.setOnClickListener {
                 val action =
-                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToOnlineOrderListFragment()
+                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToReportFactorListFragment()
                 findNavController().navigate(action)
             }
 

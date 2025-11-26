@@ -458,7 +458,7 @@ class HomeFragment : Fragment() {
 
                     6 -> { /* باز کردن صفحه سفارش‌ها */
                         val action =
-                            HomeFragmentDirections.actionHomeFragmentToOnlineOrderListFragment()
+                            HomeFragmentDirections.actionHomeFragmentToReportFactorListFragment()
                         findNavController().navigate(action)
                     }
 
