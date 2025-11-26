@@ -9,13 +9,4 @@ data class SaleCenterDto(
     val saleCenterUsers: List<SaleCenterUserDto>
 )
 
-data class SaleCenterAnbarDto(
-    val saleCenterId: Int,
-    val anbarId: Int,
-    val isActive: Boolean
-)
 
-data class SaleCenterUserDto(
-    val saleCenterId: Int,
-    val userId: Int
-)
