@@ -4,7 +4,8 @@
     style="@style/RoundedCardViewStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/small_size"
+    android:layout_marginHorizontal="@dimen/medium_size"
+    android:layout_marginBottom="@dimen/medium_size"
     app:rippleColor="?attr/colorRipple">
 
     <LinearLayout
@@ -26,7 +27,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitleFactorNumber"
-                style="@style/SmallTextStyle"
+                style="@style/XSmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_factor_number"
@@ -36,7 +37,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvFactorNumber"
-                style="@style/MediumBoldTextStyle"
+                style="@style/SmallBoldTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
@@ -64,9 +65,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
-                android:ellipsize="marquee"
-                android:scrollHorizontally="false"
-                android:singleLine="true"
                 android:textDirection="rtl"
                 app:layout_constraintEnd_toStartOf="@+id/tvTitleCustomerName"
                 app:layout_constraintStart_toStartOf="parent"
@@ -74,7 +72,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitleCustomerName"
-                style="@style/SmallTextStyle"
+                style="@style/XSmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="marquee"
@@ -95,7 +93,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitlePatternName"
-                style="@style/SmallTextStyle"
+                style="@style/XSmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_sales_plan"
@@ -105,7 +103,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvPatternName"
-                style="@style/SmallBoldTextStyle"
+                style="@style/SmallTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
@@ -125,7 +123,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitleDateTime"
-                style="@style/SmallTextStyle"
+                style="@style/XSmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_date_time"
@@ -135,7 +133,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvDateTime"
-                style="@style/SmallBoldTextStyle"
+                style="@style/SmallTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
@@ -160,7 +158,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitleFinalPrice"
-                style="@style/SmallTextStyle"
+                style="@style/XSmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_final_factor"
@@ -174,7 +172,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
-                android:textColor="@color/orange_FF5722"
+                android:textColor="@color/blue_283167"
                 android:textDirection="rtl"
                 app:layout_constraintEnd_toStartOf="@+id/tvTitleFinalPrice"
                 app:layout_constraintStart_toStartOf="parent"

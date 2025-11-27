@@ -21,18 +21,16 @@ class ReportFactorListAdapter(
     inner class ReportFactorListViewHolder(private val binding: ItemReportFactorListBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-
         @SuppressLint("SetTextI18n")
         fun bind(item: ReportFactorDto) = with(binding) {
-            binding.apply {
-                tvCustomerName.text = item.customerName
-                tvDateTime.text = item.persianDate + " _ " + item.createTime
-                tvPatternName.text = item.patternName
-                tvFactorNumber.text = item.id.toString()
-                tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
 
-                root.setOnClickListener { onClick(item) }
-            }
+            tvCustomerName.text = item.customerName
+            tvDateTime.text = item.persianDate + " _ " + item.createTime
+            tvPatternName.text = item.patternName
+            tvFactorNumber.text = item.id.toString()
+            tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
+
+            root.setOnClickListener { onClick(item) }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.report_factor.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +14,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -57,7 +57,7 @@ class ReportFactorDetailFragment : Fragment() {
     private fun initVisitorIdAndFetchData() {
         lifecycleScope.launch {
             visitorId = userPreferences.personnelId.first() ?: 0
-            viewModel.fetchReportFactor(1, visitorId)
+            viewModel.fetchReportFactorDetail(1, args.id)
         }
     }
 
@@ -66,7 +66,7 @@ class ReportFactorDetailFragment : Fragment() {
     private fun initAdapter() {
         binding.rvFactorDetail.apply {
             layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true)
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             reportFactorDetailAdapter = ReportFactorDetailAdapter()
             adapter = reportFactorDetailAdapter
         }
@@ -79,14 +79,15 @@ class ReportFactorDetailFragment : Fragment() {
             }
 
             tryAgain.setOnClickListener {
-                viewModel.fetchReportFactor(1, visitorId)
+                viewModel.fetchReportFactorDetail(1, args.id)
                 binding.tryAgain.gone()
             }
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupObserver() {
-        viewModel.reportFactors.observe(viewLifecycleOwner) { result ->
+        viewModel.reportFactorDetail.observe(viewLifecycleOwner) { result ->
             binding.apply {
                 when (result) {
                     is NetworkResult.Loading -> {
@@ -104,19 +105,21 @@ class ReportFactorDetailFragment : Fragment() {
                         val filteredList = groups.filter { it.id == args.id }
 
                         if (filteredList.isEmpty()) {
-                            rvFactorDetail.gone()
+                            svMain.gone()
                             info.show()
                             info.message(getString(R.string.msg_no_data))
                         } else {
                             info.gone()
-
-                            rvFactorDetail.show()
+                            svMain.show()
                             reportFactorDetailAdapter.submitList(filteredList)
 
                             tvNumber.text= filteredList[0].id.toString()
-                            tvNumber.text=filteredList[0].customerName
+                            tvCustomerName.text=filteredList[0].customerName
                             tvDateTime.text=filteredList[0].persianDate+" _ "+filteredList[0].createTime
-                            tvFinalPrice.text=formatter.format(filteredList[0].finalPrice)
+                            tvSumPrice.text=formatter.format(filteredList[0].sumPrice)+ " ریال"
+                            tvSumDiscountPrice.text=formatter.format(filteredList[0].sumDiscountPrice)+ " ریال"
+                            tvSumVat.text=formatter.format(filteredList[0].sumVat)+ " ریال"
+                            tvFinalPrice.text=formatter.format(filteredList[0].finalPrice)+ " ریال"
                         }
                     }
 
@@ -131,18 +134,6 @@ class ReportFactorDetailFragment : Fragment() {
                     }
                 }
             }
-        }
-    }
-
-
-    private fun calculateTotalPrices(items: List<ReportFactorDto>?) {
-        items ?: return
-        //  val total = items.sumOf { it.price }
-        with(binding) {
-            //  tvTotalOrder.text = "${formatter.format(total)} ریال"
-            //  tvDiscountOrder.text = formatter.format(0) // جایگزین با مقدار واقعی
-            //  tvTotalDiscount.text = formatter.format(0) // جایگزین با مقدار واقعی
-            //  tvTotalPrice.text = formatter.format(total) + " ریال"
         }
     }
 

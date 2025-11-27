@@ -10,3 +10,8 @@ enum class SnackBarType(val value: String) {
     Success("success"),
     Warning("warning"),
 }
+
+enum class ReportFactorListType(val value: String) {
+    Customer("customer"),
+    Visitor("visitor")
+}

@@ -85,9 +85,15 @@ interface ApiService {
     ): Response<List<ReportFactorDto>>
 
     @GET("ReportFactor")
+    suspend fun getReportFactorDetail(
+        @Query("type") type: Int,
+        @Query("FactorId") factorId: Int
+    ): Response<List<ReportFactorDto>>
+
+    @GET("ReportFactor")
     suspend fun getReportFactorCustomer(
         @Query("type") type: Int,
-        @Query("CustomerId") visitorId: Int
+        @Query("CustomerId") customerId: Int
     ): Response<List<ReportFactorDto>>
 
 }

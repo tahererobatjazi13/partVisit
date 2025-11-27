@@ -35,6 +35,12 @@
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorListFragment"
         android:label="ReportFactorListFragment"
         tools:layout="@layout/fragment_report_factor_list">
+        <argument
+            android:name="typeList"
+            app:argType="string" />
+        <argument
+            android:name="id"
+            app:argType="integer" />
         <action
             android:id="@+id/action_reportFactorListFragment_to_reportFactorDetailFragment"
             app:destination="@id/reportFactorDetailFragment" />

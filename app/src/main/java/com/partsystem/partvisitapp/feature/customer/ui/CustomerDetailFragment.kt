@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.partsystem.partvisitapp.core.utils.ReportFactorListType
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import dagger.hilt.android.AndroidEntryPoint
@@ -84,7 +85,9 @@ class CustomerDetailFragment : Fragment() {
 
             btnOrdersList.setOnClickListener {
                 val action =
-                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToReportFactorListFragment()
+                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToReportFactorListFragment(
+                        ReportFactorListType.Customer.value,args.customerId
+                    )
                 findNavController().navigate(action)
             }
 

@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.ReportFactorListType
+import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.databinding.FragmentHomeBinding
@@ -23,6 +25,7 @@ import com.partsystem.partvisitapp.feature.splash.SplashActivity
 import dagger.hilt.android.AndroidEntryPoint
 import ir.huri.jcal.JalaliCalendar
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -457,9 +460,12 @@ class HomeFragment : Fragment() {
                     }
 
                     6 -> { /* باز کردن صفحه سفارش‌ها */
+                        lifecycleScope.launch {
                         val action =
-                            HomeFragmentDirections.actionHomeFragmentToReportFactorListFragment()
+                            HomeFragmentDirections.actionHomeFragmentToReportFactorListFragment(
+                                ReportFactorListType.Visitor.value , userPreferences.personnelId.first() ?: 0)
                         findNavController().navigate(action)
+                    }
                     }
 
                     7 -> {/* خروج از حساب کاربری */

@@ -38,9 +38,10 @@ class ReportFactorDetailAdapter :
                 )
             }
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
-            tvPackingName.text =item.packingName
+            tvPackingName.text = item.packingName
             tvPackingValue.text = item.packingValue!!.clean()
-            tvUnitName.text =item.unitName
+            tvUnitName.text = item.unitName
+            tvRate1.text = formatter.format(item.rate1) + " ریال"
             tvUnitValue.text = item.unit1Value!!.clean()
 
             if (item.discountPrice != null && item.discountPrice > 0) {
@@ -48,21 +49,35 @@ class ReportFactorDetailAdapter :
                 tvPriceAfterDiscount.show()
                 tvPrice.show()
 
-                tvDiscountPrice.text = "م.تخفیف: " + formatter.format(item.discountPrice)
-                tvPriceAfterDiscount.text = formatter.format(item.priceAfterDiscount)
+                tvDiscountPrice.text = formatter.format(item.discountPrice) + " تخفیف"
+                tvPriceAfterDiscount.text =
+                    formatter.format(item.priceAfterDiscount) + " م.بعداز تخفیف"
                 // قیمت اصلی → خط بخورد
                 tvPrice.paintFlags = tvPrice.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 tvPrice.setTextColor(Color.GRAY)
-                tvPrice.text = formatter.format(item.price)
+                tvPrice.text = formatter.format(item.price) + " ریال"
 
             } else {
 
+                tvPrice.show()
                 tvDiscountPrice.gone()
                 tvPriceAfterDiscount.gone()
-
                 tvPrice.paintFlags = tvPrice.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                tvPrice.text = formatter.format(item.price)
+                tvPrice.text = formatter.format(item.price) + " ریال"
             }
+
+            if (item.vat != null && item.vat > 0) {
+                tvVat.show()
+                tvPriceAfterVat.show()
+
+                tvVat.text = formatter.format(item.vat) + " مالیات"
+                tvPriceAfterVat.text = formatter.format(item.priceAfterVat) + " م.بعداز مالیات"
+
+            } else {
+                tvVat.gone()
+                tvPriceAfterVat.gone()
+            }
+
 
 
             if (bindingAdapterPosition < itemCount - 1) {

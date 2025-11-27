@@ -19,17 +19,41 @@
         app:layout_constraintTop_toTopOf="parent"
         app:textTitleHeader="@string/label_orders_sent" />
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/medium_size"
+        android:background="@drawable/selector_search_input"
+        app:boxBackgroundMode="none"
+        app:hintEnabled="false"
+        app:layout_constraintBottom_toTopOf="@+id/rvFactorList"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/hfFactorList">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSearch"
+            style="@style/Input"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_36sdp"
+            android:drawableEnd="@drawable/ic_search"
+            android:drawablePadding="@dimen/x_small_size"
+            android:gravity="center_vertical|start"
+            android:hint="@string/label_factor_search"
+            android:padding="0dp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <!-- line list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvFactorList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/small_size"
-        android:layout_marginTop="@dimen/medium_size"
+        android:layout_height="0dp"
         android:elevation="@dimen/xx_small_size"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfFactorList"
+        app:layout_constraintTop_toBottomOf="@+id/tilSearch"
         tools:itemCount="10"
         tools:listitem="@layout/item_report_factor_list" />
 
@@ -69,6 +93,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/hfFactorList"
-        app:message="@string/msg_no_data" />
+        app:message="@string/msg_no_factor" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

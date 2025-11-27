@@ -21,6 +21,7 @@
     <string name="label_orders_sent">سفارشات ارسال شده</string>
     <string name="label_date_item">تاریخ:</string>
     <string name="label_number">تعداد:</string>
+    <string name="label_number_packing">تعداد بسته:</string>
     <string name="label_factor_number">شماره فاکتور:</string>
     <string name="label_agent">نماینده:</string>
     <string name="label_customer_list">لیست مشتریان</string>
@@ -36,24 +37,29 @@
     <string name="label_add_customer">افزودن مشتری</string>
     <string name="label_edit_customer">ویرایش مشتری</string>
     <string name="label_customer_search">جستجو مشتری ...</string>
+    <string name="label_factor_search">جستجو فاکتور ...</string>
     <string name="label_phone">تلفن:</string>
     <string name="label_address">آدرس:</string>
     <string name="label_date_time">تاریخ و زمان:</string>
     <string name="label_header_order">هدر سفارش</string>
     <string name="label_total_order">مبلغ سفارش:</string>
     <string name="label_final_factor">مبلغ نهایی:</string>
+    <string name="label_sum_discount_price">جمع تخفیفات:</string>
+    <string name="label_sum_price">جمع کل:</string>
+    <string name="label_sum_vat">جمع مالیات:</string>
     <string name="label_product_detail">جزییات محصول</string>
-    <string name="label_factor_information">اطلاعات فاکتور:</string>
     <string name="label_product_information">اطلاعات محصول :</string>
     <string name="label_description">توضیحات</string>
     <string name="label_product_description">توضیحات محصول :</string>
     <string name="label_unit_name">واحد:</string>
+    <string name="label_rate">نرخ:</string>
     <string name="label_total">جمع</string>
     <string name="label_discount">تخفیف</string>
     <string name="label_amount_1">مقدار1</string>
     <string name="label_amount_2">مقدار 2</string>
     <string name="label_product_name_header">نام محصول</string>
     <string name="label_product_name">نام کالا :</string>
+    <string name="label_product">کالا:</string>
     <string name="label_product_search">جستجو محصولات ...</string>
     <string name="label_products">محصولات</string>
     <string name="label_close">بستن</string>
@@ -82,7 +88,7 @@
     <string name="label_payment_type">نحوه تسویه :</string>
     <string name="label_cancel">لغو</string>
     <string name="label_register">ثبت</string>
-    <string name="label_packing">بسته بندی: </string>
+    <string name="label_packing_type">نوع بسته بندی: </string>
 
 
     <!-- date picker -->
@@ -101,6 +107,7 @@
     <string name="msg_no_customer">مشتری یافت نشد</string>
     <string name="msg_no_product">محصولی یافت نشد</string>
     <string name="msg_no_data">آیتمی یافت نشد</string>
+    <string name="msg_no_factor">فاکتوری یافت نشد</string>
     <string name="msg_log_out">آیا مایل به خروج از حساب کاربری خود می باشید؟</string>
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
 

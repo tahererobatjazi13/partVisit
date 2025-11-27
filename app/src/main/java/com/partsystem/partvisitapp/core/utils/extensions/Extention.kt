@@ -48,3 +48,15 @@ fun Float.clean(): String {
         this.toString()
     }
 }
+ fun String.toEnglishDigits(): String {
+    val arabic = charArrayOf('٠','١','٢','٣','٤','٥','٦','٧','٨','٩')
+    val persian = charArrayOf('۰','۱','۲','۳','۴','۵','۶','۷','۸','۹')
+
+    var output = this
+    for (i in 0..9) {
+        output = output
+            .replace(arabic[i], ('0' + i))
+            .replace(persian[i], ('0' + i))
+    }
+    return output
+}
