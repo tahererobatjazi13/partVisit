@@ -16,5 +16,5 @@ interface VisitorDao {
     suspend fun getAll(): List<VisitorEntity>
 
     @Query("DELETE FROM application_setting_table")
-    suspend fun clearAll()
+    suspend fun clearVisitors()
 }

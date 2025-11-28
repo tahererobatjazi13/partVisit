@@ -18,7 +18,7 @@ interface ProductDao {
     fun getAllProducts(): Flow<List<ProductEntity>>
 
     @Query("DELETE FROM product_table")
-    suspend fun clearAll()
+    suspend fun clearProducts()
 
     @Query("SELECT * FROM product_table WHERE id = :id")
     fun getProductById(id: Int): LiveData<ProductEntity>

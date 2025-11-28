@@ -20,6 +20,6 @@ interface GroupProductDao {
     fun getCategories(parentId: Int): Flow<List<GroupProductEntity>>
 
     @Query("DELETE FROM group_product_table")
-    suspend fun clearAll()
+    suspend fun clearGroupProduct()
 }
 

@@ -19,7 +19,7 @@ class ProductRepository @Inject constructor(
 
     fun getProductById(id: Int): LiveData<ProductEntity> = dao.getProductById(id)
 
-    suspend fun clearAll() = dao.clearAll()
+    suspend fun clearAll() = dao.clearProducts()
 
     fun getImagesForProduct(productId: Int): LiveData<List<ProductImageEntity>> =
         productImageDao.getImagesByProductId(productId)

@@ -14,5 +14,5 @@ interface InvoiceCategoryDao {
     fun getAllInvoiceCategory(): Flow<List<InvoiceCategoryEntity>>
 
     @Query("DELETE FROM invoice_category_table")
-    suspend fun clearAll()
+    suspend fun clearInvoiceCategory()
 }

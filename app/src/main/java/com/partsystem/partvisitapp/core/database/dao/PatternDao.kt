@@ -20,5 +20,5 @@ interface PatternDao {
     suspend fun getById(id: Int): PatternEntity?
 
     @Query("DELETE FROM pattern_table")
-    suspend fun clearAll()
+    suspend fun clearPatterns()
 }

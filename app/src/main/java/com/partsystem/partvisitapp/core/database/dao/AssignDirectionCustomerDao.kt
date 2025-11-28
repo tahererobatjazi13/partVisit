@@ -16,5 +16,5 @@ interface AssignDirectionCustomerDao {
     suspend fun getByVisitor(visitorId: Int): List<AssignDirectionCustomerEntity>
 
     @Query("DELETE FROM assign_direction_customer_table")
-    suspend fun clearAll()
+    suspend fun clearAssignDirectionCustomer()
 }

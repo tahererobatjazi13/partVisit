@@ -34,7 +34,7 @@ interface SaleCenterDao {
     suspend fun getUsers(centerId: Int): List<SaleCenterUserEntity>
 
     @Query("DELETE FROM sale_center_table")
-    suspend fun clearCenters()
+    suspend fun clearSaleCenters()
 
     @Query("DELETE FROM sale_center_anbar_table")
     suspend fun clearAnbars()

@@ -75,6 +75,11 @@ constructor(
             binding.btnTwo.setTextColor(value)
             field = value
         }
+    var badgeTextColorBtnOne: Int = 0
+        set(value) {
+            binding.btnOne.setTextColor(value)
+            field = value
+        }
 
     // Listeners ------------------------------------
     private var btnOneListener: ClickListener? = null
@@ -93,6 +98,8 @@ constructor(
         backColorBtnOne = attributes.getInteger(R.styleable.BottomMainBtn_backColorBtnOne, 0)
         badgeTextColorBtnTwo =
             attributes.getInteger(R.styleable.BottomMainBtn_badgeTextColorBtnTwo, 0)
+        badgeTextColorBtnOne =
+            attributes.getInteger(R.styleable.BottomMainBtn_badgeTextColorBtnOne, 0)
         attributes.recycle()
     }
 

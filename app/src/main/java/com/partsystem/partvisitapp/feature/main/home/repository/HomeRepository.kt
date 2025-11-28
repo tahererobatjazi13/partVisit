@@ -75,7 +75,7 @@ class HomeRepository @Inject constructor(
 
             val applicationSettingList = body.map { it.toEntity() }
 
-            applicationSettingDao.clearAll()
+            applicationSettingDao.clearApplicationSetting()
             applicationSettingDao.insertAll(applicationSettingList)
 
             NetworkResult.Success(applicationSettingList)
@@ -97,7 +97,7 @@ class HomeRepository @Inject constructor(
 
             val visitorList = body.map { it.toEntity() }
 
-            visitorDao.clearAll()
+            visitorDao.clearVisitors()
             visitorDao.insertAll(visitorList)
 
             NetworkResult.Success(visitorList)
@@ -119,7 +119,7 @@ class HomeRepository @Inject constructor(
 
             val groupList = body.map { it.toEntity() }
 
-            groupProductDao.clearAll()
+            groupProductDao.clearGroupProduct()
             groupProductDao.insertAll(groupList)
 
             NetworkResult.Success(groupList)
@@ -141,7 +141,7 @@ class HomeRepository @Inject constructor(
 
             val productList = body.map { it.toEntity() }
 
-            productDao.clearAll()
+            productDao.clearProducts()
             productDao.insertProducts(productList)
 
             NetworkResult.Success(productList)
@@ -163,7 +163,7 @@ class HomeRepository @Inject constructor(
 
             val imageList = body.map { it.toEntity(context) }
 
-            productImageDao.clearAll()
+            productImageDao.clearProductImage()
             productImageDao.insertImages(imageList)
 
             NetworkResult.Success(imageList)
@@ -184,7 +184,7 @@ class HomeRepository @Inject constructor(
 
             val productPackingList = body.map { it.toEntity() }
 
-            productPackingDao.clearAll()
+            productPackingDao.clearProductPacking()
             productPackingDao.insertAll(productPackingList)
 
             NetworkResult.Success(productPackingList)
@@ -207,7 +207,7 @@ class HomeRepository @Inject constructor(
 
             val customerList = body.map { it.toEntity() }
 
-            customerDao.clearAll()
+            customerDao.clearCustomers()
             customerDao.insertCustomers(customerList)
 
             NetworkResult.Success(customerList)
@@ -230,7 +230,7 @@ class HomeRepository @Inject constructor(
 
             val customerDirectionList = body.map { it.toEntity() }
 
-            customerDirectionDao.clearAll()
+            customerDirectionDao.clearCustomerDirection()
             customerDirectionDao.insertAll(customerDirectionList)
 
             NetworkResult.Success(customerDirectionList)
@@ -253,7 +253,7 @@ class HomeRepository @Inject constructor(
 
             val assignDirectionCustomerList = body.map { it.toEntity() }
 
-            assignDirectionCustomerDao.clearAll()
+            assignDirectionCustomerDao.clearAssignDirectionCustomer()
             assignDirectionCustomerDao.insertAll(assignDirectionCustomerList)
 
             NetworkResult.Success(assignDirectionCustomerList)
@@ -275,7 +275,7 @@ class HomeRepository @Inject constructor(
 
             val invoiceCategoryList = body.map { it.toEntity() }
 
-            invoiceCategoryDao.clearAll()
+            invoiceCategoryDao.clearInvoiceCategory()
             invoiceCategoryDao.insertAll(invoiceCategoryList)
 
             NetworkResult.Success(invoiceCategoryList)
@@ -298,7 +298,7 @@ class HomeRepository @Inject constructor(
 
             val patternList = body.map { it.toEntity() }
 
-            patternDao.clearAll()
+            patternDao.clearPatterns()
             patternDao.insertAll(patternList)
 
             NetworkResult.Success(patternList)
@@ -397,7 +397,7 @@ class HomeRepository @Inject constructor(
                 }
             }
 
-            saleCenterDao.clearCenters()
+            saleCenterDao.clearSaleCenters()
             saleCenterDao.clearAnbars()
             saleCenterDao.clearUsers()
 

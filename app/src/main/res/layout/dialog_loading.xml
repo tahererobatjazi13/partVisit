@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/medium_size"
+    android:background="@drawable/background_dialog"
+    android:gravity="center_vertical">
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:backgroundTint="@color/colorPrimary"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="@dimen/_30sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:indeterminate="true" />
+
+    <com.google.android.material.textview.MaterialTextView
+        style="@style/XSmallTextStyle"
+        android:id="@+id/loading_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/medium_size"
+        android:text="در حال دریافت..."
+        android:textSize="16sp" />
+</LinearLayout>

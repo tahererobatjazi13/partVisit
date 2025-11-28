@@ -16,5 +16,5 @@ interface ApplicationSettingDao {
     suspend fun getAll(): List<ApplicationSettingEntity>
 
     @Query("DELETE FROM application_setting_table")
-    suspend fun clearAll()
+    suspend fun clearApplicationSetting()
 }

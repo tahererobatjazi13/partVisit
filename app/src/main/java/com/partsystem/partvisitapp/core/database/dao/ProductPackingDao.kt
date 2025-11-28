@@ -16,5 +16,5 @@ interface ProductPackingDao {
     suspend fun getAll(): List<ProductPackingEntity>
 
     @Query("DELETE FROM product_packing_table")
-    suspend fun clearAll()
+    suspend fun clearProductPacking()
 }

@@ -43,5 +43,5 @@ interface CustomerDao {
 
     // حذف همه مشتری‌ها (برای زمانی که API سینک کامل می‌کنی)
     @Query("DELETE FROM customer_table")
-    suspend fun clearAll()
+    suspend fun clearCustomers()
 }

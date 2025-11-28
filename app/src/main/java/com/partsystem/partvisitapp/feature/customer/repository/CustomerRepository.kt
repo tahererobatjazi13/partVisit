@@ -14,5 +14,5 @@ class CustomerRepository @Inject constructor(
 
     fun getCustomerById(id: Int): LiveData<CustomerEntity> = dao.getCustomerById(id)
 
-    suspend fun clearAll() = dao.clearAll()
+    suspend fun clearAll() = dao.clearCustomers()
 }

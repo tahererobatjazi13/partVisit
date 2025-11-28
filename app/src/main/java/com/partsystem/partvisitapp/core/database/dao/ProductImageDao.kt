@@ -16,7 +16,7 @@ interface ProductImageDao {
     fun getImagesByProductId(ownerId: Int): LiveData<List<ProductImageEntity>>
 
     @Query("DELETE FROM product_images_table")
-    suspend fun clearAll()
+    suspend fun clearProductImage()
 
     @Query("SELECT * FROM product_images_table")
     suspend fun getAllImagesOnce(): List<ProductImageEntity>

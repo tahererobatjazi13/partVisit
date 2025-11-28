@@ -49,6 +49,7 @@
         <attr name="backColorBtnTwo" format="color" />
         <attr name="backColorBtnOne" format="color" />
         <attr name="badgeTextColorBtnTwo" format="color" />
+        <attr name="badgeTextColorBtnOne" format="color" />
     </declare-styleable>
 
     <declare-styleable name="HeaderField">

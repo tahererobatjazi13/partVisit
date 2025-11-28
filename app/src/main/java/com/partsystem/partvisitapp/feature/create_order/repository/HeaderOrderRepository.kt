@@ -30,5 +30,5 @@ class HeaderOrderRepository @Inject constructor(
     fun getAct(): Flow<List<ActEntity>> =
         actDao.getAllActs()
 
-    suspend fun clearAll() = customerDirectionDao.clearAll()
+    suspend fun clearAll() = customerDirectionDao.clearCustomerDirection()
 }

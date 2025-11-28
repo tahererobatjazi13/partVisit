@@ -17,5 +17,5 @@ interface CustomerDirectionDao {
     suspend fun deleteByCustomerId(customerId: Int)
 
     @Query("DELETE FROM customer_direction_table")
-    suspend fun clearAll()
+    suspend fun clearCustomerDirection()
 }

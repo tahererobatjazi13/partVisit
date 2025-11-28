@@ -1,31 +1,32 @@
 package com.partsystem.partvisitapp.feature.main.home.ui
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.utils.ReportFactorListType
-import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.databinding.DialogLoadingBinding
 import com.partsystem.partvisitapp.databinding.FragmentHomeBinding
 import com.partsystem.partvisitapp.feature.splash.SplashActivity
 import dagger.hilt.android.AndroidEntryPoint
 import ir.huri.jcal.JalaliCalendar
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -43,6 +44,11 @@ class HomeFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModels()
     private var customDialog: CustomDialog? = null
 
+
+    private var loadingCount = 0
+    private lateinit var loadingDialog: Dialog
+    private lateinit var loadingBinding: DialogLoadingBinding
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,6 +60,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         init()
+        initLoadingDialog()
         initAdapter()
         rxBinding()
         //  setupObserver()
@@ -61,6 +68,7 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun init() {
+
         customDialog = CustomDialog.instance
         val jalaliDate = JalaliCalendar()
         binding.tvDate.text = "${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}"
@@ -77,26 +85,135 @@ class HomeFragment : Fragment() {
             }
         }
     }
+    private fun setupObserver() {
 
+        observeApi(
+            liveData = viewModel.applicationSetting,
+            loadingMsg = "در حال دریافت تنظیمات..."
+        )
+        viewModel.fetchApplicationSetting()
+
+        observeApi(
+            liveData = viewModel.visitor,
+            loadingMsg = "در حال دریافت ویزیتور..."
+        )
+        viewModel.fetchVisitors()
+
+        observeApi(
+            liveData = viewModel.groupProducts,
+            loadingMsg = "در حال دریافت گروه کالا..."
+        )
+        viewModel.fetchGroupProducts()
+
+        observeApi(
+            liveData = viewModel.products,
+            loadingMsg = "در حال دریافت محصولات..."
+        )
+        viewModel.fetchProducts()
+
+        observeApi(
+            liveData = viewModel.productImages,
+            loadingMsg = "در حال دریافت تصاویر کالا..."
+        )
+        viewModel.fetchProductImages()
+
+        observeApi(
+            liveData = viewModel.productPacking,
+            loadingMsg = "در حال دریافت بسته‌بندی..."
+        )
+        viewModel.fetchProductPacking()
+
+        observeApi(
+            liveData = viewModel.customers,
+            loadingMsg = "در حال دریافت مشتریان..."
+        )
+        viewModel.fetchCustomers()
+
+        observeApi(
+            liveData = viewModel.customerDirections,
+            loadingMsg = "در حال دریافت مسیر مشتریان..."
+        )
+        viewModel.fetchCustomerDirections()
+
+        observeApi(
+            liveData = viewModel.assignDirectionCustome,
+            loadingMsg = "در حال دریافت مسیر مشتری..."
+        )
+        viewModel.fetchAssignDirectionCustomer()
+
+        observeApi(
+            liveData = viewModel.invoiceCategory,
+            loadingMsg = "در حال دریافت گروه صورتحساب..."
+        )
+        viewModel.fetchInvoiceCategory()
+
+        observeApi(
+            liveData = viewModel.pattern,
+            loadingMsg = "در حال دریافت طرح فروش..."
+        )
+        viewModel.fetchPattern()
+
+        observeApi(
+            liveData = viewModel.act,
+            loadingMsg = "در حال دریافت مصوبه..."
+        )
+        viewModel.fetchAct()
+
+        observeApi(
+            liveData = viewModel.vat,
+            loadingMsg = "در حال دریافت مالیات و عوارض..."
+        )
+        viewModel.fetchVat()
+
+        observeApi(
+            liveData = viewModel.saleCenter,
+            loadingMsg = "در حال دریافت مراکز فروش..."
+        )
+        viewModel.fetchSaleCenter()
+
+        observeApi(
+            liveData = viewModel.discount,
+            loadingMsg = "در حال دریافت تخفیفات..."
+        )
+        viewModel.fetchDiscount()
+    }
+    private fun <T> observeApi(
+        liveData: LiveData<NetworkResult<T>>,
+        loadingMsg: String
+    ) {
+        liveData.observe(viewLifecycleOwner) { result ->
+            when (result) {
+
+                is NetworkResult.Loading -> {
+                    loadingCount++
+                    showOrUpdateLoading(loadingMsg)
+                }
+
+                is NetworkResult.Success -> {
+                    hideLoadingIfDone()
+                }
+
+                is NetworkResult.Error -> {
+                    hideLoadingIfDone()
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+
+/*
     private fun setupObserver() {
 
         viewModel.applicationSetting.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت تنظیمات...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "تنظیمات با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -105,21 +222,13 @@ class HomeFragment : Fragment() {
 
         viewModel.visitor.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت ویزیتور...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "ویزیتور با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -128,21 +237,13 @@ class HomeFragment : Fragment() {
 
         viewModel.groupProducts.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت گروه کالا...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "گروه کالا ها با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -151,21 +252,13 @@ class HomeFragment : Fragment() {
 
         viewModel.products.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت محصولات ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "محصولات با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -174,21 +267,13 @@ class HomeFragment : Fragment() {
 
         viewModel.productImages.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت تصاویرکالا ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "تصاویرکالا با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -197,21 +282,13 @@ class HomeFragment : Fragment() {
 
         viewModel.productPacking.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت بسته بندی ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "بسته بندی با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -221,20 +298,15 @@ class HomeFragment : Fragment() {
         viewModel.customers.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is NetworkResult.Loading -> {
-                    // show progress
+                    showLoading("در حال دریافت مشتریان...")
                 }
 
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "مشتریان با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -243,21 +315,13 @@ class HomeFragment : Fragment() {
 
         viewModel.customerDirections.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتریان ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "مسیر مشتریان با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -266,21 +330,13 @@ class HomeFragment : Fragment() {
 
         viewModel.assignDirectionCustome.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتری ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "مسیر مشتری با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -289,21 +345,13 @@ class HomeFragment : Fragment() {
 
         viewModel.invoiceCategory.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت گروه صورتحساب  ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "گروه صورتحساب با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -312,21 +360,13 @@ class HomeFragment : Fragment() {
 
         viewModel.pattern.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت طرح فروش ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "طرح فروش با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -335,21 +375,13 @@ class HomeFragment : Fragment() {
 
         viewModel.act.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت مصوبه ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "مصوبه با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -358,21 +390,13 @@ class HomeFragment : Fragment() {
 
         viewModel.vat.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت مالیات و عوارض ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "مالیات و عوارض با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -381,21 +405,13 @@ class HomeFragment : Fragment() {
 
         viewModel.saleCenter.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت مراکز فروش ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "مراکز فروش با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -404,28 +420,20 @@ class HomeFragment : Fragment() {
 
         viewModel.discount.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is NetworkResult.Loading -> {
-                    // show progress
-                }
-
+                is NetworkResult.Loading -> showLoading("در حال دریافت تخفیفات ...")
                 is NetworkResult.Success -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "تخفیفات با موفقیت دریافت شد",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    hideLoading()
                 }
 
                 is NetworkResult.Error -> {
-                    Log.d("NetworkError6", result.message)
-
+                    hideLoading()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
         viewModel.fetchDiscount()
-
     }
+*/
 
     private fun initAdapter() {
         binding.rvHomeMenu.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -498,15 +506,103 @@ class HomeFragment : Fragment() {
         }
     }
 
+
+
+    private fun initLoadingDialog() {
+        loadingDialog = Dialog(requireContext())
+        loadingBinding = DialogLoadingBinding.inflate(layoutInflater)
+
+        loadingDialog.apply {
+            setContentView(loadingBinding.root)
+            setCancelable(false)
+            window?.setBackgroundDrawableResource(android.R.color.transparent)
+        }
+    }
+    private fun showOrUpdateLoading(message: String) {
+        if (!::loadingDialog.isInitialized) initLoadingDialog()
+
+        loadingBinding.loadingMessage.text = message
+
+        if (!loadingDialog.isShowing) {
+            loadingDialog.show()
+        }
+    }
+    private fun hideLoadingIfDone() {
+        loadingCount--
+
+        if (loadingCount <= 0) {
+            loadingCount = 0
+            if (::loadingDialog.isInitialized && loadingDialog.isShowing) {
+                loadingDialog.dismiss()
+            }
+        }
+    }
+/*
+
+
+    private fun showLoading(message: String) {
+        if (!::loadingDialog.isInitialized) initLoadingDialog()
+
+        loadingBinding.loadingMessage.text = message
+
+        if (!loadingDialog.isShowing) loadingDialog.show()
+    }
+
+    private fun hideLoading() {
+        if (::loadingDialog.isInitialized && loadingDialog.isShowing) {
+            loadingDialog.dismiss()
+        }
+    }
+
+
+    // ========================
+//  Queue Loading Manager
+// ========================
+    private val loadingQueue: ArrayDeque<String> = ArrayDeque()
+    private var isLoadingShowing = false
+
+    private fun enqueueLoadingMessage(message: String) {
+        loadingQueue.addLast(message)
+        processQueue()
+    }
+
+    private fun processQueue() {
+        if (!isLoadingShowing && loadingQueue.isNotEmpty()) {
+            val nextMessage = loadingQueue.removeFirst()
+            showLoading(nextMessage)
+            isLoadingShowing = true
+        }
+    }
+
+    private fun dequeueLoading() {
+        hideLoading()
+        isLoadingShowing = false
+        processQueue()
+    }
+
+*/
+
     private fun logout() {
         viewLifecycleOwner.lifecycleScope.launch {
             // پاک کردن اطلاعات کاربر از DataStore
             userPreferences.clearUserInfo()
 
             // پاک کردن تمام جدول‌ها
-            db.customerDao().clearAll()       // جدول مشتریان
-            db.productDao().clearAll()        // جدول محصولات
-            db.groupProductDao().clearAll()    // جدول گروه کالاها
+            db.applicationSettingDao().clearApplicationSetting()       // جدول تنظیمات
+            db.visitorDao().clearVisitors()       // جدول ویزیتور
+            db.groupProductDao().clearGroupProduct()    // جدول گروه کالاها
+            db.productDao().clearProducts()        // جدول محصولات
+            db.productImageDao().clearProductImage()        // جدول تصاویر محصولات
+            db.productPackingDao().clearProductPacking()        // جدول بسته بندی محصولات
+            db.customerDao().clearCustomers()       // جدول مشتریان
+            db.customerDirectionDao().clearCustomerDirection()       // جدول مسیر مشتریان
+            db.assignDirectionCustomerDao().clearAssignDirectionCustomer()       // جدول مسیر مشتری
+            db.invoiceCategoryDao().clearInvoiceCategory()    // جدول گروه صورت حساب
+            db.patternDao().clearPatterns()    // جدول طرح فروش
+            db.actDao().clearAct()    // جدول مصوبه
+            db.vatDao().clearVat()    // جدول مالیات
+            db.saleCenterDao().clearSaleCenters()    // جدول مراکز فروش
+            db.discountDao().clearDiscounts()    // جدول نخفیف
 
             // هدایت کاربر به صفحه Splash
             val intent = Intent(requireContext(), SplashActivity::class.java)
@@ -518,5 +614,7 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+       // _loadingBinding = null
     }
+
 }
