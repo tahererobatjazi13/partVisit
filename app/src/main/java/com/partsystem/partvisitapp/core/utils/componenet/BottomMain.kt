@@ -65,6 +65,11 @@ constructor(
             binding.btnTwo.setBackgroundColor(value)
             field = value
         }
+    var backColorBtnOne: Int = 0
+        set(value) {
+            binding.btnOne.setBackgroundColor(value)
+            field = value
+        }
     var badgeTextColorBtnTwo: Int = 0
         set(value) {
             binding.btnTwo.setTextColor(value)
@@ -85,6 +90,7 @@ constructor(
         textBtnTwo = attributes.getString(R.styleable.BottomMainBtn_textBtnTwo).toString()
         backColorBottom = attributes.getInteger(R.styleable.BottomMainBtn_backColorBottom, 0)
         backColorBtnTwo = attributes.getInteger(R.styleable.BottomMainBtn_backColorBtnTwo, 0)
+        backColorBtnOne = attributes.getInteger(R.styleable.BottomMainBtn_backColorBtnOne, 0)
         badgeTextColorBtnTwo =
             attributes.getInteger(R.styleable.BottomMainBtn_badgeTextColorBtnTwo, 0)
         attributes.recycle()

@@ -6,18 +6,18 @@
     android:layout_height="match_parent"
     android:background="?attr/colorBackSurface">
 
-    <!-- line header -->
     <com.partsystem.partvisitapp.core.utils.componenet.Header
-        android:id="@+id/hfFactorList"
+        android:id="@+id/hfOrderList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:drawableImgTwoHeader="@drawable/ic_back"
         app:isShowImgTwoHeader="true"
         app:isShowSeparatorHeader="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:textTitleHeader="@string/label_orders_sent" />
+        app:textTitleHeader="@string/label_sent_orders" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSearch"
@@ -27,10 +27,10 @@
         android:background="@drawable/selector_search_input"
         app:boxBackgroundMode="none"
         app:hintEnabled="false"
-        app:layout_constraintBottom_toTopOf="@+id/rvFactorList"
+        app:layout_constraintBottom_toTopOf="@+id/rvOrderList"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hfFactorList">
+        app:layout_constraintTop_toBottomOf="@+id/hfOrderList">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSearch"
@@ -42,11 +42,12 @@
             android:gravity="center_vertical|start"
             android:hint="@string/label_factor_search"
             android:padding="0dp" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- line list -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvFactorList"
+        android:id="@+id/rvOrderList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:elevation="@dimen/xx_small_size"
@@ -55,7 +56,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tilSearch"
         tools:itemCount="10"
-        tools:listitem="@layout/item_report_factor_list" />
+        tools:listitem="@layout/item_order_list" />
 
     <!-- line retry -->
     <com.partsystem.partvisitapp.core.utils.componenet.TryAgain
@@ -67,7 +68,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfFactorList" />
+        app:layout_constraintTop_toBottomOf="@+id/hfOrderList" />
 
     <!-- line loading -->
     <com.partsystem.partvisitapp.core.utils.componenet.DotLoading
@@ -80,7 +81,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfFactorList" />
+        app:layout_constraintTop_toBottomOf="@+id/hfOrderList" />
 
     <!-- line info -->
     <com.partsystem.partvisitapp.core.utils.componenet.Info
@@ -92,7 +93,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hfFactorList"
-        app:message="@string/msg_no_factor" />
+        app:layout_constraintTop_toBottomOf="@+id/hfOrderList"
+        app:message="@string/msg_no_order" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

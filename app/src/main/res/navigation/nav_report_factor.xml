@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_report_factor"
+    app:startDestination="@id/offlineOrderListFragment">
+
+    <fragment
+        android:id="@+id/offlineOrderListFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.offline.OfflineOrderListFragment"
+        android:label="OfflineOrderListFragment"
+        tools:layout="@layout/fragment_offline_order_list" />
+
+    <fragment
+        android:id="@+id/onlineOrderListFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderListFragment"
+        android:label="OnlineOrderListFragment"
+        tools:layout="@layout/fragment_online_order_list">
+        <argument
+            android:name="typeList"
+            app:argType="string" />
+        <argument
+            android:name="id"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_onlineOrderListFragment_to_onlineOrderDetailFragment"
+            app:destination="@id/onlineOrderDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/onlineOrderDetailFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderDetailFragment"
+        android:label="OnlineOrderDetailFragment"
+        tools:layout="@layout/fragment_online_order_detail">
+        <argument
+            android:name="id"
+            app:argType="integer" />
+    </fragment>
+
+</navigation>

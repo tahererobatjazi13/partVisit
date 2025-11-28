@@ -19,6 +19,8 @@
         <item name="colorLine">@color/gray_c7c7c7</item>
         <item name="colorBasic">@color/white</item>
         <item name="colorBackSurface">@color/gray_f4f4f4</item>
+        <item name="colorBox">@color/blue_200063F5</item>
+        <item name="colorRow">@color/gray_dark</item>
 
     </style>
 

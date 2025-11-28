@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -14,27 +13,30 @@ import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.extensions.clean
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.databinding.ItemReportFactorDetailBinding
+import com.partsystem.partvisitapp.core.utils.getColorFromAttr
+import com.partsystem.partvisitapp.databinding.ItemOrderDetailBinding
 import java.text.DecimalFormat
 
-class ReportFactorDetailAdapter :
-    ListAdapter<ReportFactorDto, ReportFactorDetailAdapter.ReportFactorDetailViewHolder>(
-        ReportFactorDetailDiffCallback()
+class OrderDetailAdapter :
+    ListAdapter<ReportFactorDto, OrderDetailAdapter.OrderDetailViewHolder>(
+        OrderDetailDiffCallback()
     ) {
     private val formatter = DecimalFormat("#,###,###,###")
 
-    inner class ReportFactorDetailViewHolder(val binding: ItemReportFactorDetailBinding) :
+    inner class OrderDetailViewHolder(val binding: ItemOrderDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         @SuppressLint("SetTextI18n")
         fun bind(item: ReportFactorDto) = with(binding) {
+
+
             if (bindingAdapterPosition % 2 == 0) {
                 binding.root.setBackgroundColor(
-                    ContextCompat.getColor(itemView.context, R.color.gray_light)
+                    itemView.context.getColorFromAttr(R.attr.colorBasic)
                 )
             } else {
                 binding.root.setBackgroundColor(
-                    ContextCompat.getColor(itemView.context, R.color.gray_dark)
+                    itemView.context.getColorFromAttr(R.attr.colorRow)
                 )
             }
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
@@ -79,7 +81,6 @@ class ReportFactorDetailAdapter :
             }
 
 
-
             if (bindingAdapterPosition < itemCount - 1) {
                 view.show()
             } else view.gone()
@@ -90,17 +91,17 @@ class ReportFactorDetailAdapter :
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): ReportFactorDetailViewHolder {
+    ): OrderDetailViewHolder {
         val binding =
-            ItemReportFactorDetailBinding.inflate(
+            ItemOrderDetailBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
             )
-        return ReportFactorDetailViewHolder(binding)
+        return OrderDetailViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ReportFactorDetailViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: OrderDetailViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
@@ -109,7 +110,7 @@ class ReportFactorDetailAdapter :
     }
 }
 
-class ReportFactorDetailDiffCallback : DiffUtil.ItemCallback<ReportFactorDto>() {
+class OrderDetailDiffCallback : DiffUtil.ItemCallback<ReportFactorDto>() {
     override fun areItemsTheSame(oldItem: ReportFactorDto, newItem: ReportFactorDto): Boolean {
         return oldItem.id == newItem.id
     }

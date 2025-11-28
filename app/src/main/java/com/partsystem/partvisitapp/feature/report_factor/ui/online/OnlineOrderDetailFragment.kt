@@ -1,4 +1,4 @@
-package com.partsystem.partvisitapp.feature.report_factor.ui
+package com.partsystem.partvisitapp.feature.report_factor.ui.online
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -7,34 +7,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import dagger.hilt.android.AndroidEntryPoint
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.databinding.FragmentReportFactorDetailBinding
-import com.partsystem.partvisitapp.feature.report_factor.adapter.ReportFactorDetailAdapter
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import com.partsystem.partvisitapp.databinding.FragmentOnlineOrderDetailBinding
+import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderDetailAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ReportFactorDetailFragment : Fragment() {
+class OnlineOrderDetailFragment : Fragment() {
     @Inject
     lateinit var userPreferences: UserPreferences
-    private var _binding: FragmentReportFactorDetailBinding? = null
+    private var _binding: FragmentOnlineOrderDetailBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ReportFactorListViewModel by viewModels()
+    private val viewModel: OnlineOrderListViewModel by viewModels()
 
-    private lateinit var reportFactorDetailAdapter: ReportFactorDetailAdapter
-    private var visitorId = 0
-    private val args: ReportFactorDetailFragmentArgs by navArgs()
+    private lateinit var orderDetailAdapter: OrderDetailAdapter
+    private val args: OnlineOrderDetailFragmentArgs by navArgs()
 
     private val formatter = DecimalFormat("#,###,###,###")
 
@@ -42,7 +38,7 @@ class ReportFactorDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentReportFactorDetailBinding.inflate(inflater, container, false)
+        _binding = FragmentOnlineOrderDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -51,30 +47,22 @@ class ReportFactorDetailFragment : Fragment() {
         initAdapter()
         setupClicks()
         setupObserver()
-        initVisitorIdAndFetchData()
     }
-
-    private fun initVisitorIdAndFetchData() {
-        lifecycleScope.launch {
-            visitorId = userPreferences.personnelId.first() ?: 0
-            viewModel.fetchReportFactorDetail(1, args.id)
-        }
-    }
-
-
 
     private fun initAdapter() {
-        binding.rvFactorDetail.apply {
+        binding.rvOrderDetail.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            reportFactorDetailAdapter = ReportFactorDetailAdapter()
-            adapter = reportFactorDetailAdapter
+            orderDetailAdapter = OrderDetailAdapter()
+            adapter = orderDetailAdapter
         }
     }
 
     private fun setupClicks() {
         binding.apply {
-            hfFactorDetail.setOnClickImgTwoListener {
+            hfOrderDetail.setOnClickImgTwoListener {
+                binding.hfOrderDetail.gone()
+                binding.svMain.gone()
                 findNavController().navigateUp()
             }
 
@@ -85,8 +73,11 @@ class ReportFactorDetailFragment : Fragment() {
         }
     }
 
+
     @SuppressLint("SetTextI18n")
     private fun setupObserver() {
+        viewModel.fetchReportFactorDetail(1, args.id)
+
         viewModel.reportFactorDetail.observe(viewLifecycleOwner) { result ->
             binding.apply {
                 when (result) {
@@ -98,28 +89,28 @@ class ReportFactorDetailFragment : Fragment() {
                     is NetworkResult.Success -> {
                         loading.gone()
                         svMain.show()
+                        val orderDetailList = result.data
 
-                        val groups = result.data
-
-                        // فیلتر بر اساس ID
-                        val filteredList = groups.filter { it.id == args.id }
-
-                        if (filteredList.isEmpty()) {
+                        if (orderDetailList.isEmpty()) {
                             svMain.gone()
                             info.show()
                             info.message(getString(R.string.msg_no_data))
                         } else {
                             info.gone()
                             svMain.show()
-                            reportFactorDetailAdapter.submitList(filteredList)
+                            orderDetailAdapter.submitList(orderDetailList)
 
-                            tvNumber.text= filteredList[0].id.toString()
-                            tvCustomerName.text=filteredList[0].customerName
-                            tvDateTime.text=filteredList[0].persianDate+" _ "+filteredList[0].createTime
-                            tvSumPrice.text=formatter.format(filteredList[0].sumPrice)+ " ریال"
-                            tvSumDiscountPrice.text=formatter.format(filteredList[0].sumDiscountPrice)+ " ریال"
-                            tvSumVat.text=formatter.format(filteredList[0].sumVat)+ " ریال"
-                            tvFinalPrice.text=formatter.format(filteredList[0].finalPrice)+ " ریال"
+                            tvOrderNumber.text = orderDetailList[0].id.toString()
+                            tvCustomerName.text = orderDetailList[0].customerName
+                            tvDateTime.text =
+                                orderDetailList[0].persianDate + " _ " + orderDetailList[0].createTime
+                            tvSumPrice.text =
+                                formatter.format(orderDetailList[0].sumPrice) + " ریال"
+                            tvSumDiscountPrice.text =
+                                formatter.format(orderDetailList[0].sumDiscountPrice) + " ریال"
+                            tvSumVat.text = formatter.format(orderDetailList[0].sumVat) + " ریال"
+                            tvFinalPrice.text =
+                                formatter.format(orderDetailList[0].finalPrice) + " ریال"
                         }
                     }
 

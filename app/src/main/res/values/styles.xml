@@ -99,7 +99,7 @@
         <item name="cornerFamilyBottomLeft">rounded</item>
         <item name="cornerFamilyTopRight">rounded</item>
         <item name="cornerFamilyBottomRight">rounded</item>
-        <item name="cornerSize">@dimen/small_size</item>
+        <item name="cornerSize">@dimen/medium_size</item>
     </style>
 
     <!-- ================================================================= -->

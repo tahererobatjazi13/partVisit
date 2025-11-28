@@ -1,4 +1,4 @@
-package com.partsystem.partvisitapp.feature.report_factor.ui
+package com.partsystem.partvisitapp.feature.report_factor.ui.online
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -19,24 +19,24 @@ import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.databinding.FragmentReportFactorListBinding
-import com.partsystem.partvisitapp.feature.report_factor.adapter.ReportFactorListAdapter
+import com.partsystem.partvisitapp.databinding.FragmentOnlineOrderListBinding
+import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
-class ReportFactorListFragment : Fragment() {
+class OnlineOrderListFragment : Fragment() {
 
     @Inject
     lateinit var userPreferences: UserPreferences
 
-    private var _binding: FragmentReportFactorListBinding? = null
+    private var _binding: FragmentOnlineOrderListBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ReportFactorListViewModel by viewModels()
+    private val viewModel: OnlineOrderListViewModel by viewModels()
 
-    private lateinit var reportFactorListAdapter: ReportFactorListAdapter
-    private val args: ReportFactorListFragmentArgs by navArgs()
+    private lateinit var orderListAdapter: OrderListAdapter
+    private val args: OnlineOrderListFragmentArgs by navArgs()
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
     private val clearIcon by lazy { requireContext().getDrawable(R.drawable.ic_clear) }
@@ -45,42 +45,26 @@ class ReportFactorListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentReportFactorListBinding.inflate(inflater, container, false)
+        _binding = FragmentOnlineOrderListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initAdapter()
+        init()
         setupClicks()
+        initAdapter()
         setupObserver()
         setupSearch()
-        initVisitorId()
     }
 
-    private fun initVisitorId() {
-
+    private fun init() {
         if (args.typeList == ReportFactorListType.Visitor.value) {
             viewModel.fetchReportFactorVisitorList(0, args.id)
+            binding.hfOrderList.gone()
         } else {
+            binding.hfOrderList.show()
             viewModel.fetchReportFactorCustomerList(0, args.id)
-
-        }
-    }
-
-    private fun initAdapter() {
-        binding.rvFactorList.apply {
-            layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-
-            reportFactorListAdapter = ReportFactorListAdapter { factors ->
-                val action =
-                    ReportFactorListFragmentDirections.actionReportFactorListFragmentToReportFactorDetailFragment(
-                        factors.id
-                    )
-                findNavController().navigate(action)
-            }
-            adapter = reportFactorListAdapter
         }
     }
 
@@ -95,14 +79,14 @@ class ReportFactorListFragment : Fragment() {
                     viewModel.fetchReportFactorCustomerList(0, args.id)
             }
 
-            hfFactorList.setOnClickImgTwoListener {
+            hfOrderList.setOnClickImgTwoListener {
                 findNavController().navigateUp()
             }
-
             etSearch.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_UP) {
                     val endDrawable = etSearch.compoundDrawablesRelative[2]
-                    val touchStart = etSearch.width - etSearch.paddingEnd - (endDrawable?.intrinsicWidth ?: 0)
+                    val touchStart =
+                        etSearch.width - etSearch.paddingEnd - (endDrawable?.intrinsicWidth ?: 0)
                     if (event.rawX >= touchStart) {
                         etSearch.text?.clear()
                         return@setOnTouchListener true
@@ -113,45 +97,59 @@ class ReportFactorListFragment : Fragment() {
         }
     }
 
+    private fun initAdapter() {
+        binding.rvOrderList.apply {
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+
+            orderListAdapter = OrderListAdapter (showSyncButton = false){ factors ->
+                val action =
+                    OnlineOrderListFragmentDirections.actionOnlineOrderListFragmentToOnlineOrderDetailFragment(factors.id)
+                findNavController().navigate(action)
+            }
+
+            adapter = orderListAdapter
+        }
+    }
+
     private fun setupObserver() {
 
-            val liveData =
-                if (args.typeList == ReportFactorListType.Visitor.value)
-                    viewModel.reportFactorVisitorList
-                else
-                    viewModel.reportFactorCustomerList
+        val liveData =
+            if (args.typeList == ReportFactorListType.Visitor.value)
+                viewModel.reportFactorVisitorList
+            else
+                viewModel.reportFactorCustomerList
 
-            liveData.observe(viewLifecycleOwner) { result ->
+        liveData.observe(viewLifecycleOwner) { result ->
 
-                binding.apply {
-                    when (result) {
+            binding.apply {
+                when (result) {
 
-                        is NetworkResult.Loading -> loading.show()
+                    is NetworkResult.Loading -> loading.show()
 
-                        is NetworkResult.Success -> {
-                            loading.gone()
+                    is NetworkResult.Success -> {
+                        loading.gone()
 
-                            val data = result.data
-                            if (data.isEmpty()) {
-                                info.show()
-                                info.message(getString(R.string.msg_no_factor))
-                                rvFactorList.hide()
-                            } else {
-                                info.gone()
-                                rvFactorList.show()
-                                reportFactorListAdapter.submitList(data)
-                            }
+                        val orderList = result.data
+                        if (orderList.isEmpty()) {
+                            info.show()
+                            info.message(getString(R.string.msg_no_order))
+                            rvOrderList.hide()
+                        } else {
+                            info.gone()
+                            rvOrderList.show()
+                            orderListAdapter.submitList(orderList)
                         }
+                    }
 
-                        is NetworkResult.Error -> {
-                            loading.gone()
-                            tryAgain.show()
-                            tryAgain.message = result.message
-                        }
+                    is NetworkResult.Error -> {
+                        loading.gone()
+                        tryAgain.show()
+                        tryAgain.message = result.message
                     }
                 }
             }
-
+        }
     }
 
     private fun setupSearch() {
@@ -171,6 +169,7 @@ class ReportFactorListFragment : Fragment() {
                 viewModel.searchCustomerList(query)
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

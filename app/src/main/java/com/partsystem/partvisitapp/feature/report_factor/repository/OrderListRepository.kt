@@ -7,7 +7,7 @@ import retrofit2.Response
 import javax.inject.Inject
 
 
-class ReportFactorListRepository @Inject constructor(
+class OrderListRepository @Inject constructor(
     private val api: ApiService
 ) {
     /**

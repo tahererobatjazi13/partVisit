@@ -14,9 +14,9 @@
         android:orientation="vertical"
         android:padding="@dimen/small_size">
 
-        <!-- شماره فاکتور  -->
+        <!-- شماره سفارش -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clFactorNumber"
+            android:id="@+id/clOrderNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/xx_small_size"
@@ -26,26 +26,69 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvTitleFactorNumber"
+                android:id="@+id/tvTitleOrderNumber"
                 style="@style/XSmallTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_factor_number"
+                android:text="@string/label_order_number"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvFactorNumber"
+                android:id="@+id/tvOrderNumber"
                 style="@style/SmallBoldTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
                 android:textColor="@color/colorPrimary"
                 android:textDirection="rtl"
-                app:layout_constraintEnd_toStartOf="@+id/tvTitleFactorNumber"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/tvTitleOrderNumber"
+                app:layout_constraintStart_toEndOf="@+id/clSyncOrder"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clSyncOrder"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvSyncOrder"
+                    style="@style/XSmallBoldTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/xx_small_size"
+                    android:background="@drawable/bg_rounded_rectangle"
+                    android:backgroundTint="@color/blue_283167"
+                    android:drawableEnd="@drawable/ic_sync_small"
+                    android:drawablePadding="@dimen/xx_small_size"
+                    android:paddingHorizontal="@dimen/medium_size"
+                    android:paddingVertical="@dimen/xx_small_size"
+                    android:text="@string/label_sync_order"
+                    android:textColor="@color/white"
+                    android:textDirection="rtl"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.partsystem.partvisitapp.core.utils.componenet.DotLoading
+                    android:id="@+id/pbSyncOrder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:dotColor="?attr/colorOnPrimary"
+                    app:dotSize="10"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- نام مشتری  -->
@@ -172,7 +215,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/xx_small_size"
-                android:textColor="@color/blue_283167"
+                android:text="@string/app_price_item"
+                android:textColor="@color/green_21BF73"
                 android:textDirection="rtl"
                 app:layout_constraintEnd_toStartOf="@+id/tvTitleFinalPrice"
                 app:layout_constraintStart_toStartOf="parent"

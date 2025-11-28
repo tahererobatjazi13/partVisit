@@ -460,12 +460,9 @@ class HomeFragment : Fragment() {
                     }
 
                     6 -> { /* باز کردن صفحه سفارش‌ها */
-                        lifecycleScope.launch {
                         val action =
-                            HomeFragmentDirections.actionHomeFragmentToReportFactorListFragment(
-                                ReportFactorListType.Visitor.value , userPreferences.personnelId.first() ?: 0)
+                            HomeFragmentDirections.actionHomeFragmentToReportFactorFragment()
                         findNavController().navigate(action)
-                    }
                     }
 
                     7 -> {/* خروج از حساب کاربری */

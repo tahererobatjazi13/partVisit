@@ -18,17 +18,18 @@
     <string name="label_no">خیر</string>
     <string name="label_ok">بله</string>
     <string name="label_logout">خروج از حساب کاربری</string>
-    <string name="label_orders_sent">سفارشات ارسال شده</string>
+    <string name="label_sent_orders">سفارشات ارسال شده</string>
+    <string name="label_unsent_orders">سفارشات ارسال نشده</string>
     <string name="label_date_item">تاریخ:</string>
     <string name="label_number">تعداد:</string>
     <string name="label_number_packing">تعداد بسته:</string>
-    <string name="label_factor_number">شماره فاکتور:</string>
+    <string name="label_order_number">شماره سفارش:</string>
     <string name="label_agent">نماینده:</string>
     <string name="label_customer_list">لیست مشتریان</string>
     <string name="label_customer_name">نام مشتری:</string>
-    <string name="label_customer">مشتری :</string>
-    <string name="label_customer_direction">مسیر مشتری :</string>
-    <string name="label_invoice_category">گروه صورتحساب :</string>
+    <string name="label_customer">مشتری:</string>
+    <string name="label_customer_direction">مسیر مشتری:</string>
+    <string name="label_invoice_category">گروه صورتحساب:</string>
     <string name="label_customer_detail">جزییات مشتری</string>
     <string name="label_customer_information">اطلاعات مشتری:</string>
     <string name="label_customer_name_star">نام مشتری * :</string>
@@ -37,7 +38,8 @@
     <string name="label_add_customer">افزودن مشتری</string>
     <string name="label_edit_customer">ویرایش مشتری</string>
     <string name="label_customer_search">جستجو مشتری ...</string>
-    <string name="label_factor_search">جستجو فاکتور ...</string>
+    <string name="label_factor_search">جستجو براساس شماره فاکتور و نام مشتری</string>
+    <string name="label_order_search">جستجو سفارش..</string>
     <string name="label_phone">تلفن:</string>
     <string name="label_address">آدرس:</string>
     <string name="label_date_time">تاریخ و زمان:</string>
@@ -68,11 +70,11 @@
     <string name="label_user_name">نام کاربری</string>
     <string name="label_password">رمز عبور</string>
     <string name="label_date">تاریخ :</string>
-    <string name="label_duo_date">تاریخ سررسید :</string>
-    <string name="label_delivery_date">تاریخ تحویل :</string>
+    <string name="label_duo_date">تاریخ سررسید:</string>
+    <string name="label_delivery_date">تاریخ تحویل:</string>
     <string name="label_continue">ادامه</string>
     <string name="label_order_summary">خلاصه سفارش</string>
-    <string name="label_factor_detail">جزییات فاکتور</string>
+    <string name="label_order_detail">جزییات سفارش</string>
     <string name="label_total_discount">جمع تخفیف:</string>
     <string name="label_discount_order">تخفیف فاکتور:</string>
     <string name="label_total_price">قابل پرداخت:</string>
@@ -83,12 +85,15 @@
     <string name="label_apply_discount">اعمال تخفیف</string>
     <string name="label_select_discount">انتخاب تخفیف</string>
     <string name="label_choose">انتخاب کنید</string>
-    <string name="label_sales_plan">طرح فروش :</string>
-    <string name="label_Resolution">مصوبه :</string>
-    <string name="label_payment_type">نحوه تسویه :</string>
+    <string name="label_sales_plan">طرح فروش:</string>
+    <string name="label_Resolution">مصوبه:</string>
+    <string name="label_payment_type">نحوه تسویه:</string>
     <string name="label_cancel">لغو</string>
     <string name="label_register">ثبت</string>
     <string name="label_packing_type">نوع بسته بندی: </string>
+    <string name="app_price_item">12000ریال</string>
+    <string name="label_sync_order">ارسال سفارش</string>
+    <string name="label_sync_all_order">ارسال همه سفارشات</string>
 
 
     <!-- date picker -->
@@ -107,7 +112,9 @@
     <string name="msg_no_customer">مشتری یافت نشد</string>
     <string name="msg_no_product">محصولی یافت نشد</string>
     <string name="msg_no_data">آیتمی یافت نشد</string>
-    <string name="msg_no_factor">فاکتوری یافت نشد</string>
+    <string name="msg_no_order">سفارشی یافت نشد</string>
+    <string name="msg_sure_send_order">سفارش به صورت قطعی ثبت شود؟</string>
+    <string name="msg_sure_send_orders">همه سفارشات به صورت قطعی ثبت شوند؟</string>
     <string name="msg_log_out">آیا مایل به خروج از حساب کاربری خود می باشید؟</string>
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
 

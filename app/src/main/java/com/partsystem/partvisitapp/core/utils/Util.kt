@@ -71,6 +71,12 @@ fun getColorAttr(ctx: Context, attrId: Int): Int {
     return ContextCompat.getColor(ctx, typedValue.resourceId)
 }
 
+fun Context.getColorFromAttr(attr: Int): Int {
+    val typedValue = TypedValue()
+    theme.resolveAttribute(attr, typedValue, true)
+    return typedValue.data
+}
+
 fun hideKeyboard(activity: Activity) {
     val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
     //Find the currently focused view, so we can grab the correct window token from it.

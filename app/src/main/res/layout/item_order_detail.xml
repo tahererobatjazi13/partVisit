@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/colorSurfaceVariant">
+    android:background="?attr/colorBasic">
 
     <LinearLayout
         android:id="@+id/llMain"
@@ -241,12 +241,11 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvPrice"
-
             style="@style/SmallTextStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:text="120000 ریال" />
+            android:text="@string/app_price_item" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -259,7 +258,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/xx_small_size"
                 android:gravity="end"
-                android:text="120000 ریال"
+                android:text="@string/app_price_item"
                 android:textColor="@color/red_E92228"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -273,7 +272,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="end"
-                android:text="120000 ریال"
+                android:text="@string/app_price_item"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/tvDiscountPrice"
@@ -285,8 +284,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/xx_small_size">
+            android:layout_height="wrap_content">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvVat"
@@ -295,8 +293,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/xx_small_size"
                 android:gravity="end"
-                android:text="120000 ریال"
-                android:textColor="@color/green_21BF73"
+                android:text="@string/app_price_item"
+                android:textColor="@color/purple_8F21A2"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_weight="3"
@@ -309,7 +307,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="end"
-                android:text="120000 ریال"
+                android:text="@string/app_price_item"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/tvVat"
                 app:layout_constraintHorizontal_weight="3"

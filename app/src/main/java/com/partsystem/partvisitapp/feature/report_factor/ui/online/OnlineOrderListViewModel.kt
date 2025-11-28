@@ -1,18 +1,20 @@
-package com.partsystem.partvisitapp.feature.report_factor.ui
+package com.partsystem.partvisitapp.feature.report_factor.ui.online
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.extensions.toEnglishDigits
-import com.partsystem.partvisitapp.feature.report_factor.repository.ReportFactorListRepository
+import com.partsystem.partvisitapp.feature.report_factor.repository.OrderListRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
-class ReportFactorListViewModel @Inject constructor(
-    private val reportFactorListRepository: ReportFactorListRepository
+class OnlineOrderListViewModel @Inject constructor(
+    private val orderListRepository: OrderListRepository
 ) : ViewModel() {
 
     private val _visitorList = MutableLiveData<NetworkResult<List<ReportFactorDto>>>()
@@ -26,7 +28,7 @@ class ReportFactorListViewModel @Inject constructor(
 
     fun fetchReportFactorVisitorList(type: Int, visitorId: Int) = viewModelScope.launch {
         _visitorList.value = NetworkResult.Loading
-        when (val result = reportFactorListRepository.getReportFactorVisitor(type, visitorId)) {
+        when (val result = orderListRepository.getReportFactorVisitor(type, visitorId)) {
             is NetworkResult.Success -> {
                 originalVisitor = result.data
                 _visitorList.value = result
@@ -38,7 +40,7 @@ class ReportFactorListViewModel @Inject constructor(
 
     fun fetchReportFactorCustomerList(type: Int, customerId: Int) = viewModelScope.launch {
         _customerList.value = NetworkResult.Loading
-        when (val result = reportFactorListRepository.getReportFactorCustomer(type, customerId)) {
+        when (val result = orderListRepository.getReportFactorCustomer(type, customerId)) {
             is NetworkResult.Success -> {
                 originalCustomer = result.data
                 _customerList.value = result
@@ -68,6 +70,7 @@ class ReportFactorListViewModel @Inject constructor(
         _customerList.value = NetworkResult.Success(
             originalCustomer.filter { it.matchesQuery(q) }
         )
+
     }
 
 
@@ -76,7 +79,7 @@ class ReportFactorListViewModel @Inject constructor(
 
     fun fetchReportFactorDetail(type: Int, factorId: Int) = viewModelScope.launch {
         _reportFactorDetail.value = NetworkResult.Loading
-        _reportFactorDetail.value = reportFactorListRepository.getReportFactorDetail(type, factorId)
+        _reportFactorDetail.value = orderListRepository.getReportFactorDetail(type, factorId)
     }
 }
 

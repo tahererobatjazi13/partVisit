@@ -12,9 +12,6 @@
         tools:layout="@layout/fragment_home">
 
         <action
-            android:id="@+id/action_homeFragment_to_reportFactorListFragment"
-            app:destination="@id/reportFactorListFragment" />
-        <action
             android:id="@+id/action_homeFragment_to_customerListFragment"
             app:destination="@id/customerListFragment" />
         <action
@@ -29,12 +26,15 @@
         <action
             android:id="@+id/action_homeFragment_to_ProductListFragment"
             app:destination="@id/productListFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_reportFactorFragment"
+            app:destination="@id/reportFactorFragment" />
     </fragment>
     <fragment
-        android:id="@+id/reportFactorListFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorListFragment"
-        android:label="ReportFactorListFragment"
-        tools:layout="@layout/fragment_report_factor_list">
+        android:id="@+id/onlineOrderListFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderListFragment"
+        android:label="OnlineOrderListFragment"
+        tools:layout="@layout/fragment_online_order_list">
         <argument
             android:name="typeList"
             app:argType="string" />
@@ -42,14 +42,14 @@
             android:name="id"
             app:argType="integer" />
         <action
-            android:id="@+id/action_reportFactorListFragment_to_reportFactorDetailFragment"
-            app:destination="@id/reportFactorDetailFragment" />
+            android:id="@+id/action_onlineOrderListFragment_to_onlineOrderDetailFragment"
+            app:destination="@id/onlineOrderDetailFragment" />
     </fragment>
     <fragment
-        android:id="@+id/reportFactorDetailFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorDetailFragment"
-        android:label="ReportFactorDetailFragment"
-        tools:layout="@layout/fragment_report_factor_detail">
+        android:id="@+id/onlineOrderDetailFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderDetailFragment"
+        android:label="OnlineOrderDetailFragment"
+        tools:layout="@layout/fragment_online_order_detail">
         <argument
             android:name="id"
             app:argType="integer" />
@@ -80,8 +80,8 @@
             android:id="@+id/action_customerDetailFragment_to_headerOrderFragment"
             app:destination="@id/headerOrderFragment" />
         <action
-            android:id="@+id/action_customerDetailFragment_to_reportFactorListFragment"
-            app:destination="@id/reportFactorListFragment" />
+            android:id="@+id/action_customerDetailFragment_to_onlineOrderListFragment"
+            app:destination="@id/onlineOrderListFragment" />
     </fragment>
     <fragment
         android:id="@+id/groupProductFragment"
@@ -145,4 +145,10 @@
             android:id="@+id/action_orderFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/reportFactorFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorFragment"
+        android:label="ReportFactorFragment"
+        tools:layout="@layout/fragment_report_factor" />
+
 </navigation>
