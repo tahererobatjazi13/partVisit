@@ -131,6 +131,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:backColorBtnOne="@color/colorPrimary"
+        android:layout_marginHorizontal="@dimen/medium_size"
         app:badgeTextColorBtnOne="?attr/colorOnPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -139,6 +140,8 @@
 
     <com.partsystem.partvisitapp.core.utils.componenet.BottomMain
         android:id="@+id/bmbSetting"
+        android:layout_marginTop="@dimen/large_size"
+        android:layout_marginHorizontal="@dimen/medium_size"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:backColorBtnOne="?attr/colorBackSurface"

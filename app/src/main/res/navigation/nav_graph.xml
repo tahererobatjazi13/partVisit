@@ -34,7 +34,7 @@
         android:id="@+id/onlineOrderListFragment"
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderListFragment"
         android:label="OnlineOrderListFragment"
-        tools:layout="@layout/fragment_online_order_list">
+        tools:layout="@layout/fragment_order_list">
         <argument
             android:name="typeList"
             app:argType="string" />
@@ -49,7 +49,7 @@
         android:id="@+id/onlineOrderDetailFragment"
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderDetailFragment"
         android:label="OnlineOrderDetailFragment"
-        tools:layout="@layout/fragment_online_order_detail">
+        tools:layout="@layout/fragment_order_detail">
         <argument
             android:name="id"
             app:argType="integer" />

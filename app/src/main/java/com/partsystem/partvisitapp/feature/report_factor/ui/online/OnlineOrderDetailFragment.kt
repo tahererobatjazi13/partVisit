@@ -15,7 +15,7 @@ import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.databinding.FragmentOnlineOrderDetailBinding
+import com.partsystem.partvisitapp.databinding.FragmentOrderDetailBinding
 import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderDetailAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
@@ -25,7 +25,7 @@ import javax.inject.Inject
 class OnlineOrderDetailFragment : Fragment() {
     @Inject
     lateinit var userPreferences: UserPreferences
-    private var _binding: FragmentOnlineOrderDetailBinding? = null
+    private var _binding: FragmentOrderDetailBinding? = null
     private val binding get() = _binding!!
     private val viewModel: OnlineOrderListViewModel by viewModels()
 
@@ -38,7 +38,7 @@ class OnlineOrderDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentOnlineOrderDetailBinding.inflate(inflater, container, false)
+        _binding = FragmentOrderDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
 

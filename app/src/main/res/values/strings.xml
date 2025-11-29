@@ -38,8 +38,7 @@
     <string name="label_add_customer">افزودن مشتری</string>
     <string name="label_edit_customer">ویرایش مشتری</string>
     <string name="label_customer_search">جستجو مشتری ...</string>
-    <string name="label_factor_search">جستجو براساس شماره فاکتور و نام مشتری</string>
-    <string name="label_order_search">جستجو سفارش..</string>
+    <string name="label_order_search">جستجو سفارش ...</string>
     <string name="label_phone">تلفن:</string>
     <string name="label_address">آدرس:</string>
     <string name="label_date_time">تاریخ و زمان:</string>

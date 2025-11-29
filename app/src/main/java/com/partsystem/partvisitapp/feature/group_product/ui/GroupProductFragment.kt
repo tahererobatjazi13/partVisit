@@ -182,7 +182,6 @@ class GroupProductFragment : Fragment() {
     private fun observeCategory(subGroupId: Int) {
         latestSubGroupId = subGroupId
         latestCategoryId = null
-
         groupProductViewModel.getCategories(subGroupId)
             .observe(viewLifecycleOwner) { categories ->
                 if (latestSubGroupId == subGroupId) {
@@ -196,7 +195,6 @@ class GroupProductFragment : Fragment() {
                     } else {
                         binding.info.gone()
                         binding.rvCategory.show()
-
                         categoryAdapter.resetSelection()
                         categoryAdapter.setData(categories)
                         observeProductsByCategory(categories[0].id)

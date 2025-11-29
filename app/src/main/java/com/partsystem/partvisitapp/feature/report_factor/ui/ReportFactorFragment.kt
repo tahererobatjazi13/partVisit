@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -43,19 +44,43 @@ class ReportFactorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            if (!navController.popBackStack()) {
+                findNavController().navigateUp()
+            }
+        }
+
         setupClicks()
         setupTabs()
         setActiveTab(true)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.onlineOrderDetailFragment) {
-                binding.tabsLayout.visibility = View.GONE
-                binding.hfOrderList.visibility = View.GONE
-            } else {
-                binding.tabsLayout.visibility = View.VISIBLE
-                binding.hfOrderList.visibility = View.VISIBLE
+
+            when (destination.id) {
+
+                // تب offline فعال شود
+                R.id.offlineOrderListFragment -> {
+                    binding.tabsLayout.visibility = View.VISIBLE
+                    binding.hfOrderList.visibility = View.VISIBLE
+                    setActiveTab(true)
+                }
+
+                // تب online فعال شود
+                R.id.onlineOrderListFragment -> {
+                    binding.tabsLayout.visibility = View.VISIBLE
+                    binding.hfOrderList.visibility = View.VISIBLE
+                    setActiveTab(false)
+                }
+
+                // صفحات دیتیل مخفی شود
+                R.id.onlineOrderDetailFragment,
+                R.id.offlineOrderDetailFragment -> {
+                    binding.tabsLayout.visibility = View.GONE
+                    binding.hfOrderList.visibility = View.GONE
+                }
             }
         }
+
     }
 
     private fun setupClicks() {
@@ -72,12 +97,12 @@ class ReportFactorFragment : Fragment() {
         binding.tabSent.setOnClickListener {
             setActiveTab(false)
             lifecycleScope.launch {
-                val personnelId = userPreferences.personnelId.first() ?: 0
+                val visitorId = userPreferences.personnelId.first() ?: 0
                 navController.navigate(
                     R.id.onlineOrderListFragment,
                     Bundle().apply {
                         putString("typeList",ReportFactorListType.Visitor.value)
-                        putInt("id", personnelId)
+                        putInt("id", visitorId)
                     },
                     navOptions {
                         launchSingleTop = true
