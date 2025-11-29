@@ -183,7 +183,7 @@ class ProductListFragment : Fragment() {
             }
         }
 
-        // مشاهده تغییرات عکس‌ها
+    // مشاهده تغییرات عکس‌ها
         productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
             val products = productViewModel.filteredList.value ?: emptyList()
             productListAdapter.setData(products, imagesMap)

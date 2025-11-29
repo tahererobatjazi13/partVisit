@@ -1,7 +1,6 @@
 package com.partsystem.partvisitapp.feature.product.repository
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.liveData
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
 import com.partsystem.partvisitapp.core.database.dao.ProductImageDao

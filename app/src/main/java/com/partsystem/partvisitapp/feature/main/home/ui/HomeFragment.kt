@@ -49,6 +49,9 @@ class HomeFragment : Fragment() {
     private lateinit var loadingDialog: Dialog
     private lateinit var loadingBinding: DialogLoadingBinding
 
+    private val tasks = mutableListOf<() -> Unit>()
+    private var currentTaskIndex = 0
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -85,355 +88,369 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
     private fun setupObserver() {
 
-        observeApi(
+        tasks.clear()
+        currentTaskIndex = 0
+
+        addTask(
             liveData = viewModel.applicationSetting,
-            loadingMsg = "در حال دریافت تنظیمات..."
-        )
-        viewModel.fetchApplicationSetting()
+            loadingMsg = "در حال دریافت تنظیمات ..."
+        ) { viewModel.fetchApplicationSetting() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.visitor,
-            loadingMsg = "در حال دریافت ویزیتور..."
-        )
-        viewModel.fetchVisitors()
+            loadingMsg = "در حال دریافت ویزیتور ..."
+        ) { viewModel.fetchVisitors() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.groupProducts,
-            loadingMsg = "در حال دریافت گروه کالا..."
-        )
-        viewModel.fetchGroupProducts()
+            loadingMsg = "در حال دریافت گروه کالا ..."
+        ) { viewModel.fetchGroupProducts() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.products,
-            loadingMsg = "در حال دریافت محصولات..."
-        )
-        viewModel.fetchProducts()
+            loadingMsg = "در حال دریافت محصولات ..."
+        ) { viewModel.fetchProducts() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.productImages,
-            loadingMsg = "در حال دریافت تصاویر کالا..."
-        )
-        viewModel.fetchProductImages()
+            loadingMsg = "در حال دریافت تصاویر کالا ..."
+        ) { viewModel.fetchProductImages() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.productPacking,
-            loadingMsg = "در حال دریافت بسته‌بندی..."
-        )
-        viewModel.fetchProductPacking()
+            loadingMsg = "در حال دریافت بسته‌بندی ..."
+        ) { viewModel.fetchProductPacking() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.customers,
-            loadingMsg = "در حال دریافت مشتریان..."
-        )
-        viewModel.fetchCustomers()
+            loadingMsg = "در حال دریافت مشتریان ..."
+        ) { viewModel.fetchCustomers() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.customerDirections,
-            loadingMsg = "در حال دریافت مسیر مشتریان..."
-        )
-        viewModel.fetchCustomerDirections()
+            loadingMsg = "در حال دریافت مسیر مشتریان ..."
+        ) { viewModel.fetchCustomerDirections() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.assignDirectionCustome,
-            loadingMsg = "در حال دریافت مسیر مشتری..."
-        )
-        viewModel.fetchAssignDirectionCustomer()
+            loadingMsg = "در حال دریافت مسیر مشتری ..."
+        ) { viewModel.fetchAssignDirectionCustomer() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.invoiceCategory,
-            loadingMsg = "در حال دریافت گروه صورتحساب..."
-        )
-        viewModel.fetchInvoiceCategory()
+            loadingMsg = "در حال دریافت گروه صورتحساب ..."
+        ) { viewModel.fetchInvoiceCategory() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.pattern,
-            loadingMsg = "در حال دریافت طرح فروش..."
-        )
-        viewModel.fetchPattern()
+            loadingMsg = "در حال دریافت طرح فروش ..."
+        ) { viewModel.fetchPattern() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.act,
-            loadingMsg = "در حال دریافت مصوبه..."
-        )
-        viewModel.fetchAct()
+            loadingMsg = "در حال دریافت مصوبه ..."
+        ) { viewModel.fetchAct() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.vat,
-            loadingMsg = "در حال دریافت مالیات و عوارض..."
-        )
-        viewModel.fetchVat()
+            loadingMsg = "در حال دریافت مالیات و عوارض ..."
+        ) { viewModel.fetchVat() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.saleCenter,
-            loadingMsg = "در حال دریافت مراکز فروش..."
-        )
-        viewModel.fetchSaleCenter()
+            loadingMsg = "در حال دریافت مراکز فروش ..."
+        ) { viewModel.fetchSaleCenter() }
 
-        observeApi(
+        addTask(
             liveData = viewModel.discount,
-            loadingMsg = "در حال دریافت تخفیفات..."
-        )
-        viewModel.fetchDiscount()
+            loadingMsg = "در حال دریافت تخفیفات ..."
+        ) { viewModel.fetchDiscount() }
+
+        // اولین کار را شروع کن
+        runNextTask()
     }
-    private fun <T> observeApi(
+
+    private fun <T> addTask(
         liveData: LiveData<NetworkResult<T>>,
-        loadingMsg: String
+        loadingMsg: String,
+        fetchAction: () -> Unit
+    ) {
+        tasks.add {
+            observeApiSequential(liveData, loadingMsg, fetchAction)
+        }
+    }
+
+    private fun <T> observeApiSequential(
+        liveData: LiveData<NetworkResult<T>>,
+        loadingMsg: String,
+        fetchAction: () -> Unit
     ) {
         liveData.observe(viewLifecycleOwner) { result ->
             when (result) {
 
                 is NetworkResult.Loading -> {
-                    loadingCount++
                     showOrUpdateLoading(loadingMsg)
                 }
 
                 is NetworkResult.Success -> {
-                    hideLoadingIfDone()
+                    runNextTask()
                 }
 
                 is NetworkResult.Error -> {
-                    hideLoadingIfDone()
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    runNextTask()
                 }
             }
+        }
+
+        fetchAction()
+    }
+
+    private fun runNextTask() {
+        if (currentTaskIndex < tasks.size) {
+            tasks[currentTaskIndex].invoke()
+            currentTaskIndex++
+        } else {
+            // همه کارها تمام شد
+            loadingDialog.dismiss()
         }
     }
 
+    /*
+        private fun setupObserver() {
 
-/*
-    private fun setupObserver() {
+            viewModel.applicationSetting.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت تنظیمات...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-        viewModel.applicationSetting.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت تنظیمات...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchApplicationSetting()
-
-        viewModel.visitor.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت ویزیتور...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        }
-        viewModel.fetchVisitors()
+            viewModel.fetchApplicationSetting()
 
-        viewModel.groupProducts.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت گروه کالا...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
+            viewModel.visitor.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت ویزیتور...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchGroupProducts()
-
-        viewModel.products.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت محصولات ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        }
-        viewModel.fetchProducts()
+            viewModel.fetchVisitors()
 
-        viewModel.productImages.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت تصاویرکالا ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
+            viewModel.groupProducts.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت گروه کالا...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchProductImages()
-
-        viewModel.productPacking.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت بسته بندی ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        }
-        viewModel.fetchProductPacking()
+            viewModel.fetchGroupProducts()
 
-        viewModel.customers.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> {
-                    showLoading("در حال دریافت مشتریان...")
-                }
+            viewModel.products.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت محصولات ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        }
-        viewModel.fetchCustomers()
+            viewModel.fetchProducts()
 
-        viewModel.customerDirections.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتریان ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
+            viewModel.productImages.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت تصاویرکالا ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchCustomerDirections()
-
-        viewModel.assignDirectionCustome.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتری ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        }
-        viewModel.fetchAssignDirectionCustomer()
+            viewModel.fetchProductImages()
 
-        viewModel.invoiceCategory.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت گروه صورتحساب  ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
+            viewModel.productPacking.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت بسته بندی ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchInvoiceCategory()
-
-        viewModel.pattern.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت طرح فروش ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        }
-        viewModel.fetchPattern()
+            viewModel.fetchProductPacking()
 
-        viewModel.act.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت مصوبه ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
+            viewModel.customers.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> {
+                        showLoading("در حال دریافت مشتریان...")
+                    }
 
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchAct()
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-        viewModel.vat.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت مالیات و عوارض ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        }
-        viewModel.fetchVat()
+            viewModel.fetchCustomers()
 
-        viewModel.saleCenter.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت مراکز فروش ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
+            viewModel.customerDirections.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتریان ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
 
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-        viewModel.fetchSaleCenter()
-
-        viewModel.discount.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showLoading("در حال دریافت تخفیفات ...")
-                is NetworkResult.Success -> {
-                    hideLoading()
-                }
-
-                is NetworkResult.Error -> {
-                    hideLoading()
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
+            viewModel.fetchCustomerDirections()
+
+            viewModel.assignDirectionCustome.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتری ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
+
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            viewModel.fetchAssignDirectionCustomer()
+
+            viewModel.invoiceCategory.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت گروه صورتحساب  ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
+
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            viewModel.fetchInvoiceCategory()
+
+            viewModel.pattern.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت طرح فروش ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
+
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            viewModel.fetchPattern()
+
+            viewModel.act.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت مصوبه ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
+
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            viewModel.fetchAct()
+
+            viewModel.vat.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت مالیات و عوارض ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
+
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            viewModel.fetchVat()
+
+            viewModel.saleCenter.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت مراکز فروش ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
+
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            viewModel.fetchSaleCenter()
+
+            viewModel.discount.observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is NetworkResult.Loading -> showLoading("در حال دریافت تخفیفات ...")
+                    is NetworkResult.Success -> {
+                        hideLoading()
+                    }
+
+                    is NetworkResult.Error -> {
+                        hideLoading()
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            viewModel.fetchDiscount()
         }
-        viewModel.fetchDiscount()
-    }
-*/
+    */
 
     private fun initAdapter() {
         binding.rvHomeMenu.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -496,7 +513,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun rxBinding() {
-
         binding.ivSync.setOnClickListener {
             setupObserver()
         }
@@ -505,8 +521,6 @@ class HomeFragment : Fragment() {
             setOnClickPositiveButton { logout() }
         }
     }
-
-
 
     private fun initLoadingDialog() {
         loadingDialog = Dialog(requireContext())
@@ -518,15 +532,17 @@ class HomeFragment : Fragment() {
             window?.setBackgroundDrawableResource(android.R.color.transparent)
         }
     }
+
     private fun showOrUpdateLoading(message: String) {
         if (!::loadingDialog.isInitialized) initLoadingDialog()
 
-        loadingBinding.loadingMessage.text = message
+        loadingBinding.tvLoadingMessage.text = message
 
         if (!loadingDialog.isShowing) {
             loadingDialog.show()
         }
     }
+
     private fun hideLoadingIfDone() {
         loadingCount--
 
@@ -537,50 +553,6 @@ class HomeFragment : Fragment() {
             }
         }
     }
-/*
-
-
-    private fun showLoading(message: String) {
-        if (!::loadingDialog.isInitialized) initLoadingDialog()
-
-        loadingBinding.loadingMessage.text = message
-
-        if (!loadingDialog.isShowing) loadingDialog.show()
-    }
-
-    private fun hideLoading() {
-        if (::loadingDialog.isInitialized && loadingDialog.isShowing) {
-            loadingDialog.dismiss()
-        }
-    }
-
-
-    // ========================
-//  Queue Loading Manager
-// ========================
-    private val loadingQueue: ArrayDeque<String> = ArrayDeque()
-    private var isLoadingShowing = false
-
-    private fun enqueueLoadingMessage(message: String) {
-        loadingQueue.addLast(message)
-        processQueue()
-    }
-
-    private fun processQueue() {
-        if (!isLoadingShowing && loadingQueue.isNotEmpty()) {
-            val nextMessage = loadingQueue.removeFirst()
-            showLoading(nextMessage)
-            isLoadingShowing = true
-        }
-    }
-
-    private fun dequeueLoading() {
-        hideLoading()
-        isLoadingShowing = false
-        processQueue()
-    }
-
-*/
 
     private fun logout() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -588,21 +560,21 @@ class HomeFragment : Fragment() {
             userPreferences.clearUserInfo()
 
             // پاک کردن تمام جدول‌ها
-            db.applicationSettingDao().clearApplicationSetting()       // جدول تنظیمات
-            db.visitorDao().clearVisitors()       // جدول ویزیتور
-            db.groupProductDao().clearGroupProduct()    // جدول گروه کالاها
-            db.productDao().clearProducts()        // جدول محصولات
-            db.productImageDao().clearProductImage()        // جدول تصاویر محصولات
-            db.productPackingDao().clearProductPacking()        // جدول بسته بندی محصولات
-            db.customerDao().clearCustomers()       // جدول مشتریان
-            db.customerDirectionDao().clearCustomerDirection()       // جدول مسیر مشتریان
-            db.assignDirectionCustomerDao().clearAssignDirectionCustomer()       // جدول مسیر مشتری
-            db.invoiceCategoryDao().clearInvoiceCategory()    // جدول گروه صورت حساب
-            db.patternDao().clearPatterns()    // جدول طرح فروش
-            db.actDao().clearAct()    // جدول مصوبه
-            db.vatDao().clearVat()    // جدول مالیات
-            db.saleCenterDao().clearSaleCenters()    // جدول مراکز فروش
-            db.discountDao().clearDiscounts()    // جدول نخفیف
+            db.applicationSettingDao().clearApplicationSetting() // جدول تنظیمات
+            db.visitorDao().clearVisitors() // جدول ویزیتور
+            db.groupProductDao().clearGroupProduct() // جدول گروه کالاها
+            db.productDao().clearProducts() // جدول محصولات
+            db.productImageDao().clearProductImage() // جدول تصاویر محصولات
+            db.productPackingDao().clearProductPacking() // جدول بسته بندی محصولات
+            db.customerDao().clearCustomers() // جدول مشتریان
+            db.customerDirectionDao().clearCustomerDirection() // جدول مسیر مشتریان
+            db.assignDirectionCustomerDao().clearAssignDirectionCustomer() // جدول مسیر مشتری
+            db.invoiceCategoryDao().clearInvoiceCategory() // جدول گروه صورت حساب
+            db.patternDao().clearPatterns() // جدول طرح فروش
+            db.actDao().clearAct() // جدول مصوبه
+            db.vatDao().clearVat() // جدول مالیات
+            db.saleCenterDao().clearSaleCenters() // جدول مراکز فروش
+            db.discountDao().clearDiscounts() // جدول تخفیف
 
             // هدایت کاربر به صفحه Splash
             val intent = Intent(requireContext(), SplashActivity::class.java)
@@ -614,7 +586,7 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-       // _loadingBinding = null
+        // _loadingBinding = null
     }
 
 }

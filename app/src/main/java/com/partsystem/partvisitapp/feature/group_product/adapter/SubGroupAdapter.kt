@@ -57,6 +57,10 @@ class SubGroupAdapter(
             }
         }
     }
+    fun resetSelection() {
+        selectedPosition = RecyclerView.NO_POSITION
+    }
+
 }
 
 class SubGroupDiffCallback : DiffUtil.ItemCallback<GroupProductEntity>() {

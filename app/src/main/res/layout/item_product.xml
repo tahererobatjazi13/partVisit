@@ -22,7 +22,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/RoundedImageView"
-            app:srcCompat="@drawable/ic_logo" />
+            app:srcCompat="@drawable/ic_placeholder" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="0dp"
@@ -153,7 +153,7 @@
                 android:layout_height="wrap_content"
                 android:drawableEnd="@drawable/ic_price"
                 android:drawablePadding="@dimen/xxx_small_size"
-                android:text="1000 ریال"
+                android:text="@string/app_price_item"
                 android:textColor="@color/colorPrimary" />
 
         </LinearLayout>

@@ -5,9 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.databinding.ItemCategoryBinding
+import java.io.File
 
 class CategoryAdapter(
     private val onClick: (GroupProductEntity) -> Unit = {}
@@ -23,10 +26,23 @@ class CategoryAdapter(
             tvCategoryName.text = category.name
 
             val backgroundRes = if (isSelected)
-                R.drawable.bg_circle_focused
+                R.drawable.bg_rectangle_focused
             else
-                R.drawable.bg_circle_default
+                R.drawable.bg_rectangle_default
+
             cvImageCategory.setBackgroundResource(backgroundRes)
+
+            val images = images[category.id]
+            if (!images.isNullOrEmpty()) {
+                val localPath = images.first().localPath
+                Glide.with(ivCategory.context)
+                    .load(File(localPath))
+                    .placeholder(R.drawable.ic_placeholder)
+                    .error(R.drawable.ic_placeholder)
+                    .into(ivCategory)
+            } else {
+                ivCategory.setImageResource(R.drawable.ic_placeholder)
+            }
 
             root.setOnClickListener {
                 val previous = selectedPosition
@@ -45,6 +61,17 @@ class CategoryAdapter(
                 notifyItemChanged(0)
             }
         }
+    }
+
+    fun resetSelection() {
+        selectedPosition = RecyclerView.NO_POSITION
+    }
+
+    private var images: Map<Int, List<ProductImageEntity>> = emptyMap()
+
+    fun setImages(map: Map<Int, List<ProductImageEntity>>) {
+        images = map
+        notifyDataSetChanged()
     }
 
 

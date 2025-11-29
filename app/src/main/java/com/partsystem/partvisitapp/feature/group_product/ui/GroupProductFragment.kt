@@ -18,7 +18,6 @@ import com.partsystem.partvisitapp.feature.group_product.adapter.CategoryAdapter
 import com.partsystem.partvisitapp.feature.group_product.adapter.MainGroupAdapter
 import com.partsystem.partvisitapp.feature.group_product.adapter.SubGroupAdapter
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
-import com.partsystem.partvisitapp.feature.product.ui.ProductListFragmentDirections
 import com.partsystem.partvisitapp.feature.product.ui.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -38,6 +37,9 @@ class GroupProductFragment : Fragment() {
     private val productViewModel: ProductViewModel by viewModels()
     private val cartViewModel: CartViewModel by viewModels()
 
+    private var latestMainGroupId: Int? = null
+    private var latestSubGroupId: Int? = null
+    private var latestCategoryId: Int? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,6 +57,14 @@ class GroupProductFragment : Fragment() {
         initRecyclerViews()
         observeData()
         observeCartBadge()
+
+        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+            latestCategoryId?.let { categoryId ->
+                val products =
+                    groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
+                productListAdapter.setData(products, imagesMap)
+            }
+        }
     }
 
     private fun init() {
@@ -76,7 +86,6 @@ class GroupProductFragment : Fragment() {
 
     private fun initAdapters() {
 
-        // 🟢 ابتدا آداپترها را مقداردهی کن
         mainGroupAdapter = MainGroupAdapter { group ->
             observeSubGroup(group.id)
         }
@@ -84,10 +93,11 @@ class GroupProductFragment : Fragment() {
         subGroupAdapter = SubGroupAdapter { sub ->
             observeCategory(sub.id)
         }
+
         categoryAdapter = CategoryAdapter { category ->
+            latestCategoryId = category.id
             observeProductsByCategory(category.id)
         }
-
         val currentQuantities = mutableMapOf<Int, Int>()
 
         productListAdapter = ProductListAdapter(
@@ -122,15 +132,11 @@ class GroupProductFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = categoryAdapter
         }
-
-
-
         binding.rvProduct.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = productListAdapter
         }
-
     }
 
     private fun observeData() {
@@ -148,77 +154,83 @@ class GroupProductFragment : Fragment() {
         }
     }
 
+
     private fun observeSubGroup(mainGroupId: Int) {
+        latestMainGroupId = mainGroupId
         groupProductViewModel.getSubGroups(mainGroupId)
             .observe(viewLifecycleOwner) { subs ->
-         /*       if (subs.isNullOrEmpty()) {
-                    binding.info.show()
-                    binding.info.message(getString(R.string.msg_no_data))
-                    binding.rvProduct.gone()
-                } else {*/
-                 //   binding.info.gone()
-                    subGroupAdapter.setData(subs)
-                    val id = subs[0].id
-                    observeCategory(id)
-                //}
+                if (latestMainGroupId == mainGroupId) {
+                    if (subs.isNullOrEmpty()) {
+                        binding.info.show()
+                        binding.info.message(getString(R.string.msg_no_data))
+                        binding.rvSubGroup.gone()
+                        binding.rvCategory.gone()
+                        binding.rvProduct.gone()
+                        binding.infoProduct.gone()
+                        binding.tvTitleProduct.gone()
+                    } else {
+                        binding.info.gone()
+                        binding.rvSubGroup.show()
+                        subGroupAdapter.resetSelection()
+                        subGroupAdapter.setData(subs)
+                        observeCategory(subs[0].id)
+                    }
+                }
             }
     }
 
     private fun observeCategory(subGroupId: Int) {
+        latestSubGroupId = subGroupId
+        latestCategoryId = null
+
         groupProductViewModel.getCategories(subGroupId)
             .observe(viewLifecycleOwner) { categories ->
-//                if (categories.isNullOrEmpty()) {
-//                    binding.info.show()
-//                    binding.info.message(getString(R.string.msg_no_data))
-//                    binding.rvProduct.gone()
-//                } else {
-                 //   binding.info.gone()
-                    categoryAdapter.setData(categories)
-                    val id = categories[0].id
-                    observeProductsByCategory(id)
-               // }
-            }
-    }
+                if (latestSubGroupId == subGroupId) {
+                    if (categories.isNullOrEmpty()) {
+                        binding.info.show()
+                        binding.info.message(getString(R.string.msg_no_data))
+                        binding.rvProduct.gone()
+                        binding.infoProduct.gone()
+                        binding.tvTitleProduct.gone()
+                        binding.rvCategory.gone()
+                    } else {
+                        binding.info.gone()
+                        binding.rvCategory.show()
 
-/*    private fun observeProductsByCategory(categoryId: Int) {
-        groupProductViewModel.getProductsByCategory(categoryId)
-            .observe(viewLifecycleOwner) { products ->
-                if (products.isNullOrEmpty()) {
-                    binding.info.show()
-                    binding.info.message(getString(R.string.msg_no_product))
-                    binding.rvProduct.gone()
-                } else {
-                    binding.info.gone()
-                    binding.rvProduct.show()
-                 //   productListAdapter.setData(products)
-                }
-            }
-    }*/
-
-    private fun observeProductsByCategory(categoryId: Int) {
-        groupProductViewModel.getProductsByCategory(categoryId)
-            .observe(viewLifecycleOwner) { products ->
-                val imagesMap = productViewModel.productImages.value ?: emptyMap()
-
-                if (products.isNullOrEmpty()) {
-                    binding.info.show()
-                    binding.info.message(getString(R.string.msg_no_product))
-                    binding.rvProduct.gone()
-                } else {
-                    binding.info.gone()
-                    binding.rvProduct.show()
-                    productListAdapter.setData(products, imagesMap)
+                        categoryAdapter.resetSelection()
+                        categoryAdapter.setData(categories)
+                        observeProductsByCategory(categories[0].id)
+                    }
                 }
             }
 
-        // این بخش برای آپدیت شدن عکس‌ها بعد از لود شدن
-        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-            val products = groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
-            productListAdapter.setData(products, imagesMap)
+        productViewModel.groupProductImages.observe(viewLifecycleOwner) { imagesMap ->
+            if (latestSubGroupId == subGroupId) {
+                categoryAdapter.setImages(imagesMap)
+            }
         }
     }
 
-
+    private fun observeProductsByCategory(categoryId: Int) {
+        latestCategoryId = categoryId
+        groupProductViewModel.getProductsByCategory(categoryId)
+            .observe(viewLifecycleOwner) { products ->
+                if (latestCategoryId == categoryId) {
+                    val imagesMap = productViewModel.productImages.value ?: emptyMap()
+                    if (products.isNullOrEmpty()) {
+                        binding.infoProduct.show()
+                        binding.tvTitleProduct.show()
+                        binding.infoProduct.message(getString(R.string.msg_no_product))
+                        binding.rvProduct.gone()
+                    } else {
+                        binding.infoProduct.gone()
+                        binding.tvTitleProduct.show()
+                        binding.rvProduct.show()
+                        productListAdapter.setData(products, imagesMap)
+                    }
+                }
+            }
+    }
 
     private fun observeCartBadge() {
         cartViewModel.totalCount.observe(viewLifecycleOwner) { count ->

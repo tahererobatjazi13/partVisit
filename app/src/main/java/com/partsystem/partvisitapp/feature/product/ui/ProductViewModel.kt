@@ -8,6 +8,7 @@ import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.*
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
+import com.partsystem.partvisitapp.core.utils.ImageProductType
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,6 +17,7 @@ import javax.inject.Inject
 class ProductViewModel @Inject constructor(
     private val repository: ProductRepository
 ) : ViewModel() {
+
 
     // لیست اصلی محصولات از دیتابیس
     private val _productList = MutableLiveData<List<ProductEntity>>()
@@ -47,10 +49,17 @@ class ProductViewModel @Inject constructor(
     // گرفتن محصول با id مشخص
     fun getProductById(id: Int): LiveData<ProductEntity> = repository.getProductById(id)
 
+    private val _groupProductImages = MutableLiveData<Map<Int, List<ProductImageEntity>>>()
+    val groupProductImages: LiveData<Map<Int, List<ProductImageEntity>>> = _groupProductImages
 
-    // برای نگه داشتن عکس‌ها
     private val _productImages = MutableLiveData<Map<Int, List<ProductImageEntity>>>()
     val productImages: LiveData<Map<Int, List<ProductImageEntity>>> = _productImages
+
+
+
+/*    // برای نگه داشتن عکس‌ها
+    private val _productImages = MutableLiveData<Map<Int, List<ProductImageEntity>>>()
+    val productImages: LiveData<Map<Int, List<ProductImageEntity>>> = _productImages*/
     init {
         viewModelScope.launch {
             repository.getAllProducts().collectLatest { list ->
@@ -59,9 +68,19 @@ class ProductViewModel @Inject constructor(
             }
         }
 
-        // لود کردن همه عکس‌ها یک بار
+    repository.getAllProductImages().observeForever { allImages ->
+
+        val groupImages = allImages.filter { it.value.firstOrNull()?.ownerType == ImageProductType.GROUP_PRODUCT }
+        val productImages = allImages.filter { it.value.firstOrNull()?.ownerType == ImageProductType.PRODUCT }
+
+        _groupProductImages.postValue(groupImages)
+        _productImages.postValue(productImages)
+    }
+
+/*
+    // لود کردن همه عکس‌ها یک بار
         repository.getAllProductImages().observeForever {
             _productImages.postValue(it)
-        }
+        }*/
     }
 }

@@ -15,3 +15,8 @@ enum class ReportFactorListType(val value: String) {
     Customer("customer"),
     Visitor("visitor")
 }
+
+enum class ImageProductType(val value: String) {
+    GROUP_PRODUCT("Store.GroupProduct"), PRODUCT("Store.Product")
+}
+
