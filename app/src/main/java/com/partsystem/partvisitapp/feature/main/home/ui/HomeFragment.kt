@@ -66,7 +66,8 @@ class HomeFragment : Fragment() {
         initLoadingDialog()
         initAdapter()
         rxBinding()
-        //  setupObserver()
+        //setupObserver()
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -98,8 +99,6 @@ class HomeFragment : Fragment() {
             liveData = viewModel.applicationSetting,
             loadingMsg = "در حال دریافت تنظیمات ..."
         ) { viewModel.fetchApplicationSetting() }
-
-        viewModel.loadAndSaveControlVisitSchedule()
 
         addTask(
             liveData = viewModel.visitor,
@@ -198,6 +197,7 @@ class HomeFragment : Fragment() {
                 }
 
                 is NetworkResult.Success -> {
+
                     runNextTask()
                 }
 

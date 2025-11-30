@@ -140,7 +140,7 @@ class CustomerListFragment : Fragment() {
     }
 
     private fun observeData() {
-        customerViewModel.customerList.observe(viewLifecycleOwner) { filteredProducts ->
+        customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { filteredProducts ->
             if (filteredProducts.isEmpty()) {
                 binding.info.show()
                 binding.info.message(requireContext().getString(R.string.msg_no_customer))

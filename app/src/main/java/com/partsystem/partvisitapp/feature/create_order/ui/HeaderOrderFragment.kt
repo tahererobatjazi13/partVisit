@@ -2,32 +2,40 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.utils.componenet.BottomSheetChooseDialog
-import com.partsystem.partvisitapp.databinding.FragmentHeaderOrderBinding
-import com.partsystem.partvisitapp.feature.create_order.bottomSheet.CustomerListBottomSheet
+import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.persiancalendar.CalendarConstraints
 import com.partsystem.partvisitapp.core.utils.persiancalendar.DateValidatorPointForward
 import com.partsystem.partvisitapp.core.utils.persiancalendar.MaterialDatePicker
 import com.partsystem.partvisitapp.core.utils.persiancalendar.MaterialPickerOnPositiveButtonClickListener
 import com.partsystem.partvisitapp.core.utils.persiancalendar.Month
 import com.partsystem.partvisitapp.core.utils.persiancalendar.calendar.PersianCalendar
+import com.partsystem.partvisitapp.databinding.FragmentHeaderOrderBinding
 import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
+import com.partsystem.partvisitapp.feature.create_order.bottomSheet.CustomerListBottomSheet
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import ir.huri.jcal.JalaliCalendar
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class HeaderOrderFragment : Fragment() {
+    @Inject
+    lateinit var userPreferences: UserPreferences
 
     private var _binding: FragmentHeaderOrderBinding? = null
     private val binding get() = _binding!!
@@ -51,6 +59,18 @@ class HeaderOrderFragment : Fragment() {
         init()
         setupClicks()
         observeData()
+
+        lifecycleScope.launch {
+            val controlVisitSchedule = userPreferences.controlVisitSchedule.first()
+
+           /* if (controlVisitSchedule == true) {
+                allCustomer = q.getCustomers(factorActivity.factor.PersianDate)
+            } else {
+                allCustomer = q.getCustomers()
+            }*/
+        }
+
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -172,7 +192,7 @@ class HeaderOrderFragment : Fragment() {
     }
 
     private fun observeData() {
-        customerViewModel.customerList.observe(viewLifecycleOwner) { customers ->
+        customerViewModel.customers.observe(viewLifecycleOwner) { customers ->
             if (customers.isNotEmpty()) {
                 val first = customers.first()
                 customerId = first.id

@@ -75,7 +75,7 @@ class UserPreferences @Inject constructor(
         .map { it[KEY_SALE_CENTER_ID] }
 
 
-    val controlVisitScheduleFlow: Flow<Boolean?> = context.dataStore.data
+    val controlVisitSchedule: Flow<Boolean?> = context.dataStore.data
         .map { it[CONTROL_VISIT_SCHEDULE] }
 
 

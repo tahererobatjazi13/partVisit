@@ -17,6 +17,21 @@ interface CustomerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCustomers(customers: List<CustomerEntity>)
 
+    @Query("""
+        SELECT c.*
+        FROM customer_table c
+        INNER JOIN assign_direction_customer_table adc
+              ON c.id = adc.customerId
+             AND adc.saleCenterId = c.saleCenterId
+        WHERE c.saleCenterId = :saleCenterId
+          AND adc.tafsiliId = :visitorId
+        ORDER BY c.code ASC
+    """)
+    fun getCustomersBySchedule(
+        saleCenterId: Int,
+        visitorId: Int
+    ): Flow<List<CustomerEntity>>
+
     // دریافت همه مشتری‌ها
     @Query("SELECT * FROM customer_table")
     fun getAllCustomers(): Flow<List<CustomerEntity>>

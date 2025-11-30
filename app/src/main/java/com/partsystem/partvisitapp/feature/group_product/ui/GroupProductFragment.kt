@@ -1,7 +1,6 @@
 package com.partsystem.partvisitapp.feature.group_product.ui
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -62,8 +61,6 @@ class GroupProductFragment : Fragment() {
         initRecyclerViews()
         observeData()
         observeCartBadge()
-
-       Log.d("tesssst", userPreferences.controlVisitScheduleFlow.toString())
 
         productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
             latestCategoryId?.let { categoryId ->

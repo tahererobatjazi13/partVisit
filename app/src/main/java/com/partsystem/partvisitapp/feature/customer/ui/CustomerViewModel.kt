@@ -2,44 +2,68 @@ package com.partsystem.partvisitapp.feature.customer.ui
 
 import androidx.lifecycle.*
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.feature.customer.repository.CustomerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 @HiltViewModel
 class CustomerViewModel @Inject constructor(
-    private val repository: CustomerRepository
+    private val repository: CustomerRepository,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
-    // لیست اصلی مشتریان از دیتابیس
-    private val _customerList = MutableLiveData<List<CustomerEntity>>()
+    private val _customers = MutableLiveData<List<CustomerEntity>>()  // لیست کامل مشتریان از کوئری
+    val customers: LiveData<List<CustomerEntity>> get() = _customers
 
-    // لیست فیلترشده
-    private val _filteredCustomerList = MutableLiveData<List<CustomerEntity>>()
-    val customerList: LiveData<List<CustomerEntity>> get() = _filteredCustomerList
+    private val _filteredCustomers = MutableLiveData<List<CustomerEntity>>() // فیلتر شده
+    val filteredCustomers: LiveData<List<CustomerEntity>> get() = _filteredCustomers
 
     init {
-        // جمع‌آوری لیست مشتریان از Room و مقداردهی اولیه
+        loadCustomersFromPreferences()
+    }
+
+    private fun loadCustomersFromPreferences() {
         viewModelScope.launch {
-            repository.getAllCustomers().collectLatest { list ->
-                _customerList.value = list
-                _filteredCustomerList.value = list
+
+            combine(
+                userPreferences.saleCenterId,
+                userPreferences.personnelId
+            ) { saleCenterId, visitorId ->
+                Pair(saleCenterId, visitorId)
+            }.collectLatest { (saleCenterId, visitorId) ->
+
+                if (saleCenterId == 0 || visitorId == 0) {
+                    _customers.postValue(emptyList())
+                    _filteredCustomers.postValue(emptyList())
+                    return@collectLatest
+                }
+
+                repository.getCustomers(saleCenterId!!, visitorId!!)
+                    .collectLatest { list ->
+                        _customers.postValue(list)
+                        _filteredCustomers.postValue(list) // مقدار اولیه همان کل لیست
+                    }
             }
         }
     }
 
-    // فیلتر کردن محصولات بر اساس query
+    // فیلتر کردن مشتریان
     fun filterCustomers(query: String) {
-        val list = _customerList.value ?: emptyList()
-        _filteredCustomerList.value = if (query.isEmpty()) {
-            list
-        } else {
-            list.filter { it.name?.contains(query, ignoreCase = true) == true }
-        }
+        val list = _customers.value ?: emptyList()
+
+        _filteredCustomers.value =
+            if (query.isBlank()) {
+                list
+            } else {
+                list.filter { customer ->
+                    customer.name.contains(query.trim(), ignoreCase = true)
+                }
+            }
     }
 
-    // گرفتن مشتری با id مشخص
-    fun getCustomerById(id: Int): LiveData<CustomerEntity> = repository.getCustomerById(id)
+    fun getCustomerById(id: Int): LiveData<CustomerEntity> =
+        repository.getCustomerById(id)
 }

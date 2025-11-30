@@ -35,8 +35,9 @@ class CustomerBottomSheetAdapter(
     inner class CustomerViewHolder(private val binding: ItemBottomSheetBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(customer: CustomerEntity) = with(binding) {
+            tvName.text = "${bindingAdapterPosition + 1}_  ${customer.name}"
 
-            tvName.text = customer.name
+            //tvName.text = customer.name
             ivItem.gone()
 
             itemView.setOnClickListener {

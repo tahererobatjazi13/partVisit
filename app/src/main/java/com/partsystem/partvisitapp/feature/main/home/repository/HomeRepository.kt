@@ -88,8 +88,9 @@ class HomeRepository @Inject constructor(
 
     suspend fun getControlVisitSchedule(): Boolean {
         val setting = applicationSettingDao.getSettingByName("ControlVisitSchedule")
-        return setting?.value.equals("true", ignoreCase = true)
+        return setting?.value?.equals("true", ignoreCase = true) ?: false
     }
+
 
     suspend fun fetchAndSaveVisitor(): NetworkResult<List<VisitorEntity>> {
         return try {

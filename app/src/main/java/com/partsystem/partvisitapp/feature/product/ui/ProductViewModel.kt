@@ -77,10 +77,5 @@ class ProductViewModel @Inject constructor(
         _productImages.postValue(productImages)
     }
 
-/*
-    // لود کردن همه عکس‌ها یک بار
-        repository.getAllProductImages().observeForever {
-            _productImages.postValue(it)
-        }*/
     }
 }

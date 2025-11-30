@@ -63,10 +63,17 @@ class HomeViewModel @Inject constructor(
 
     fun fetchApplicationSetting() = viewModelScope.launch {
         _applicationSetting.value = NetworkResult.Loading
-        _applicationSetting.value = homeRepository.fetchAndSaveApplicationSetting()
+        val result = homeRepository.fetchAndSaveApplicationSetting()
+        _applicationSetting.value = result
+
+        // اگر موفق بود → برو مقدار ControlVisitSchedule را ذخیره کن
+        if (result is NetworkResult.Success) {
+            loadAndSaveControlVisitSchedule()
+        }
     }
 
-    fun loadAndSaveControlVisitSchedule() {
+
+    private fun loadAndSaveControlVisitSchedule() {
         viewModelScope.launch {
             val value = homeRepository.getControlVisitSchedule()
             userPreferences.saveControlVisitSchedule(value)

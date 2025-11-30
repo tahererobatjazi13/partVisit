@@ -18,6 +18,7 @@ class HeaderOrderRepository @Inject constructor(
     private val patternDao: PatternDao,
     private val actDao: ActDao,
 ) {
+
     fun getDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>> =
         customerDirectionDao.getDirectionsByCustomer(customerId)
 
