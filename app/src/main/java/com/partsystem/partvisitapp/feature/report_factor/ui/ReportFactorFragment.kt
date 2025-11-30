@@ -90,6 +90,7 @@ class ReportFactorFragment : Fragment() {
     }
 
     private fun setupTabs() {
+
         binding.tabUnsent.setOnClickListener {
             setActiveTab(true)
             navController.navigate(R.id.offlineOrderListFragment)

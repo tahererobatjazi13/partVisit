@@ -86,6 +86,11 @@ class HomeRepository @Inject constructor(
         }
     }
 
+    suspend fun getControlVisitSchedule(): Boolean {
+        val setting = applicationSettingDao.getSettingByName("ControlVisitSchedule")
+        return setting?.value.equals("true", ignoreCase = true)
+    }
+
     suspend fun fetchAndSaveVisitor(): NetworkResult<List<VisitorEntity>> {
         return try {
             val response = api.getVisitors()
@@ -310,7 +315,7 @@ class HomeRepository @Inject constructor(
     }
 
     suspend fun fetchAndSaveAct(): NetworkResult<List<ActEntity>> {
-         try {
+        try {
             val response = api.getAct()
             val body = response.body()
 
@@ -339,7 +344,7 @@ class HomeRepository @Inject constructor(
     }
 
     suspend fun fetchAndSaveVat(): NetworkResult<List<VatEntity>> {
-         try {
+        try {
             val response = api.getVat()
             val body = response.body()
 
@@ -368,7 +373,7 @@ class HomeRepository @Inject constructor(
     }
 
     suspend fun fetchAndSaveSaleCenter(): NetworkResult<List<SaleCenterEntity>> {
-         try {
+        try {
             val response = api.getSaleCenters()
             val body = response.body()
 

@@ -99,6 +99,8 @@ class HomeFragment : Fragment() {
             loadingMsg = "در حال دریافت تنظیمات ..."
         ) { viewModel.fetchApplicationSetting() }
 
+        viewModel.loadAndSaveControlVisitSchedule()
+
         addTask(
             liveData = viewModel.visitor,
             loadingMsg = "در حال دریافت ویزیتور ..."

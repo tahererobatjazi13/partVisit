@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.feature.group_product.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentGroupProductBinding
@@ -20,9 +22,12 @@ import com.partsystem.partvisitapp.feature.group_product.adapter.SubGroupAdapter
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import com.partsystem.partvisitapp.feature.product.ui.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class GroupProductFragment : Fragment() {
+    @Inject
+    lateinit var userPreferences: UserPreferences
 
     private var _binding: FragmentGroupProductBinding? = null
     private val binding get() = _binding!!
@@ -57,6 +62,8 @@ class GroupProductFragment : Fragment() {
         initRecyclerViews()
         observeData()
         observeCartBadge()
+
+       Log.d("tesssst", userPreferences.controlVisitScheduleFlow.toString())
 
         productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
             latestCategoryId?.let { categoryId ->

@@ -21,6 +21,7 @@ import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.database.entity.VatEntity
 import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.feature.main.home.model.HomeMenuItem
 import com.partsystem.partvisitapp.feature.main.home.repository.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +31,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val homeRepository: HomeRepository
+    private val homeRepository: HomeRepository,
+    private val userPreferences: UserPreferences
+
 ) : ViewModel() {
 
     private val _homeMenuItem = MutableLiveData<List<HomeMenuItem>>()
@@ -61,6 +64,13 @@ class HomeViewModel @Inject constructor(
     fun fetchApplicationSetting() = viewModelScope.launch {
         _applicationSetting.value = NetworkResult.Loading
         _applicationSetting.value = homeRepository.fetchAndSaveApplicationSetting()
+    }
+
+    fun loadAndSaveControlVisitSchedule() {
+        viewModelScope.launch {
+            val value = homeRepository.getControlVisitSchedule()
+            userPreferences.saveControlVisitSchedule(value)
+        }
     }
 
     private val _visitor =
@@ -104,6 +114,7 @@ class HomeViewModel @Inject constructor(
         _productPacking.value = NetworkResult.Loading
         _productPacking.value = homeRepository.fetchAndSaveProductPacking()
     }
+
     private val _customers = MutableLiveData<NetworkResult<List<CustomerEntity>>>()
     val customers: LiveData<NetworkResult<List<CustomerEntity>>> = _customers
 

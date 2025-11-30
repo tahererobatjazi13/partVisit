@@ -24,6 +24,7 @@ class UserPreferences @Inject constructor(
         val KEY_PERSONNEL_ID = intPreferencesKey("key_personnelId")
         val KEY_IS_LOGGED = booleanPreferencesKey("key_is_login")
         val KEY_SALE_CENTER_ID = intPreferencesKey("key_sale_center_id")
+        val CONTROL_VISIT_SCHEDULE = booleanPreferencesKey("key_control_visit_schedule")
     }
 
     suspend fun saveUserInfo(
@@ -49,6 +50,12 @@ class UserPreferences @Inject constructor(
         }
     }
 
+    suspend fun saveControlVisitSchedule(controlVisitSchedule: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[CONTROL_VISIT_SCHEDULE] = controlVisitSchedule
+        }
+    }
+
     val id: Flow<Int?> = context.dataStore.data
         .map { it[KEY_ID] }
 
@@ -66,6 +73,11 @@ class UserPreferences @Inject constructor(
 
     val saleCenterId: Flow<Int?> = context.dataStore.data
         .map { it[KEY_SALE_CENTER_ID] }
+
+
+    val controlVisitScheduleFlow: Flow<Boolean?> = context.dataStore.data
+        .map { it[CONTROL_VISIT_SCHEDULE] }
+
 
     suspend fun clearUserInfo() {
         context.dataStore.edit { it.clear() }

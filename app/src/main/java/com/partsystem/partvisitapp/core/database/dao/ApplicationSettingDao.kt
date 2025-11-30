@@ -17,4 +17,7 @@ interface ApplicationSettingDao {
 
     @Query("DELETE FROM application_setting_table")
     suspend fun clearApplicationSetting()
+
+    @Query("SELECT * FROM application_setting_table WHERE name = :name LIMIT 1")
+    suspend fun getSettingByName(name: String): ApplicationSettingEntity?
 }

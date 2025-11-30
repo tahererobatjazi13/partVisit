@@ -64,7 +64,7 @@ fun String.toEnglishDigits(): String {
 
 /*
 git add .
-git commit -m "group_product_image"
+git commit -m "save sale center id in login activity"
 git push -u origin master
 git push
 */
