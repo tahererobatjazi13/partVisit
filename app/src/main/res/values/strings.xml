@@ -133,5 +133,9 @@
     <string name="error_enter_password">رمز عبور را وارد کنید</string>
     <string name="error_enter_username">نام کاربری را وارد کنید</string>
     <string name="error_no_items_cart">هیچ آیتمی به سبد خرید اضافه نشده</string>
+    <string name="error_user_not_found">کاربر یافت نشد</string>
+    <string name="error_visitor_not_assigned_account">ویزیتور به این حساب کاربری تخصیص داده نشده است</string>
+    <string name="error_sales_center_not_assigned_visitor">مرکز فروش به ویزیتور تخصیص داده نشده است</string>
+
 
 </resources>

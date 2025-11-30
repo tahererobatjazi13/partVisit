@@ -1,17 +1,18 @@
 package com.partsystem.partvisitapp.feature.login.ui
 
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import android.os.Bundle
+import android.util.Log
+import android.util.Log.*
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
-import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
@@ -20,6 +21,8 @@ import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.core.utils.hideKeyboard
 import com.partsystem.partvisitapp.databinding.ActivityLoginBinding
 import com.partsystem.partvisitapp.feature.login.dialog.AddSettingLoginDialog
+import com.partsystem.partvisitapp.feature.login.model.LoginResponse
+import com.partsystem.partvisitapp.feature.login.model.User
 import com.partsystem.partvisitapp.feature.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -33,34 +36,20 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private val loginViewModel: LoginViewModel by viewModels()
+    private lateinit var loggedUser: User
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        setupClicks()
+        observeLogin()
+        observeVisitors()
         initPasswordToggle()
-        rxBinding()
-        observeLoginResult()
     }
 
-    /**
-     *  تنظیم تغییر حالت آیکن پسورد در صورت خالی یا پر بودن فیلد
-     */
-    private fun initPasswordToggle() {
-        binding.tilPassword.endIconMode = TextInputLayout.END_ICON_NONE
-
-        binding.tiePassword.addTextChangedListener {
-            binding.tilPassword.endIconMode =
-                if (!it.isNullOrEmpty()) TextInputLayout.END_ICON_PASSWORD_TOGGLE
-                else TextInputLayout.END_ICON_NONE
-        }
-    }
-
-    /**
-     *     تنظیم کلیک روی دکمه ورود و بررسی ورودی‌ها
-     */
-    private fun rxBinding() {
+    private fun setupClicks() {
         binding.bmbLogin.setOnClickBtnOneListener {
             if (validateInputs()) {
                 doLogin()
@@ -76,30 +65,6 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    /**
-     *  مشاهده‌ی نتایج لاگین از ViewModel و واکنش مناسب
-     */
-    private fun observeLoginResult() {
-        loginViewModel.loginUser.observe(this) { result ->
-            when (result) {
-                is NetworkResult.Loading -> binding.bmbLogin.checkShowPbOne(true)
-
-                is NetworkResult.Success -> {
-                    processLogin(result.data)
-                    binding.bmbLogin.checkShowPbOne(false)
-                }
-
-                is NetworkResult.Error -> {
-                    processError(result.message)
-                    binding.bmbLogin.checkShowPbOne(false)
-                }
-            }
-        }
-    }
-
-    /**
-     * اجرای عملیات لاگین در صورت اتصال به اینترنت
-     */
     private fun doLogin() {
         var userName = binding.tieUserName.text.toString().trim()
         var passWord = binding.tiePassword.text.toString().trim()
@@ -112,28 +77,110 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.loginUser(userName, passWord)
     }
 
+    private fun observeLogin() {
+        loginViewModel.loginUser.observe(this) { result ->
+            when (result) {
+                is NetworkResult.Loading -> binding.bmbLogin.checkShowPbOne(true)
 
+                is NetworkResult.Success -> {
+                    processLogin(result.data)
+                }
 
-    /**
-     * پردازش نتیجه موفق لاگین
-     */
+                is NetworkResult.Error -> {
+                    processError(result.message)
+                    binding.bmbLogin.checkShowPbOne(false)
+                }
+            }
+        }
+    }
+
     private fun processLogin(data: LoginResponse?) {
-        if (data?.isSuccess == true) {
+        if (data?.isSuccess != true) {
+            processError(data?.message)
+            return
+        }
 
-            // ذخیره اطلاعات یوزر در DataStore
-            lifecycleScope.launch {
-                userPreferences.saveUserInfo(
-                    id = data.listResult?.get(0)?.id ?: 0,
-                    firstName = data.listResult?.get(0)?.firstName ?: "",
-                    lastName = data.listResult?.get(0)?.lastName ?: "",
-                    personnelId = data.listResult?.get(0)?.personnelId ?: 0,
-                )
+        val user = data.listResult?.firstOrNull()
+        if (user == null) {
+            CustomSnackBar.make(
+                findViewById(android.R.id.content),
+                getString(R.string.error_user_not_found),
+                SnackBarType.Error.value
+            )?.show()
+            return
+        } else {
+            loggedUser = user
+            saveUserInfo(user)
+            loginViewModel.getVisitors()
+        }
+    }
+
+    private fun saveUserInfo(user: User) {
+        lifecycleScope.launch {
+            userPreferences.saveUserInfo(
+                id = user.id,
+                firstName = user.firstName,
+                lastName = user.lastName,
+                personnelId = user.personnelId
+            )
+        }
+    }
+
+    private fun observeVisitors() {
+        loginViewModel.visitorState.observe(this) { result ->
+            binding.bmbLogin.checkShowPbOne(false)
+
+            when (result) {
+                is NetworkResult.Loading -> {}
+
+                is NetworkResult.Success -> {
+                    handleVisitorMatch(result.data)
+                }
+
+                is NetworkResult.Error -> {
+                    processError(result.message)
+                }
+            }
+        }
+    }
+
+    private fun handleVisitorMatch(visitors: List<VisitorDto>) {
+        val personnelId = loggedUser.personnelId
+        val visitor = visitors.find { it.id == personnelId }
+
+        when {
+            visitor == null -> {
+                CustomSnackBar.make(
+                    findViewById(android.R.id.content),
+                    getString(R.string.error_visitor_not_assigned_account),
+                    SnackBarType.Error.value
+                )?.show()
+                return
             }
 
-            Toast.makeText(this, R.string.msg_success_login, Toast.LENGTH_SHORT).show()
-            navigateToHome()
-        } else {
-            processError(data?.message)
+            visitor.saleCenterId == null -> {
+                CustomSnackBar.make(
+                    findViewById(android.R.id.content),
+                    getString(R.string.error_sales_center_not_assigned_visitor),
+                    SnackBarType.Error.value
+                )?.show()
+                return
+            }
+        }
+
+        if (visitor != null) {
+            saveVisitorInfo(visitor)
+        }
+        Toast.makeText(this, R.string.msg_success_login, Toast.LENGTH_SHORT).show()
+        navigateToHome()
+    }
+
+    private fun saveVisitorInfo(visitor: VisitorDto) {
+        lifecycleScope.launch {
+            userPreferences.saveVisitorInfo(
+                id = visitor.id,
+                saleCenterId = visitor.saleCenterId
+            )
         }
     }
 
@@ -155,6 +202,19 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToHome() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
+    }
+
+    /**
+     *  تنظیم تغییر حالت آیکن پسورد در صورت خالی یا پر بودن فیلد
+     */
+    private fun initPasswordToggle() {
+        binding.tilPassword.endIconMode = TextInputLayout.END_ICON_NONE
+
+        binding.tiePassword.addTextChangedListener {
+            binding.tilPassword.endIconMode =
+                if (!it.isNullOrEmpty()) TextInputLayout.END_ICON_PASSWORD_TOGGLE
+                else TextInputLayout.END_ICON_NONE
+        }
     }
 
     /**
