@@ -19,7 +19,7 @@ import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.databinding.FragmentOnlineOrderListBinding
+import com.partsystem.partvisitapp.databinding.FragmentOrderListBinding
 import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -31,7 +31,7 @@ class OnlineOrderListFragment : Fragment() {
     @Inject
     lateinit var userPreferences: UserPreferences
 
-    private var _binding: FragmentOnlineOrderListBinding? = null
+    private var _binding: FragmentOrderListBinding? = null
     private val binding get() = _binding!!
     private val viewModel: OnlineOrderListViewModel by viewModels()
 
@@ -45,7 +45,7 @@ class OnlineOrderListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentOnlineOrderListBinding.inflate(inflater, container, false)
+        _binding = FragmentOrderListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -102,9 +102,11 @@ class OnlineOrderListFragment : Fragment() {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
-            orderListAdapter = OrderListAdapter (showSyncButton = false){ factors ->
+            orderListAdapter = OrderListAdapter(showSyncButton = false) { factors ->
                 val action =
-                    OnlineOrderListFragmentDirections.actionOnlineOrderListFragmentToOnlineOrderDetailFragment(factors.id)
+                    OnlineOrderListFragmentDirections.actionOnlineOrderListFragmentToOnlineOrderDetailFragment(
+                        factors.id
+                    )
                 findNavController().navigate(action)
             }
 

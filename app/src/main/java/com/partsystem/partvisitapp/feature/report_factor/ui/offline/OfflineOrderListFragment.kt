@@ -5,18 +5,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
-import com.partsystem.partvisitapp.databinding.FragmentOfflineOrderListBinding
 import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.databinding.FragmentOrderListBinding
 
 @AndroidEntryPoint
 class OfflineOrderListFragment : Fragment() {
 
-    private var _binding: FragmentOfflineOrderListBinding? = null
+    private var _binding: FragmentOrderListBinding? = null
     private val binding get() = _binding!!
     private lateinit var orderListAdapter: OrderListAdapter
     private val fakeOrders = mutableListOf<ReportFactorDto>()
@@ -26,7 +28,7 @@ class OfflineOrderListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentOfflineOrderListBinding.inflate(inflater, container, false)
+        _binding = FragmentOrderListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -35,7 +37,7 @@ class OfflineOrderListFragment : Fragment() {
         initAdapterFake()
         setupClicks()
         customDialog = CustomDialog.instance
-
+        binding.btnSyncAllOrder.show()
     }
 
     private fun initAdapterFake() {
@@ -67,7 +69,7 @@ class OfflineOrderListFragment : Fragment() {
         )
         fakeOrders.add(
             ReportFactorDto(
-                1,
+                2,
                 2,
                 3,
                 "13/08/1404",
@@ -95,11 +97,11 @@ class OfflineOrderListFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
             orderListAdapter = OrderListAdapter(showSyncButton = true) { factors ->
-//                val action =
-//                    ReportFactorListFragmentDirections.actionReportFactorListFragmentToReportFactorDetailFragment(
-//                        factors.id
-//                    )
-//                findNavController().navigate(action)
+                val action =
+                    OfflineOrderListFragmentDirections.actionOfflineOrderListFragmentToOfflineOrderDetailFragment(
+                        factors.id
+                    )
+                findNavController().navigate(action)
             }
             adapter = orderListAdapter
             orderListAdapter.submitList(fakeOrders)

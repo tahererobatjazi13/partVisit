@@ -41,6 +41,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/medium_size"
+            app:backColorBtnOne="@color/colorPrimary"
+            app:badgeTextColorBtnOne="?attr/colorOnPrimary"
             app:isShowSeparator="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

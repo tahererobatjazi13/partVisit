@@ -9,13 +9,17 @@
         android:id="@+id/offlineOrderListFragment"
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.offline.OfflineOrderListFragment"
         android:label="OfflineOrderListFragment"
-        tools:layout="@layout/fragment_offline_order_list" />
+        tools:layout="@layout/fragment_offline_order_list" >
+        <action
+            android:id="@+id/action_offlineOrderListFragment_to_offlineOrderDetailFragment"
+            app:destination="@id/offlineOrderDetailFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/onlineOrderListFragment"
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderListFragment"
         android:label="OnlineOrderListFragment"
-        tools:layout="@layout/fragment_online_order_list">
+        tools:layout="@layout/fragment_order_list">
         <argument
             android:name="typeList"
             app:argType="string" />
@@ -31,10 +35,18 @@
         android:id="@+id/onlineOrderDetailFragment"
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderDetailFragment"
         android:label="OnlineOrderDetailFragment"
-        tools:layout="@layout/fragment_online_order_detail">
+        tools:layout="@layout/fragment_order_detail">
         <argument
             android:name="id"
             app:argType="integer" />
     </fragment>
-
+    <fragment
+        android:id="@+id/offlineOrderDetailFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.offline.OfflineOrderDetailFragment"
+        android:label="OfflineOrderDetailFragment"
+        tools:layout="@layout/fragment_order_detail">
+        <argument
+            android:name="id"
+            app:argType="integer" />
+    </fragment>
 </navigation>
