@@ -104,6 +104,10 @@ class HomeFragment : Fragment() {
             liveData = viewModel.visitor,
             loadingMsg = "در حال دریافت ویزیتور ..."
         ) { viewModel.fetchVisitors() }
+        addTask(
+            liveData = viewModel.visitSchedule,
+            loadingMsg = "در حال دریافت برنامه ویزیت ..."
+        ) { viewModel.fetchVisitSchedules() }
 
         addTask(
             liveData = viewModel.groupProducts,

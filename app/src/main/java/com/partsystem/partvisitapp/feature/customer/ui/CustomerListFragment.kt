@@ -9,10 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
+import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -20,9 +23,15 @@ import com.partsystem.partvisitapp.databinding.FragmentCustomerListBinding
 import com.partsystem.partvisitapp.feature.customer.dialog.AddEditCustomerDialog
 import com.partsystem.partvisitapp.feature.customer.ui.adapter.CustomerListAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
 class CustomerListFragment : Fragment() {
+    @Inject
+    lateinit var userPreferences: UserPreferences
 
     private var _binding: FragmentCustomerListBinding? = null
     private val binding get() = _binding!!
@@ -140,6 +149,19 @@ class CustomerListFragment : Fragment() {
     }
 
     private fun observeData() {
+        lifecycleScope.launch {
+            val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+            val persianDate = getTodayPersianDate()
+
+            if (controlVisit) {
+                //  با برنامه ویزیت
+                customerViewModel.loadCustomersWithSchedule(persianDate)
+            } else {
+                //  بدون برنامه ویزیت
+                customerViewModel.loadCustomersWithoutSchedule()
+            }
+        }
+
         customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { filteredProducts ->
             if (filteredProducts.isEmpty()) {
                 binding.info.show()

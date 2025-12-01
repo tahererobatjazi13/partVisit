@@ -19,6 +19,8 @@ import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterUserEntity
 import com.partsystem.partvisitapp.core.database.entity.VatDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.VatEntity
+import com.partsystem.partvisitapp.core.database.entity.VisitScheduleDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.VisitScheduleEntity
 import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.utils.saveBase64ImageToFile
 import com.partsystem.partvisitapp.core.network.modelDto.ActDetailDto
@@ -37,6 +39,8 @@ import com.partsystem.partvisitapp.core.network.modelDto.ProductPackingDto
 import com.partsystem.partvisitapp.core.network.modelDto.SaleCenterDto
 import com.partsystem.partvisitapp.core.network.modelDto.VatDetailDto
 import com.partsystem.partvisitapp.core.network.modelDto.VatDto
+import com.partsystem.partvisitapp.core.network.modelDto.VisitScheduleDetailDto
+import com.partsystem.partvisitapp.core.network.modelDto.VisitScheduleDto
 import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
 
 fun ApplicationSettingDto.toEntity() = ApplicationSettingEntity(
@@ -68,6 +72,29 @@ fun VisitorDto.toEntity(): VisitorEntity {
         userId = userId
     )
 }
+
+fun VisitScheduleDto.toEntity() = VisitScheduleEntity(
+    id = id,
+    kind = kind,
+    mainCode = mainCode,
+    code = code,
+    createDate = createDate,
+    persianDate = persianDate,
+    visitorId = visitorId,
+    sabt = sabt,
+    fromHour = fromHour,
+    toHour = toHour
+)
+
+fun VisitScheduleDetailDto.toEntity() = VisitScheduleDetailEntity(
+    id = id,
+    visitScheduleId = visitScheduleId,
+    sortCode = sortCode,
+    directionId = directionId,
+    directionDetailId = directionDetailId,
+    customerId = customerId,
+    pathPriority = pathPriority
+)
 
 fun GroupProductDto.toEntity() = GroupProductEntity(
     id = id,
@@ -317,35 +344,35 @@ fun SaleCenterDto.toUserEntities(): List<SaleCenterUserEntity> =
 
 
 fun DiscountDto.toEntity() = DiscountEntity(
-        id = id,
-        formType = formType,
-        code = code,
-        name = name,
-        kind = kind,
-        isAutoCalculate = isAutoCalculate,
-        applyKind = applyKind,
-        calculationKind = calculationKind,
-        inclusionKind = inclusionKind,
-        paymentKind = paymentKind,
-        priceAmount = priceAmount,
-        priceKind = priceKind,
-        sabt = sabt,
-        beginDate = beginDate,
-        persianBeginDate = persianBeginDate,
-        hasCash = hasCash,
-        hasMaturityCash = hasMaturityCash,
-        hasSanad = hasSanad,
-        hasSanadAndCash = hasSanadAndCash,
-        hasCredit = hasCredit,
-        dayCount = dayCount,
-        isSystem = isSystem,
-        hasUseToolsPercnet = hasUseToolsPercnet,
-        hasUseToolsPrice = hasUseToolsPrice,
-        unitKind = unitKind,
-        hasLastControl = hasLastControl,
-        executeKind = executeKind,
-        maxPrice = maxPrice,
-        customerFilterKind = customerFilterKind,
-        toDate = toDate,
-        toPersianDate = toPersianDate
-    )
+    id = id,
+    formType = formType,
+    code = code,
+    name = name,
+    kind = kind,
+    isAutoCalculate = isAutoCalculate,
+    applyKind = applyKind,
+    calculationKind = calculationKind,
+    inclusionKind = inclusionKind,
+    paymentKind = paymentKind,
+    priceAmount = priceAmount,
+    priceKind = priceKind,
+    sabt = sabt,
+    beginDate = beginDate,
+    persianBeginDate = persianBeginDate,
+    hasCash = hasCash,
+    hasMaturityCash = hasMaturityCash,
+    hasSanad = hasSanad,
+    hasSanadAndCash = hasSanadAndCash,
+    hasCredit = hasCredit,
+    dayCount = dayCount,
+    isSystem = isSystem,
+    hasUseToolsPercnet = hasUseToolsPercnet,
+    hasUseToolsPrice = hasUseToolsPrice,
+    unitKind = unitKind,
+    hasLastControl = hasLastControl,
+    executeKind = executeKind,
+    maxPrice = maxPrice,
+    customerFilterKind = customerFilterKind,
+    toDate = toDate,
+    toPersianDate = toPersianDate
+)

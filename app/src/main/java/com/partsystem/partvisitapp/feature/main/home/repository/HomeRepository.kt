@@ -16,6 +16,7 @@ import com.partsystem.partvisitapp.core.database.dao.ProductImageDao
 import com.partsystem.partvisitapp.core.database.dao.ProductPackingDao
 import com.partsystem.partvisitapp.core.database.dao.SaleCenterDao
 import com.partsystem.partvisitapp.core.database.dao.VatDao
+import com.partsystem.partvisitapp.core.database.dao.VisitScheduleDao
 import com.partsystem.partvisitapp.core.database.dao.VisitorDao
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
@@ -33,6 +34,7 @@ import com.partsystem.partvisitapp.core.database.entity.SaleCenterAnbarEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterUserEntity
 import com.partsystem.partvisitapp.core.database.entity.VatEntity
+import com.partsystem.partvisitapp.core.database.entity.VisitScheduleEntity
 import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.database.mapper.toEntity
 import com.partsystem.partvisitapp.core.network.ApiService
@@ -40,6 +42,7 @@ import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
@@ -48,6 +51,7 @@ class HomeRepository @Inject constructor(
     private val userPreferences: UserPreferences,
     private val applicationSettingDao: ApplicationSettingDao,
     private val visitorDao: VisitorDao,
+    private val visitScheduleDao: VisitScheduleDao,
     private val groupProductDao: GroupProductDao,
     private val productDao: ProductDao,
     private val productImageDao: ProductImageDao,
@@ -64,6 +68,12 @@ class HomeRepository @Inject constructor(
 
     @ApplicationContext private val context: Context
 ) {
+
+    private val visitorId: Int by lazy {
+        runBlocking {
+            userPreferences.personnelId.first() ?: 0
+        }
+    }
     suspend fun fetchAndSaveApplicationSetting(): NetworkResult<List<ApplicationSettingEntity>> {
         return try {
             val response = api.getApplicationSetting()
@@ -94,7 +104,8 @@ class HomeRepository @Inject constructor(
 
     suspend fun fetchAndSaveVisitor(): NetworkResult<List<VisitorEntity>> {
         return try {
-            val response = api.getVisitors()
+
+            val response = api.getVisitors(visitorId)
             val body = response.body()
 
             if (!response.isSuccessful || body == null) {
@@ -111,6 +122,35 @@ class HomeRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e("NetworkError", e.toString())
             NetworkResult.Error("Network error: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun fetchAndSaveVisitSchedule(): NetworkResult<List<VisitScheduleEntity>> {
+        try {
+            val response = api.getVisitSchedule(visitorId)
+            val body = response.body()
+
+            if (!response.isSuccessful || body == null) {
+                return NetworkResult.Error("Server Error: ${response.code()}")
+            }
+
+            val visitScheduleList = body.map { it.toEntity() }
+
+            val visitScheduleDetailList = body.flatMap { act ->
+                act.visitScheduleDetails?.map { it.toEntity() } ?: emptyList()
+            }
+
+            visitScheduleDao.clearVisitSchedule()
+            visitScheduleDao.clearVisitScheduleDetails()
+
+            visitScheduleDao.insertVisitSchedule(visitScheduleList)
+            visitScheduleDao.insertVisitScheduleDetails(visitScheduleDetailList)
+
+            return NetworkResult.Success(visitScheduleList)
+
+        } catch (e: Exception) {
+            Log.e("NetworkError", e.toString())
+            return NetworkResult.Error("Network error: ${e.localizedMessage}")
         }
     }
 
@@ -203,7 +243,6 @@ class HomeRepository @Inject constructor(
 
     suspend fun fetchAndSaveCustomers(): NetworkResult<List<CustomerEntity>> {
         return try {
-            val visitorId = userPreferences.personnelId.first() ?: 0
             val response = api.getCustomers(visitorId)
             val body = response.body()
 
@@ -212,7 +251,7 @@ class HomeRepository @Inject constructor(
             }
 
             val customerList = body.map { it.toEntity() }
-
+            Log.d("customerList", customerList.size.toString());
             customerDao.clearCustomers()
             customerDao.insertCustomers(customerList)
 
@@ -226,7 +265,6 @@ class HomeRepository @Inject constructor(
 
     suspend fun fetchAndSaveCustomerDirections(): NetworkResult<List<CustomerDirectionEntity>> {
         return try {
-            val visitorId = userPreferences.personnelId.first() ?: 0
             val response = api.getCustomerDirections(visitorId)
             val body = response.body()
 
@@ -249,7 +287,6 @@ class HomeRepository @Inject constructor(
 
     suspend fun fetchAndSaveAssignDirectionCustomer(): NetworkResult<List<AssignDirectionCustomerEntity>> {
         return try {
-            val visitorId = userPreferences.personnelId.first() ?: 0
             val response = api.getAssignDirectionCustomer(visitorId)
             val body = response.body()
 
@@ -294,7 +331,6 @@ class HomeRepository @Inject constructor(
 
     suspend fun fetchAndSavePattern(): NetworkResult<List<PatternEntity>> {
         return try {
-            val visitorId = userPreferences.personnelId.first() ?: 0
             val response = api.getPattern(visitorId)
             val body = response.body()
 

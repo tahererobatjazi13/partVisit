@@ -111,7 +111,7 @@ class LoginActivity : AppCompatActivity() {
         } else {
             loggedUser = user
             saveUserInfo(user)
-            loginViewModel.getVisitors()
+            loginViewModel.getVisitors(loggedUser.personnelId)
         }
     }
 

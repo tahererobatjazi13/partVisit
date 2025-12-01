@@ -16,8 +16,18 @@ class CustomerRepository @Inject constructor(
 
     suspend fun clearAll() = dao.clearCustomers()
 
-    fun getCustomers(saleCenterId: Int, visitorId: Int): Flow<List<CustomerEntity>> =
-        dao.getCustomersBySchedule(saleCenterId, visitorId)
+    //  کنترل برنامه ویزیت فعال
+    fun getCustomersBySchedule(
+        saleCenterId: Int,
+        visitorId: Int,
+        persianDate: String
+    ): Flow<List<CustomerEntity>> =
+        dao.getCustomersByVisitSchedule(saleCenterId, visitorId, persianDate)
 
-
+    // کنترل برنامه ویزیت غیر فعال
+    fun getCustomersWithoutSchedule(
+        saleCenterId: Int,
+        visitorId: Int
+    ): Flow<List<CustomerEntity>> =
+        dao.getCustomersWithoutVisitSchedule(saleCenterId, visitorId)
 }

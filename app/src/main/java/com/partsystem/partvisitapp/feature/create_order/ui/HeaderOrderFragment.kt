@@ -2,7 +2,6 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.utils.componenet.BottomSheetChooseDialog
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.persiancalendar.CalendarConstraints
 import com.partsystem.partvisitapp.core.utils.persiancalendar.DateValidatorPointForward
 import com.partsystem.partvisitapp.core.utils.persiancalendar.MaterialDatePicker
@@ -59,18 +59,6 @@ class HeaderOrderFragment : Fragment() {
         init()
         setupClicks()
         observeData()
-
-        lifecycleScope.launch {
-            val controlVisitSchedule = userPreferences.controlVisitSchedule.first()
-
-           /* if (controlVisitSchedule == true) {
-                allCustomer = q.getCustomers(factorActivity.factor.PersianDate)
-            } else {
-                allCustomer = q.getCustomers()
-            }*/
-        }
-
-
     }
 
     @SuppressLint("SetTextI18n")
@@ -130,8 +118,6 @@ class HeaderOrderFragment : Fragment() {
                     }
                 }
             })
-
-
             picker.show(parentFragmentManager, "DatePickerTag")
         }
 
@@ -192,7 +178,19 @@ class HeaderOrderFragment : Fragment() {
     }
 
     private fun observeData() {
-        customerViewModel.customers.observe(viewLifecycleOwner) { customers ->
+        lifecycleScope.launch {
+            val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+            val persianDate = getTodayPersianDate()
+
+            if (controlVisit) {
+                //  با برنامه ویزیت
+                customerViewModel.loadCustomersWithSchedule(persianDate)
+            } else {
+                //  بدون برنامه ویزیت
+                customerViewModel.loadCustomersWithoutSchedule()
+            }
+        }
+        customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
             if (customers.isNotEmpty()) {
                 val first = customers.first()
                 customerId = first.id

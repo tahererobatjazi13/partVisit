@@ -9,12 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -32,6 +32,7 @@ class CustomerListBottomSheet(
     private val onDismissCallback: (() -> Unit)? = null
 ) : BottomSheetDialogFragment() {
     private val customerViewModel: CustomerViewModel by viewModels()
+
     @Inject
     lateinit var userPreferences: UserPreferences
 
@@ -124,17 +125,21 @@ class CustomerListBottomSheet(
     }
 
     private fun observeData() {
-      /*  customerViewModel.customers.observe(viewLifecycleOwner) { filteredProducts ->
-            if (filteredProducts.isEmpty()) {
-                binding.info.show()
-                binding.info.message(requireContext().getString(R.string.msg_no_customer))
-                binding.rvCustomer.hide()
+        lifecycleScope.launch {
+            val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+            val persianDate = getTodayPersianDate()
+
+            if (controlVisit) {
+                //  با برنامه ویزیت
+                customerViewModel.loadCustomersWithSchedule(persianDate)
             } else {
-                binding.info.gone()
-                binding.rvCustomer.show()
-                customerBottomSheetAdapter.setData(filteredProducts)
+                //  بدون برنامه ویزیت
+                customerViewModel.loadCustomersWithoutSchedule()
             }
-        }*/
+        }
+        binding.rvCustomer.hide()
+        binding.info.gone()
+
         customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
 
             if (customers.isEmpty()) {
@@ -145,11 +150,6 @@ class CustomerListBottomSheet(
                 binding.info.gone()
                 binding.rvCustomer.show()
                 customerBottomSheetAdapter.setData(customers)
-
-//                // مقدار اول
-//                val first = customers.first()
-//                customerId = first.id
-//                binding.tvCustomerName.text = first.name
             }
         }
     }

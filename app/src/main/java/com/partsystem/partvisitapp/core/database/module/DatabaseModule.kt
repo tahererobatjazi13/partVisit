@@ -30,6 +30,10 @@ object DatabaseModule {
         db.visitorDao()
 
     @Provides
+    fun provideVisitScheduleDao(db: AppDatabase): VisitScheduleDao =
+        db.visitScheduleDao()
+
+    @Provides
     fun provideOrderDao(db: AppDatabase): OrderDao =
         db.orderDao()
 

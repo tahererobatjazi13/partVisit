@@ -19,6 +19,7 @@ import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.database.entity.VatEntity
+import com.partsystem.partvisitapp.core.database.entity.VisitScheduleEntity
 import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
@@ -88,6 +89,16 @@ class HomeViewModel @Inject constructor(
     fun fetchVisitors() = viewModelScope.launch {
         _visitor.value = NetworkResult.Loading
         _visitor.value = homeRepository.fetchAndSaveVisitor()
+    }
+
+    private val _visitSchedule =
+        MutableLiveData<NetworkResult<List<VisitScheduleEntity>>>()
+    val visitSchedule: LiveData<NetworkResult<List<VisitScheduleEntity>>> =
+        _visitSchedule
+
+    fun fetchVisitSchedules() = viewModelScope.launch {
+        _visitSchedule.value = NetworkResult.Loading
+        _visitSchedule.value = homeRepository.fetchAndSaveVisitSchedule()
     }
 
     private val _groupProducts = MutableLiveData<NetworkResult<List<GroupProductEntity>>>()

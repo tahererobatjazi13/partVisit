@@ -1,10 +1,7 @@
 package com.partsystem.partvisitapp.feature.login.repository
 
 import android.content.Context
-import android.util.Log
 import com.partsystem.partvisitapp.core.database.dao.VisitorDao
-import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
-import com.partsystem.partvisitapp.core.database.mapper.toEntity
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
@@ -43,9 +40,9 @@ class LoginRepository @Inject constructor(
             NetworkResult.Error(errorMsg)
         }
     }
-    suspend fun getVisitors(): NetworkResult<List<VisitorDto>> {
+    suspend fun getVisitors(visitorId:Int): NetworkResult<List<VisitorDto>> {
         return try {
-            val response = api.getVisitors()
+            val response = api.getVisitors(visitorId)
             val body = response.body()
 
             if (response.isSuccessful && body != null) {

@@ -17,6 +17,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.ProductPackingDto
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.network.modelDto.SaleCenterDto
 import com.partsystem.partvisitapp.core.network.modelDto.VatDto
+import com.partsystem.partvisitapp.core.network.modelDto.VisitScheduleDto
 import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
 import retrofit2.Response
 import retrofit2.http.GET
@@ -36,7 +37,10 @@ interface ApiService {
     suspend fun getApplicationSetting(): Response<List<ApplicationSettingDto>>
 
     @GET("Visitor")
-    suspend fun getVisitors(): Response<List<VisitorDto>>
+    suspend fun getVisitors(@Query("visitorId") visitorId: Int): Response<List<VisitorDto>>
+
+    @GET("VisitSchedule")
+    suspend fun getVisitSchedule(@Query("visitorId") visitorId: Int): Response<List<VisitScheduleDto>>
 
     @GET("GroupProduct")
     suspend fun getGroupProducts(): Response<List<GroupProductDto>>

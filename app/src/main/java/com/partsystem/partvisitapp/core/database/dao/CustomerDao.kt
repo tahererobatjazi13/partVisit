@@ -13,24 +13,50 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CustomerDao {
 
-    // درج لیست مشتری‌ها (برای سینک با API)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCustomers(customers: List<CustomerEntity>)
 
+    // کنترل برنامه ویزیت غیرفعال
     @Query("""
-        SELECT c.*
-        FROM customer_table c
-        INNER JOIN assign_direction_customer_table adc
-              ON c.id = adc.customerId
-             AND adc.saleCenterId = c.saleCenterId
-        WHERE c.saleCenterId = :saleCenterId
-          AND adc.tafsiliId = :visitorId
-        ORDER BY c.code ASC
-    """)
-    fun getCustomersBySchedule(
+    SELECT c.*
+    FROM customer_table c
+    INNER JOIN assign_direction_customer_table adc
+          ON c.id = adc.customerId
+         AND adc.saleCenterId = c.saleCenterId
+    WHERE c.saleCenterId = :saleCenterId
+      AND adc.tafsiliId = :visitorId
+""")
+    fun getCustomersWithoutVisitSchedule(
         saleCenterId: Int,
         visitorId: Int
     ): Flow<List<CustomerEntity>>
+
+
+    // کنترل برنامه ویزیت فعال
+    @Query(
+        """
+    SELECT c.*
+    FROM customer_table c
+    INNER JOIN visit_schedule_detail_table vsd 
+           ON c.id = vsd.customerId
+    INNER JOIN visit_schedule_table vs
+           ON vs.id = vsd.visitScheduleId
+    INNER JOIN assign_direction_customer_table adc
+           ON c.id = adc.customerId
+          AND adc.tafsiliId = vs.visitorId
+          AND adc.saleCenterId = c.saleCenterId
+    WHERE c.saleCenterId = :saleCenterId
+      AND vs.visitorId = :visitorId
+      AND vs.persianDate = :persianDate
+    ORDER BY c.code ASC
+"""
+    )
+    fun getCustomersByVisitSchedule(
+        saleCenterId: Int,
+        visitorId: Int,
+        persianDate: String
+    ): Flow<List<CustomerEntity>>
+
 
     // دریافت همه مشتری‌ها
     @Query("SELECT * FROM customer_table")

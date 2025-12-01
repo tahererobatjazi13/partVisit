@@ -31,10 +31,10 @@ class LoginViewModel @Inject constructor(
     private val _visitorState = MutableLiveData<NetworkResult<List<VisitorDto>>>()
     val visitorState: LiveData<NetworkResult<List<VisitorDto>>> = _visitorState
 
-    fun getVisitors() {
+    fun getVisitors(visitorId:Int) {
         viewModelScope.launch {
             _visitorState.value = NetworkResult.Loading
-            _visitorState.value = loginRepository.getVisitors()
+            _visitorState.value = loginRepository.getVisitors(visitorId)
         }
     }
 

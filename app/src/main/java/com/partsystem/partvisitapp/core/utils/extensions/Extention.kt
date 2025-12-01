@@ -1,9 +1,11 @@
 package com.partsystem.partvisitapp.core.utils.extensions
 
+import android.annotation.SuppressLint
 import android.view.View
 import com.jakewharton.rxbinding4.view.clicks
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
+import ir.huri.jcal.JalaliCalendar
 import java.util.concurrent.TimeUnit
 
 fun View.show() {
@@ -62,9 +64,20 @@ fun String.toEnglishDigits(): String {
     return output
 }
 
+@SuppressLint("DefaultLocale")
+fun getTodayPersianDate(): String {
+    val jalaliDate = JalaliCalendar()
+    return String.format(
+        "%d/%02d/%02d",
+        jalaliDate.year,
+        jalaliDate.month,
+        jalaliDate.day
+    )
+}
+
 /*
 git add .
-git commit -m "save sale center id in login activity"
+git commit -m "ControlVisitSchedule"
 git push -u origin master
 git push
 */
