@@ -16,3 +16,17 @@ data class VisitScheduleEntity(
     val fromHour: String,
     val toHour: String
 )
+/*
+{
+    "id": 1,
+    "kind": 0,
+    "mainCode": 1,
+    "code": 1,
+    "createDate": "2025-12-01T00:00:00",
+    "persianDate": "1404/09/10",
+    "visitorId": 2471,
+    "sabt": 1,
+    "fromHour": "07:00:00",
+    "toHour": "15:00:00",
+    "visitScheduleDetails": []
+}*/

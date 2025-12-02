@@ -10,6 +10,7 @@ import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
+import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
@@ -32,6 +33,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.DiscountDto
 import com.partsystem.partvisitapp.core.network.modelDto.GroupProductDto
 import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
+import com.partsystem.partvisitapp.core.network.modelDto.PatternDetailDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductImageDto
@@ -276,6 +278,27 @@ fun PatternDto.toEntity() = PatternEntity(
     patternDetails = patternDetails?.toString()
 )
 
+fun PatternDetailDto.toEntity(): PatternDetailEntity {
+    return PatternDetailEntity(
+        id = id,
+        patternId = patternId,
+        kind = kind,
+        discountId = discountId,
+        customerId = customerId,
+        customerKindId = customerKindId,
+        centerId = centerId,
+        invoiceCategoryId = invoiceCategoryId,
+        processId = processId,
+        areaId = areaId,
+        actId = actId,
+        isDefault = isDefault,
+        customerFilterKind = customerFilterKind,
+        customerDegreeId = customerDegreeId,
+        customerPishehId = customerPishehId,
+        tafsiliGroupId = tafsiliGroupId,
+        tafsiliGroupDetailId = tafsiliGroupDetailId
+    )
+}
 
 fun ActDto.toEntity() = ActEntity(
     id = id,

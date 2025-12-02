@@ -4,6 +4,8 @@ plugins {
     id("kotlin-kapt")
     alias(libs.plugins.dagger.hilt.android)
     id("androidx.navigation.safeargs.kotlin")
+    id("kotlin-parcelize")
+
 }
 android {
     namespace = "com.partsystem.partvisitapp"

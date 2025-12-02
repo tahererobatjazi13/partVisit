@@ -11,6 +11,7 @@ import com.partsystem.partvisitapp.core.database.dao.DiscountDao
 import com.partsystem.partvisitapp.core.database.dao.GroupProductDao
 import com.partsystem.partvisitapp.core.database.dao.InvoiceCategoryDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDao
+import com.partsystem.partvisitapp.core.database.dao.PatternDetailDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
 import com.partsystem.partvisitapp.core.database.dao.ProductImageDao
 import com.partsystem.partvisitapp.core.database.dao.ProductPackingDao
@@ -26,6 +27,7 @@ import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
+import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
@@ -61,6 +63,7 @@ class HomeRepository @Inject constructor(
     private val assignDirectionCustomerDao: AssignDirectionCustomerDao,
     private val invoiceCategoryDao: InvoiceCategoryDao,
     private val patternDao: PatternDao,
+    private val patternDetailDao: PatternDetailDao,
     private val actDao: ActDao,
     private val vatDao: VatDao,
     private val saleCenterDao: SaleCenterDao,
@@ -344,6 +347,27 @@ class HomeRepository @Inject constructor(
             patternDao.insertAll(patternList)
 
             NetworkResult.Success(patternList)
+
+        } catch (e: Exception) {
+            Log.e("NetworkError", e.toString())
+            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        }
+    }
+    suspend fun fetchAndSavePatternDetails(): NetworkResult<List<PatternDetailEntity>> {
+        return try {
+            val response = api.getPatternDetails(visitorId)
+            val body = response.body()
+
+            if (!response.isSuccessful || body == null) {
+                return NetworkResult.Error("Server Error: ${response.code()}")
+            }
+
+            val patternDetailsList = body.map { it.toEntity() }
+
+            patternDetailDao.clearPatternDetails()
+            patternDetailDao.insertAll(patternDetailsList)
+
+            NetworkResult.Success(patternDetailsList)
 
         } catch (e: Exception) {
             Log.e("NetworkError", e.toString())

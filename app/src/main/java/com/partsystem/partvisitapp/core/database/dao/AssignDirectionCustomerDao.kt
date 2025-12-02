@@ -17,4 +17,8 @@ interface AssignDirectionCustomerDao {
 
     @Query("DELETE FROM assign_direction_customer_table")
     suspend fun clearAssignDirectionCustomer()
+
+    @Query("SELECT * FROM assign_direction_customer_table WHERE CustomerId = :customerId")
+    suspend fun getAssignDirectionCustomerByCustomerId(customerId: Int): List<AssignDirectionCustomerEntity>
+
 }

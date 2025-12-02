@@ -75,6 +75,10 @@ object DatabaseModule {
         db.patternDao()
 
     @Provides
+    fun providePatternDetailDao(db: AppDatabase): PatternDetailDao =
+        db.patternDetailDao()
+
+    @Provides
     fun provideActDao(db: AppDatabase): ActDao =
         db.actDao()
 
@@ -89,4 +93,8 @@ object DatabaseModule {
     @Provides
     fun provideDiscountDao(db: AppDatabase): DiscountDao =
         db.discountDao()
+
+    @Provides
+    fun provideFactorDaoDao(db: AppDatabase): FactorDao =
+        db.factorDao()
 }

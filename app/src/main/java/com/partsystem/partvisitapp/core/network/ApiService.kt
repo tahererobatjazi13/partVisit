@@ -10,6 +10,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.CustomerDirectionDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.DiscountDto
 import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
+import com.partsystem.partvisitapp.core.network.modelDto.PatternDetailDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductImageDto
@@ -69,6 +70,8 @@ interface ApiService {
     @GET("Pattern")
     suspend fun getPattern(@Query("visitorId") visitorId: Int): Response<List<PatternDto>>
 
+    @GET("PatternDetail")
+    suspend fun getPatternDetails(@Query("visitorId") visitorId: Int): Response<List<PatternDetailDto>>
     @GET("Act")
     suspend fun getAct(): Response<List<ActDto>>
 

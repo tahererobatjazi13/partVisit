@@ -62,7 +62,7 @@ class CustomerDetailFragment : Fragment() {
         }
 
 
-        headerOrderViewModel.getCustomerDirections(args.customerId)
+        headerOrderViewModel.getCustomerDirectionsByCustomer(args.customerId)
             .observe(viewLifecycleOwner) { directions ->
                 val items = directions.mapNotNull { it.fullAddress }
                 customerDirectionAdapter = CustomerDirectionAdapter(items)

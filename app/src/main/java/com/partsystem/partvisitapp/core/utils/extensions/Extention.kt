@@ -77,7 +77,7 @@ fun getTodayPersianDate(): String {
 
 /*
 git add .
-git commit -m "ControlVisitSchedule"
+git commit -m "setFragmentResultListener from customer list"
 git push -u origin master
 git push
 */

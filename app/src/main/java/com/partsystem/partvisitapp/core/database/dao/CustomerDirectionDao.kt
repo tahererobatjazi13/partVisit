@@ -10,12 +10,15 @@ interface CustomerDirectionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(data: List<CustomerDirectionEntity>)
 
+
     @Query("SELECT * FROM customer_direction_table WHERE customerId = :customerId")
-    fun getDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>>
+     fun getCustomerDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>>
 
     @Query("DELETE FROM customer_direction_table WHERE customerId = :customerId")
     suspend fun deleteByCustomerId(customerId: Int)
 
     @Query("DELETE FROM customer_direction_table")
     suspend fun clearCustomerDirection()
+
+
 }

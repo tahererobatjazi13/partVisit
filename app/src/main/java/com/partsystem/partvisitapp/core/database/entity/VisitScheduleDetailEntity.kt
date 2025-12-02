@@ -13,3 +13,13 @@ data class VisitScheduleDetailEntity(
     val customerId: Int,
     val pathPriority: Int
 )
+/*
+{
+    "id": 3,
+    "visitScheduleId": 1,
+    "sortCode": 3,
+    "directionId": 2,
+    "directionDetailId": 2527,
+    "customerId": 6434,
+    "pathPriority": 3
+}*/

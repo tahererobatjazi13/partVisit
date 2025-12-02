@@ -13,6 +13,7 @@ import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
+import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
@@ -175,6 +176,13 @@ class HomeViewModel @Inject constructor(
     fun fetchPattern() = viewModelScope.launch {
         _pattern.value = NetworkResult.Loading
         _pattern.value = homeRepository.fetchAndSavePattern()
+    }
+    private val _patternDetails = MutableLiveData<NetworkResult<List<PatternDetailEntity>>>()
+    val patternDetails: LiveData<NetworkResult<List<PatternDetailEntity>>> = _patternDetails
+
+    fun fetchPatternDetails() = viewModelScope.launch {
+        _patternDetails.value = NetworkResult.Loading
+        _patternDetails.value = homeRepository.fetchAndSavePatternDetails()
     }
 
     private val _act = MutableLiveData<NetworkResult<List<ActEntity>>>()

@@ -10,10 +10,9 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemSpinnerBinding
-
 class SpinnerAdapter(
     context: Context,
-    private val items: List<String>
+    private val items: MutableList<String>
 ) : ArrayAdapter<String>(context, R.layout.item_spinner, items) {
 
     private val inflater = LayoutInflater.from(context)
@@ -21,7 +20,6 @@ class SpinnerAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = bindView(position, convertView, parent, false)
         val binding = ItemSpinnerBinding.bind(view)
-
         binding.tvName.apply {
             isSingleLine = true
             ellipsize = android.text.TextUtils.TruncateAt.END
@@ -32,14 +30,12 @@ class SpinnerAdapter(
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = bindView(position, convertView, parent, true)
         val binding = ItemSpinnerBinding.bind(view)
-
         binding.tvName.apply {
             isSingleLine = false
             ellipsize = null
         }
         return view
     }
-
 
     private fun bindView(
         position: Int,
@@ -52,7 +48,9 @@ class SpinnerAdapter(
         } else {
             ItemSpinnerBinding.bind(convertView)
         }
+
         binding.tvName.text = items[position]
+
         if (isDropdown) {
             binding.view.show()
             val bgColor = if (position % 2 == 0)
@@ -64,6 +62,13 @@ class SpinnerAdapter(
             binding.root.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
             binding.view.gone()
         }
+
         return binding.root
+    }
+
+    fun setData(data: List<String>) {
+        items.clear()
+        items.addAll(data)
+        notifyDataSetChanged()
     }
 }

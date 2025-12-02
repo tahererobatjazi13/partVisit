@@ -153,6 +153,10 @@ class HomeFragment : Fragment() {
             liveData = viewModel.pattern,
             loadingMsg = "در حال دریافت طرح فروش ..."
         ) { viewModel.fetchPattern() }
+        addTask(
+            liveData = viewModel.patternDetails,
+            loadingMsg = "در حال دریافت جزییات طرح فروش ..."
+        ) { viewModel.fetchPatternDetails() }
 
         addTask(
             liveData = viewModel.act,
