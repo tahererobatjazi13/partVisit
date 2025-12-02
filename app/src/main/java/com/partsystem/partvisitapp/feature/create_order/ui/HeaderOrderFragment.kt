@@ -293,13 +293,14 @@ class HeaderOrderFragment : Fragment() {
             settlementKind = factor.settlementKind,
             date = factor.persianDate.toString()
         )
-       
+
     }
 
 
     private fun observeData() {
         lifecycleScope.launch {
             val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+            val userId = userPreferences.id.first() ?:0
 
             if (controlVisit) {
                 //  با برنامه ویزیت
@@ -308,7 +309,7 @@ class HeaderOrderFragment : Fragment() {
                 //  بدون برنامه ویزیت
                 customerViewModel.loadCustomersWithoutSchedule()
             }
-        }
+
         /*     customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
                  if (customers.isNotEmpty()) {
                      val first = customers.first()
@@ -317,7 +318,7 @@ class HeaderOrderFragment : Fragment() {
                  }
              }*/
 
-        headerOrderViewModel.getInvoiceCategory()
+        headerOrderViewModel.getInvoiceCategory(userId)
             .observe(viewLifecycleOwner) { invoiceCategory ->
 
                 val items = invoiceCategory
@@ -331,7 +332,7 @@ class HeaderOrderFragment : Fragment() {
                     binding.spInvoiceCategory.dropDownWidth = dropDownWidth
                 }
             }
-
+        }
         headerOrderViewModel.getAct()
             .observe(viewLifecycleOwner) { act ->
 

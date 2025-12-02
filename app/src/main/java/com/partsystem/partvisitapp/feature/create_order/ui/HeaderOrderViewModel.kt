@@ -44,9 +44,12 @@ class HeaderOrderViewModel @Inject constructor(
     fun getCustomerDirectionsByCustomer(customerId: Int): LiveData<List<CustomerDirectionEntity>> {
         return repository.getCustomerDirectionsByCustomer(customerId).asLiveData()
     }
+ /*   fun getInvoiceCategory(customerId: Int): LiveData<List<InvoiceCategoryEntity>> {
+        return repository.getInvoiceCategory(customerId).asLiveData()
+    }*/
 
-    fun getInvoiceCategory(): LiveData<List<InvoiceCategoryEntity>> {
-        return repository.getInvoiceCategory().asLiveData()
+    fun getInvoiceCategory(userId: Int): LiveData<List<InvoiceCategoryEntity>> {
+        return repository.getInvoiceCategory(userId).asLiveData()
     }
 
     fun getPattern(): LiveData<List<PatternEntity>> {

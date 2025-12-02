@@ -35,9 +35,14 @@ class HeaderOrderRepository @Inject constructor(
     fun getCustomerDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>> =
         customerDirectionDao.getCustomerDirectionsByCustomer(customerId)
 
+/*
     fun getInvoiceCategory(): Flow<List<InvoiceCategoryEntity>> =
         invoiceCategoryDao.getAllInvoiceCategory()
+*/
 
+     fun getInvoiceCategory(userId: Int): Flow<List<InvoiceCategoryEntity>> {
+        return invoiceCategoryDao.getInvoiceCategory(userId)
+    }
     fun getPattern(): Flow<List<PatternEntity>> =
         patternDao.getAllPatterns()
 
