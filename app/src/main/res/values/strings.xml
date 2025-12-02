@@ -80,6 +80,7 @@
     <string name="label_view_order">مشاهده سفارش</string>
     <string name="label_send_order">ثبت و ارسال نهایی سفارش</string>
     <string name="label_draft_order">پیش نویس سفارش</string>
+    <string name="label_edit_order">ویرایش سفارش</string>
     <string name="label_order_description">توضیحات سفارش...</string>
     <string name="label_apply_discount">اعمال تخفیف</string>
     <string name="label_select_discount">انتخاب تخفیف</string>
@@ -93,6 +94,7 @@
     <string name="app_price_item">12000ریال</string>
     <string name="label_sync_order">ارسال سفارش</string>
     <string name="label_sync_all_order">ارسال همه سفارشات</string>
+    <string name="label_please_select">لطفا انتخاب کنید</string>
 
 
     <!-- date picker -->

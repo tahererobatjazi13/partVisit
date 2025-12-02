@@ -9,7 +9,7 @@
         android:id="@+id/offlineOrderListFragment"
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.offline.OfflineOrderListFragment"
         android:label="OfflineOrderListFragment"
-        tools:layout="@layout/fragment_offline_order_list" >
+        tools:layout="@layout/fragment_order_list">
         <action
             android:id="@+id/action_offlineOrderListFragment_to_offlineOrderDetailFragment"
             app:destination="@id/offlineOrderDetailFragment" />
@@ -48,5 +48,8 @@
         <argument
             android:name="id"
             app:argType="integer" />
+
     </fragment>
+
+
 </navigation>

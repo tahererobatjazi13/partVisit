@@ -10,9 +10,9 @@
         android:id="@+id/hfOrderList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         app:drawableImgTwoHeader="@drawable/ic_back"
         app:isShowImgTwoHeader="true"
+        android:visibility="gone"
         app:isShowSeparatorHeader="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -30,7 +30,7 @@
         app:layout_constraintBottom_toTopOf="@+id/rvOrderList"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnSyncAllOrder"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/hfOrderList">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSearch"

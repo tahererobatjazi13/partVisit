@@ -103,6 +103,20 @@
         android:name="com.partsystem.partvisitapp.feature.create_order.ui.HeaderOrderFragment"
         android:label="CustomerDetailFragment"
         tools:layout="@layout/fragment_header_order">
+        <argument
+            android:name="typeCustomer"
+            app:argType="boolean" />
+        <argument
+            android:name="typeOrder"
+            app:argType="string" />
+        <argument
+            android:name="customerId"
+            app:argType="integer" />
+
+        <argument
+            android:name="customerName"
+            app:argType="string" />
+
         <action
             android:id="@+id/action_headerOrderFragment_to_productListFragment"
             app:destination="@id/productListFragment" />
@@ -150,5 +164,8 @@
         android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorFragment"
         android:label="ReportFactorFragment"
         tools:layout="@layout/fragment_report_factor" />
+    <action
+        android:id="@+id/action_global_to_headerOrderFragment"
+        app:destination="@id/headerOrderFragment" />
 
 </navigation>

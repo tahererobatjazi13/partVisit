@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.ReportFactorListType
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -26,10 +27,11 @@ class CustomerDetailFragment : Fragment() {
     private val customerViewModel: CustomerViewModel by viewModels()
     private val headerOrderViewModel: HeaderOrderViewModel by viewModels()
     private lateinit var customerDirectionAdapter: CustomerDirectionAdapter
+    private var customerName: String = ""
+    private var customerId: Int = 0
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCustomerDetailBinding.inflate(inflater, container, false)
         return binding.root
@@ -44,13 +46,13 @@ class CustomerDetailFragment : Fragment() {
     private fun observeData() {
         customerViewModel.getCustomerById(args.customerId).observe(viewLifecycleOwner) { customer ->
             if (customer != null) {
+                customerName = customer.name
+                customerId = customer.id
                 binding.tvCustomerName.text = customer.name
 
-                val details = listOfNotNull(
-                    customer.tafsiliPhone1?.takeIf { it.isNotBlank() },
+                val details = listOfNotNull(customer.tafsiliPhone1?.takeIf { it.isNotBlank() },
                     customer.tafsiliPhone2?.takeIf { it.isNotBlank() },
-                    customer.tafsiliMobile?.takeIf { it.isNotBlank() }
-                )
+                    customer.tafsiliMobile?.takeIf { it.isNotBlank() })
 
                 if (details.isNotEmpty()) {
                     binding.tvPhone.text = details.joinToString(" | ")
@@ -93,7 +95,10 @@ class CustomerDetailFragment : Fragment() {
 
             btRegisterOrder.setOnClickListener {
                 val action =
-                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToHeaderOrderFragment()
+                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToHeaderOrderFragment(
+                        typeCustomer = true, typeOrder = OrderType.Add.value,
+                        customerId = customerId, customerName = customerName
+                    )
                 findNavController().navigate(action)
             }
         }

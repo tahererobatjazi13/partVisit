@@ -44,9 +44,14 @@ class OnlineOrderDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        init()
         initAdapter()
         setupClicks()
         setupObserver()
+    }
+
+    private fun init() {
+        binding.btnEditOrder.gone()
     }
 
     private fun initAdapter() {

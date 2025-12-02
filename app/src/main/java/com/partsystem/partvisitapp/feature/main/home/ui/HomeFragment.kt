@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.databinding.DialogLoadingBinding
@@ -481,7 +482,12 @@ class HomeFragment : Fragment() {
 
                     3 -> { /* باز کردن صفحه ثبت سفارش */
                         val action =
-                            HomeFragmentDirections.actionHomeFragmentToHeaderOrderFragment()
+                            HomeFragmentDirections.actionHomeFragmentToHeaderOrderFragment(
+                                typeCustomer = false,
+                                typeOrder = OrderType.Add.value,
+                                customerId = 0,
+                                customerName = ""
+                            )
                         findNavController().navigate(action)
                     }
 

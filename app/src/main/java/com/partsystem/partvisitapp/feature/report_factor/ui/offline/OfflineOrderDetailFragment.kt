@@ -4,18 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
+import com.partsystem.partvisitapp.core.utils.ReportFactorListType
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderDetailBinding
+import com.partsystem.partvisitapp.feature.customer.ui.CustomerDetailFragmentDirections
 import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderDetailAdapter
 import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
+import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.utils.OrderType
 
 @AndroidEntryPoint
 class OfflineOrderDetailFragment : Fragment() {
@@ -25,6 +31,7 @@ class OfflineOrderDetailFragment : Fragment() {
     private lateinit var orderDetailAdapter: OrderDetailAdapter
     private val formatter = DecimalFormat("#,###,###,###")
     private val args: OfflineOrderDetailFragmentArgs by navArgs()
+
     // private val viewModel: OrderListViewModel by viewModels()
     private val fakeOrders = mutableListOf<ReportFactorDto>()
 
@@ -117,9 +124,16 @@ class OfflineOrderDetailFragment : Fragment() {
                 findNavController().navigateUp()
             }
 
-            tryAgain.setOnClickListener {
-                //     viewModel.fetchOrderDetail(args.orderId)
-                binding.tryAgain.gone()
+            btnEditOrder.setOnClickListener {
+                val bundle = bundleOf(
+                    "typeCustomer" to true,
+                    "typeOrder" to OrderType.Edit.value,
+                    "customerId" to 0,
+                    "customerName" to ""
+                )
+
+                val navController = requireActivity().findNavController(R.id.mainNavHost)
+                navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
             }
         }
     }
@@ -133,7 +147,6 @@ class OfflineOrderDetailFragment : Fragment() {
         }
         orderDetailAdapter.submitList(fakeOrders)
     }
-
 
 
     override fun onDestroyView() {
