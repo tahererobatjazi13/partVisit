@@ -77,7 +77,7 @@ fun getTodayPersianDate(): String {
 
 /*
 git add .
-git commit -m "loadCustomerData"
+git commit -m "fix loadCustomerData"
 git push -u origin master
 git push
 */

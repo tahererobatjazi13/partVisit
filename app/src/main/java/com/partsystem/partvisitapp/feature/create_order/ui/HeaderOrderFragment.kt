@@ -28,7 +28,6 @@ import com.partsystem.partvisitapp.core.utils.persiancalendar.calendar.PersianCa
 import com.partsystem.partvisitapp.databinding.FragmentHeaderOrderBinding
 import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
 import com.partsystem.partvisitapp.feature.create_order.bottomSheet.CustomerListBottomSheet
-import com.partsystem.partvisitapp.feature.customer.ui.CustomerDetailFragmentArgs
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import ir.huri.jcal.JalaliCalendar
@@ -70,9 +69,8 @@ class HeaderOrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        init()
         fillControls()
-        //  setupAdapters()
+        init()
         setupClicks()
         observeData()
     }
@@ -85,14 +83,6 @@ class HeaderOrderFragment : Fragment() {
         binding.tvDuoDate.text = today
         binding.tvDeliveryDate.text = today
 
-        // گرفتن آرگومان از آفلاین دیتیل
-        /* arguments?.let { args ->
-             typeCustomer = args.getBoolean("typeCustomer", false)
-             customerId = args.getInt("customerId")
-             customerName = args.getString("customerName")
-         }*/
-
-        val args = HeaderOrderFragmentArgs.fromBundle(requireArguments())
 
         if (args.typeCustomer && args.customerId != 0) {
             val customer = CustomerEntity(
@@ -259,59 +249,6 @@ class HeaderOrderFragment : Fragment() {
             }
         }
 
-        /*   parentFragmentManager.setFragmentResultListener(
-               CustomerListBottomSheet.REQ_CLICK_ITEM,
-               viewLifecycleOwner
-           ) { _, bundle ->
-               val customer =
-                   bundle.getParcelable<CustomerEntity>(CustomerListBottomSheet.ARG_CUSTOMER)
-               customer?.let { it ->
-                   binding.tvCustomerName.text = it.name
-                   factor.customerId = it.id
-
-                   headerOrderViewModel.loadAssignDirectionCustomerByCustomerId(it.id)
-                   allCustomerDirection.clear()
-                   allPattern.clear()
-
-
-
-                   headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
-
-                       val items = list.map { it.name }.toMutableList()
-                       val adapter = SpinnerAdapter(requireContext(), items)
-                       binding.spPattern.adapter = adapter
-
-                       binding.spPattern.post {
-                           val margin = resources.getDimensionPixelSize(R.dimen.big_size)
-                           val dropDownWidth = binding.cvPattern.width - margin
-                           binding.spPattern.dropDownWidth = dropDownWidth
-                       }
-                   }
-                   headerOrderViewModel.loadPatterns(
-                       customer = customer,
-                       centerId = factor.saleCenterId,
-                       invoiceCategoryId = 0,
-                       *//* processId = 0,*//*
-                    settlementKind = 0,
-                    date = persianDate
-                )
-                headerOrderViewModel.getCustomerDirectionsByCustomer(it.id)
-                    .observe(viewLifecycleOwner) { list ->
-
-                        val items = list.mapNotNull { it.fullAddress }.toMutableList()
-                        val adapter = SpinnerAdapter(requireContext(), items)
-                        binding.spCustomerDirection.adapter = adapter
-
-                        binding.spCustomerDirection.post {
-                            val margin = resources.getDimensionPixelSize(R.dimen.big_size)
-                            val dropDownWidth = binding.cvCustomerDirection.width - margin
-                            binding.spCustomerDirection.dropDownWidth = dropDownWidth
-                        }
-                    }
-
-            }
-        }
-*/
     }
 
     private fun loadCustomerData(customer: CustomerEntity) {
@@ -324,11 +261,10 @@ class HeaderOrderFragment : Fragment() {
         // بارگذاری مسیرهای مشتری
         headerOrderViewModel.getCustomerDirectionsByCustomer(customer.id)
             .observe(viewLifecycleOwner) { list ->
-                val items = mutableListOf(requireContext().getString(R.string.label_please_select))
-                items.addAll(list.mapNotNull { it.fullAddress })
+                val items = list.mapNotNull { it.fullAddress }.toMutableList()
 
-                val adapter = SpinnerAdapter(requireContext(), items)
-                binding.spCustomerDirection.adapter = adapter
+                customerDirectionAdapter = SpinnerAdapter(requireContext(), items)
+                binding.spCustomerDirection.adapter = customerDirectionAdapter
 
                 binding.spCustomerDirection.post {
                     val margin = resources.getDimensionPixelSize(R.dimen.big_size)
@@ -340,8 +276,8 @@ class HeaderOrderFragment : Fragment() {
         // بارگذاری الگوها
         headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
             val items = list.map { it.name }.toMutableList()
-            val adapter = SpinnerAdapter(requireContext(), items)
-            binding.spPattern.adapter = adapter
+            patternAdapter = SpinnerAdapter(requireContext(), items)
+            binding.spPattern.adapter = patternAdapter
 
             binding.spPattern.post {
                 val margin = resources.getDimensionPixelSize(R.dimen.big_size)
@@ -354,9 +290,10 @@ class HeaderOrderFragment : Fragment() {
             customer = customer,
             centerId = factor.saleCenterId,
             invoiceCategoryId = 0,
-            settlementKind = 0,
-            date = persianDate
+            settlementKind = factor.settlementKind,
+            date = factor.persianDate.toString()
         )
+       
     }
 
 
