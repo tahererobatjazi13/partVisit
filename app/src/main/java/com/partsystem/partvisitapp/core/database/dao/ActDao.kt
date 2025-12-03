@@ -8,7 +8,6 @@ import androidx.room.Transaction
 import com.partsystem.partvisitapp.core.database.entity.ActDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.ActWithDetails
-import com.partsystem.partvisitapp.core.database.entity.VatWithDetails
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -32,4 +31,19 @@ interface ActDao {
 
     @Query("DELETE FROM act_detail_table")
     suspend fun clearActDetails()
+
+    @Query("""
+        SELECT a.* 
+        FROM act_table AS a
+        INNER JOIN pattern_details_table AS pd ON pd.actId = a.id
+        WHERE pd.patternId = :patternId
+          AND a.kind = :kind
+        ORDER BY pd.isDefault DESC, a.code ASC
+    """)
+    suspend fun getActsByPatternId(patternId: Int, kind: Int): List<ActEntity>
+
+    @Query("SELECT * FROM act_table WHERE id = :id LIMIT 1")
+    suspend fun getAct(id: Int): ActEntity?
+
+
 }

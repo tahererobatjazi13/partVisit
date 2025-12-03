@@ -22,7 +22,7 @@ interface PatternDao {
     @Query("DELETE FROM pattern_table")
     suspend fun clearPatterns()
 
-    // ***** 1) فیلتر مشتری و CustomerFilterKind
+    // 1) فیلتر مشتری و CustomerFilterKind
     @Query(
         """
         SELECT DISTINCT p.id
@@ -74,7 +74,7 @@ interface PatternDao {
     ): List<Int>
 
 
-    // ***** 2) فیلتر مرکز فروش (Center)
+    // 2) فیلتر مرکز فروش (Center)
     @Query(
         """
         SELECT DISTINCT p.id
@@ -99,7 +99,7 @@ interface PatternDao {
     ): List<Int>
 
 
-    // ***** 3) فیلتر گروه صورتحساب (InvoiceCategory)
+    // 3) فیلتر گروه صورتحساب (InvoiceCategory)
     @Query(
         """
         SELECT DISTINCT p.id
@@ -122,32 +122,6 @@ interface PatternDao {
         invoiceCategoryId: Int?,
         settlementKind: Int
     ): List<Int>
-
-
-/*    // ***** 4) فیلتر فعالیت (Process)
-    @Query(
-        """
-        SELECT DISTINCT p.id
-        FROM pattern_table p
-        LEFT JOIN pattern_details_table pd
-            ON pd.kind = 5 AND pd.patternId = p.id
-        WHERE 
-            (p.processInclusionKind = 0 OR pd.processId = :processId)
-            AND (
-                :settlementKind = -1
-                OR (:settlementKind = 0 AND p.hasCash = 1)
-                OR (:settlementKind = 1 AND p.hasMaturityCash = 1)
-                OR (:settlementKind = 2 AND p.hasSanadAndCash = 1)
-                OR (:settlementKind = 3 AND p.hasSanad = 1)
-                OR (:settlementKind = 4 AND p.hasCredit = 1)
-            )
-    """
-    )
-    fun filterProcessPatterns(
-        processId: Int?,
-        settlementKind: Int
-    ): List<Int>
-*/
 
     // ***** گرفتن Pattern نهایی با بازه‌ی تاریخ
     @Query(

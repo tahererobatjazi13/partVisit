@@ -1,6 +1,8 @@
 package com.partsystem.partvisitapp.core.database.mapper
 
 import android.content.Context
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.partsystem.partvisitapp.core.database.entity.ActDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
@@ -197,18 +199,34 @@ fun CustomerDto.toEntity() = CustomerEntity(
     tafsiliMobile = tafsiliMobile
 )
 
-
 fun CustomerDirectionDto.toEntity() = CustomerDirectionEntity(
     id = id,
     customerId = customerId,
-    fullAddress = fullAddress,
-    cityName = cityName,
-    mainStreet = mainStreet,
-    subStreet = subStreet,
-    phone1 = phone1,
+    sortCode = sortCode ?: 0,
+    cityId = cityId ?: 0,
+    directionId = directionId ?: 0,
+    areaId = areaId ?: 0,
+    directionDetailId = directionDetailId ?: 0,
+    fullAddress = fullAddress ?: "",
+    cityCode = cityCode ?: "",
+    cityName = cityName ?: "",
     latitude = latitude,
     longitude = longitude,
-    isMainAddress = isMainAddress
+    mainStreet = mainStreet ?: "",
+    subStreet = subStreet ?: "",
+    mahalehCode = mahalehCode ?: "",
+    mahalehName = mahalehName ?: "",
+    phone1 = phone1,
+    phone2 = phone2,
+    mobile = mobile,
+    fax = fax,
+    webSite = webSite,
+    email = email,
+    isVisit = isVisit ?: false,
+    isDistribution = isDistribution ?: false,
+    isPayment = isPayment ?: false,
+    isActive = isActive ?: false,
+    isMainAddress = isMainAddress ?: false
 )
 
 fun AssignDirectionCustomerDto.toEntity() = AssignDirectionCustomerEntity(

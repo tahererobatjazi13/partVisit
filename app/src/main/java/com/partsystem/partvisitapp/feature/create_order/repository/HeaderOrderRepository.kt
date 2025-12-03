@@ -2,25 +2,30 @@ package com.partsystem.partvisitapp.feature.create_order.repository
 
 import com.partsystem.partvisitapp.core.database.dao.ActDao
 import com.partsystem.partvisitapp.core.database.dao.AssignDirectionCustomerDao
+import com.partsystem.partvisitapp.core.database.dao.CustomerDao
 import com.partsystem.partvisitapp.core.database.dao.CustomerDirectionDao
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
 import com.partsystem.partvisitapp.core.database.dao.InvoiceCategoryDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDao
+import com.partsystem.partvisitapp.core.database.dao.SaleCenterDao
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
+import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 
 class HeaderOrderRepository @Inject constructor(
     private val factorDao: FactorDao,
+    private val customerDao: CustomerDao,
     private val customerDirectionDao: CustomerDirectionDao,
     private val invoiceCategoryDao: InvoiceCategoryDao,
     private val patternDao: PatternDao,
+    private val saleCenterDao: SaleCenterDao,
     private val assignDirectionCustomerDao: AssignDirectionCustomerDao,
     private val actDao: ActDao,
 ) {
@@ -35,51 +40,76 @@ class HeaderOrderRepository @Inject constructor(
     fun getCustomerDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>> =
         customerDirectionDao.getCustomerDirectionsByCustomer(customerId)
 
-/*
-    fun getInvoiceCategory(): Flow<List<InvoiceCategoryEntity>> =
-        invoiceCategoryDao.getAllInvoiceCategory()
-*/
 
-     fun getInvoiceCategory(userId: Int): Flow<List<InvoiceCategoryEntity>> {
+    fun getSaleCenters(invoiceCategoryId: Int): List<SaleCenterEntity> =
+        saleCenterDao.getSaleCenters(invoiceCategoryId)
+
+    fun getInvoiceCategory(userId: Int): Flow<List<InvoiceCategoryEntity>> {
         return invoiceCategoryDao.getInvoiceCategory(userId)
     }
+
     fun getPattern(): Flow<List<PatternEntity>> =
         patternDao.getAllPatterns()
 
     fun getAct(): Flow<List<ActEntity>> =
         actDao.getAllActs()
 
+
+//    suspend fun getPatterns(): List<PatternEntity> {
+//        return patternDao.getAllPatterns()
+//    }
+
+/*    suspend fun getActsByPattern(patternId: Int, actKind: Int): List<ActEntity> {
+        return actDao.getActsByPattern(patternId, actKind)
+    }
+
+    suspend fun getActById(actId: Int): ActEntity? {
+        return actDao.getActById(actId)
+    }*/
+    suspend fun getActsByPatternId(patternId: Int, kind: Int): List<ActEntity> {
+        return actDao.getActsByPatternId(patternId, kind)
+    }
+
+    suspend fun getActById(id: Int): ActEntity? {
+        return actDao.getAct(id)
+    }
+
     suspend fun clearAll() = customerDirectionDao.clearCustomerDirection()
 
-    /////
-    fun getPatternsForCustomer(
-        customer: CustomerEntity,
+    suspend fun getCustomerById(customerId: Int): CustomerEntity? {
+        return customerDao.getCustomerById(customerId)
+    }
+
+    suspend fun getPatternsForCustomer(
+        customerId: Int,
         centerId: Int?,
         invoiceCategoryId: Int?,
-        // processId: Int?,
         settlementKind: Int,
         date: String
     ): List<PatternEntity> {
 
+        //  Customer را از دیتابیس بخوان
+        val customer = getCustomerById(customerId) ?: return emptyList()
+
+        //  محاسبه set1
         val set1 = patternDao.filterCustomerPatterns(
             customerId = customer.id,
             customerKindId = customer.customerKindId,
-            customerDegreeId = customer.degreeId,
-            customerPishehId = customer.processKindId,
+            customerDegreeId = customer.degreeId ?: 0,
+            customerPishehId = customer.processKindId ?: 0,
             settlementKind = settlementKind
         ).toSet()
 
         val set2 = patternDao.filterCenterPatterns(centerId, settlementKind).toSet()
         val set3 =
             patternDao.filterInvoiceCategoryPatterns(invoiceCategoryId, settlementKind).toSet()
-        // val set4 = patternDao.filterProcessPatterns(processId, settlementKind).toSet()
 
-        val resultIds = set1.intersect(set2).intersect(set3)/*.intersect(set4)*/.toList()
+        val resultIds = set1.intersect(set2).intersect(set3).toList()
 
         return patternDao.getPatternsFinal(resultIds, date)
     }
 
-    suspend  fun getAssignDirectionCustomerByCustomerId(customerId: Int) =
+    suspend fun getAssignDirectionCustomerByCustomerId(customerId: Int) =
         assignDirectionCustomerDao.getAssignDirectionCustomerByCustomerId(customerId)
 
 

@@ -141,60 +141,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!--
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cvCustomerDirection"
-                    style="@style/RoundedCardViewStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/small_size"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cvCustomer"
-                    app:rippleColor="?attr/colorRipple">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/normal_size">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvTitleCustomerDirection"
-                            style="@style/SmallBoldTextStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/label_customer_direction"
-                            android:textColor="@color/colorPrimary"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvCustomerDirection"
-                            style="@style/MediumTextStyle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="@dimen/small_size"
-                            android:gravity="start"
-                            android:text="@string/app_name"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@+id/tvTitleCustomerDirection"
-                            app:layout_constraintStart_toEndOf="@+id/ivCustomerDirection"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/ivCustomerDirection"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:srcCompat="@drawable/ic_arrow_down"
-                            app:tint="@color/colorPrimary" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-        -->
-
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cvInvoiceCategory"
             style="@style/RoundedCardViewStyle"

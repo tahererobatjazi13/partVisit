@@ -12,7 +12,7 @@ class CustomerRepository @Inject constructor(
 ) {
     fun getAllCustomers(): Flow<List<CustomerEntity>> = dao.getAllCustomers()
 
-    fun getCustomerById(id: Int): LiveData<CustomerEntity> = dao.getCustomerById(id)
+    fun getCustomerById(id: Int): LiveData<CustomerEntity> = dao.getCustomerByIdLive(id)
 
     suspend fun clearAll() = dao.clearCustomers()
 

@@ -6,10 +6,12 @@ import com.partsystem.partvisitapp.core.database.dao.*
 import com.partsystem.partvisitapp.core.database.entity.*
 
 @Database(
-    entities = [ApplicationSettingEntity::class, VisitorEntity::class, VisitScheduleEntity::class, VisitScheduleDetailEntity::class, OrderEntity::class, GroupProductEntity::class,
+    entities = [ApplicationSettingEntity::class, VisitorEntity::class, VisitScheduleEntity::class,
+        VisitScheduleDetailEntity::class, OrderEntity::class, GroupProductEntity::class,
         ProductEntity::class, ProductImageEntity::class, ProductPackingEntity::class,
         CustomerEntity::class, CustomerDirectionEntity::class, AssignDirectionCustomerEntity::class,
-        InvoiceCategoryEntity::class, InvoiceCategoryDetailEntity::class,InvoiceCategoryCenterEntity::class,
+        InvoiceCategoryEntity::class, InvoiceCategoryDetailEntity::class,
+        InvoiceCategoryCenterEntity::class,
         PatternEntity::class, PatternDetailEntity::class,
         ActEntity::class, ActDetailEntity::class,
         VatEntity::class, VatDetailEntity::class,

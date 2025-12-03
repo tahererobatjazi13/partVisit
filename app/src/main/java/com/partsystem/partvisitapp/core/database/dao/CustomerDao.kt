@@ -17,7 +17,8 @@ interface CustomerDao {
     suspend fun insertCustomers(customers: List<CustomerEntity>)
 
     // کنترل برنامه ویزیت غیرفعال
-    @Query("""
+    @Query(
+        """
     SELECT c.*
     FROM customer_table c
     INNER JOIN assign_direction_customer_table adc
@@ -25,7 +26,8 @@ interface CustomerDao {
          AND adc.saleCenterId = c.saleCenterId
     WHERE c.saleCenterId = :saleCenterId
       AND adc.tafsiliId = :visitorId
-""")
+"""
+    )
     fun getCustomersWithoutVisitSchedule(
         saleCenterId: Int,
         visitorId: Int
@@ -62,9 +64,13 @@ interface CustomerDao {
     @Query("SELECT * FROM customer_table")
     fun getAllCustomers(): Flow<List<CustomerEntity>>
 
-    // دریافت مشتری بر اساس ID
-    @Query("SELECT * FROM customer_table WHERE id = :customerId LIMIT 1")
-    fun getCustomerById(customerId: Int): LiveData<CustomerEntity>
+    //  نسخه suspend برای coroutine   //  دریافت مشتری بر اساس ID
+    @Query("SELECT * FROM customer_table WHERE id = :id LIMIT 1")
+    suspend fun getCustomerById(id: Int): CustomerEntity?
+
+    // نسخه LiveData برای مستقیم observe  //  دریافت مشتری بر اساس ID
+    @Query("SELECT * FROM customer_table WHERE id = :id LIMIT 1")
+    fun getCustomerByIdLive(id: Int): LiveData<CustomerEntity>
 
     // درج یک مشتری
     @Insert(onConflict = OnConflictStrategy.REPLACE)

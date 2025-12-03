@@ -10,6 +10,7 @@ import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
+import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.feature.create_order.repository.HeaderOrderRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,15 +39,16 @@ class HeaderOrderViewModel @Inject constructor(
         // factor.id = id.toInt()
         _currentFactor.postValue(factor)
     }
+
     private val _customerDirections = MutableLiveData<List<CustomerDirectionEntity>>()
     val customerDirections: LiveData<List<CustomerDirectionEntity>> = _customerDirections
 
     fun getCustomerDirectionsByCustomer(customerId: Int): LiveData<List<CustomerDirectionEntity>> {
         return repository.getCustomerDirectionsByCustomer(customerId).asLiveData()
     }
- /*   fun getInvoiceCategory(customerId: Int): LiveData<List<InvoiceCategoryEntity>> {
-        return repository.getInvoiceCategory(customerId).asLiveData()
-    }*/
+    /*   fun getInvoiceCategory(customerId: Int): LiveData<List<InvoiceCategoryEntity>> {
+           return repository.getInvoiceCategory(customerId).asLiveData()
+       }*/
 
     fun getInvoiceCategory(userId: Int): LiveData<List<InvoiceCategoryEntity>> {
         return repository.getInvoiceCategory(userId).asLiveData()
@@ -80,10 +82,9 @@ class HeaderOrderViewModel @Inject constructor(
     }
 
     fun loadPatterns(
-        customer: CustomerEntity,
+        customer: Int,
         centerId: Int?,
         invoiceCategoryId: Int?,
-        /*processId: Int?,*/
         settlementKind: Int,
         date: String
     ) = viewModelScope.launch(Dispatchers.IO) {
@@ -92,7 +93,6 @@ class HeaderOrderViewModel @Inject constructor(
             customer,
             centerId,
             invoiceCategoryId,
-            //processId,
             settlementKind,
             date
         )
@@ -100,7 +100,36 @@ class HeaderOrderViewModel @Inject constructor(
         _patterns.postValue(result)
     }
 
+    private val _saleCenters = MutableLiveData<List<SaleCenterEntity>>()
+    val saleCenters: LiveData<List<SaleCenterEntity>> get() = _saleCenters
+
+    fun loadSaleCenters(invoiceCategoryId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val centers = repository.getSaleCenters(invoiceCategoryId)
+            _saleCenters.postValue(centers)
+        }
+    }
 
 
+
+    private val _acts = MutableLiveData<List<ActEntity>>()
+    val acts: LiveData<List<ActEntity>> get() = _acts
+
+    private val _selectedAct = MutableLiveData<ActEntity?>()
+    val selectedAct: LiveData<ActEntity?> get() = _selectedAct
+
+    fun loadActs(patternId: Int, actKind: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = repository.getActsByPatternId(patternId, actKind)
+            _acts.postValue(result)
+        }
+    }
+
+    fun loadActById(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = repository.getActById(id)
+            _selectedAct.postValue(result)
+        }
+    }
 
 }

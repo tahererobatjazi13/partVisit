@@ -41,4 +41,15 @@ interface SaleCenterDao {
 
     @Query("DELETE FROM sale_center_user_table")
     suspend fun clearUsers()
+
+    @Query("""
+    SELECT DISTINCT sc.*
+    FROM sale_center_table AS sc
+    LEFT JOIN invoice_category_center_table AS icc ON icc.CenterId = sc.id
+    WHERE icc.InvoiceCategoryId IS NULL 
+       OR icc.InvoiceCategoryId = :invoiceCategoryId
+""")
+    fun getSaleCenters(invoiceCategoryId: Int): List<SaleCenterEntity>
+
+
 }

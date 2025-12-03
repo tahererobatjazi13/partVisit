@@ -104,21 +104,11 @@ class CustomerListBottomSheet(
     }
 
     private fun initAdapter() {
-        /*        customerBottomSheetAdapter = CustomerBottomSheetAdapter(
-                    onClick = {
-                        val result = Bundle().apply {
-                            putInt(ARG_ID, it.id)
-                            putString(ARG_NAME, it.name)
-                        }
-                        parentFragmentManager.setFragmentResult(REQ_CLICK_ITEM, result)
-                        dismiss()
-                    }
-                )*/
-
         customerBottomSheetAdapter = CustomerBottomSheetAdapter(
             onClick = { customer ->
                 val result = Bundle().apply {
-                    putParcelable(ARG_CUSTOMER, customer)
+                    putInt(ARG_CUSTOMER_ID, customer.id)
+                    putString(ARG_CUSTOMER_NAME, customer.name)
                 }
                 parentFragmentManager.setFragmentResult(REQ_CLICK_ITEM, result)
                 dismiss()
@@ -183,7 +173,8 @@ class CustomerListBottomSheet(
 
     companion object {
         const val REQ_CLICK_ITEM = "click_item_request"
-        const val ARG_CUSTOMER = "customer"
+        const val ARG_CUSTOMER_ID = "customerId"
+        const val ARG_CUSTOMER_NAME = "customerName"
         fun newInstance(onDismiss: (() -> Unit)? = null) =
             CustomerListBottomSheet(onDismiss)
     }

@@ -12,10 +12,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
+import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
+import com.partsystem.partvisitapp.core.utils.ActKind
 import com.partsystem.partvisitapp.core.utils.componenet.BottomSheetChooseDialog
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
@@ -38,17 +41,21 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class HeaderOrderFragment : Fragment() {
+
     @Inject
     lateinit var userPreferences: UserPreferences
 
     private var _binding: FragmentHeaderOrderBinding? = null
     private val binding get() = _binding!!
-    private var customerId = 0
 
     private val headerOrderViewModel: HeaderOrderViewModel by viewModels()
     private val customerViewModel: CustomerViewModel by viewModels()
+
     private lateinit var patternAdapter: SpinnerAdapter
     private lateinit var customerDirectionAdapter: SpinnerAdapter
+    private lateinit var invoiceCategoryAdapter: SpinnerAdapter
+    private lateinit var actAdapter: SpinnerAdapter
+
     private lateinit var factor: FactorEntity
 
     data class KeyValue(val id: Int, val name: String)
@@ -58,10 +65,11 @@ class HeaderOrderFragment : Fragment() {
     private val persianDate: String = getTodayPersianDate()
     private val allCustomerDirection = mutableListOf<CustomerDirectionEntity>()
     private val allPattern = mutableListOf<PatternEntity>()
+    private val allSaleCenter = mutableListOf<SaleCenterEntity>()
+    private val allAct = mutableListOf<ActEntity>()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHeaderOrderBinding.inflate(inflater, container, false)
         return binding.root
@@ -70,57 +78,10 @@ class HeaderOrderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         fillControls()
-        init()
-        setupClicks()
+        initDate()
+        initCustomer()
         observeData()
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun init() {
-        val jalaliDate = JalaliCalendar()
-        val today = "${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}"
-        binding.tvDate.text = today
-        binding.tvDuoDate.text = today
-        binding.tvDeliveryDate.text = today
-
-
-        if (args.typeCustomer && args.customerId != 0) {
-            val customer = CustomerEntity(
-                id = args.customerId,
-                code = 0,
-                name = args.customerName ?: "",
-                groupId = 0,
-                groupDetailId = 0,
-                tafsiliNationalId = null,
-                saleCenterId = 0,
-                degreeId = null,
-                processKindId = null,
-                customerKindId = 0,
-                isCustomerDeactive = false,
-                deactivePersianDate = null,
-                deactiveDate = null,
-                customerSabt = false,
-                tafsiliPhone1 = null,
-                tafsiliPhone2 = null,
-                tafsiliMobile = null
-            )
-            loadCustomerData(customer)
-
-        } else {
-            binding.tvCustomerName.text = getString(R.string.label_please_select)
-            val defaultList = mutableListOf(getString(R.string.label_please_select))
-            val defaultAdapter = SpinnerAdapter(requireContext(), defaultList)
-            binding.spCustomerDirection.adapter = defaultAdapter
-        }
-
-    }
-
-    private fun rotateArrow(isExpanded: Boolean) {
-        val rotation = if (isExpanded) 180f else 0f
-        binding.ivCustomerName.animate()
-            .rotation(rotation)
-            .setDuration(200)
-            .start()
+        setupClicks()
     }
 
     private fun fillControls() {
@@ -132,8 +93,7 @@ class HeaderOrderFragment : Fragment() {
                 saleCenterId = saleCenterId,
                 persianDate = getTodayPersianDate(),
                 settlementKind = 0 // مقدار دلخواه
-            )
-            /* factor = Factor()
+            )/* factor = Factor()
              factor.UniqueId = StringHelper.getGUID()
              factor.Id = q.getMax("Factor", "Id", null) + 1
              factor.FormKind = SaleDefine.FactorFormKind.RegisterOrderDistribute.ordinal()
@@ -162,6 +122,283 @@ class HeaderOrderFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    private fun initDate() {
+        val jalaliDate = JalaliCalendar()
+        val today = "${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}"
+        binding.tvDate.text = today
+        binding.tvDuoDate.text = today
+        binding.tvDeliveryDate.text = today
+    }
+
+    private fun initCustomer() {
+        if (args.typeCustomer && args.customerId != 0) {
+            loadCustomerData(args.customerId, args.customerName)
+
+        } else {
+            binding.tvCustomerName.text = getString(R.string.label_please_select)
+            val defaultList = mutableListOf(getString(R.string.label_please_select))
+            val defaultAdapter = SpinnerAdapter(requireContext(), defaultList)
+            binding.spCustomerDirection.adapter = defaultAdapter
+        }
+    }
+
+    private fun observeData() {
+        lifecycleScope.launch {
+            val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+            val userId = userPreferences.id.first() ?: 0
+
+            if (controlVisit) {
+                //  با برنامه ویزیت
+                customerViewModel.loadCustomersWithSchedule(persianDate)
+            } else {
+                //  بدون برنامه ویزیت
+                customerViewModel.loadCustomersWithoutSchedule()
+            }
+
+            headerOrderViewModel.getInvoiceCategory(userId).observe(viewLifecycleOwner) { list ->
+
+                val items = mutableListOf(getString(R.string.label_please_select))
+                items.addAll(list.map { it.name })
+
+                invoiceCategoryAdapter = SpinnerAdapter(requireContext(), items)
+                binding.spInvoiceCategory.adapter = invoiceCategoryAdapter
+
+                binding.spInvoiceCategory.post {
+                    val margin = resources.getDimensionPixelSize(R.dimen.big_size)
+                    val dropDownWidth = binding.cvInvoiceCategory.width - margin
+                    binding.spInvoiceCategory.dropDownWidth = dropDownWidth
+                }
+            }
+
+            binding.spInvoiceCategory.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?, view: View?, position: Int, id: Long
+                    ) {
+                        if (position == 0) {
+                            // یعنی "لطفاً انتخاب کنید"
+                            return
+                        }
+
+                        // val selectedName = items[position]
+                        // پردازش انتخاب واقعی
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                }
+
+            headerOrderViewModel.getInvoiceCategory(userId).observe(viewLifecycleOwner) { list ->
+
+                val items = mutableListOf(getString(R.string.label_please_select))
+                items.addAll(list.map { it.name })
+
+                invoiceCategoryAdapter = SpinnerAdapter(requireContext(), items)
+                binding.spInvoiceCategory.adapter = invoiceCategoryAdapter
+
+                binding.spInvoiceCategory.post {
+                    val margin = resources.getDimensionPixelSize(R.dimen.big_size)
+                    val dropDownWidth = binding.cvInvoiceCategory.width - margin
+                    binding.spInvoiceCategory.dropDownWidth = dropDownWidth
+                }
+
+                binding.spInvoiceCategory.onItemSelectedListener =
+                    object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(
+                            parent: AdapterView<*>?, view: View?, position: Int, id: Long
+                        ) {
+
+                            if (position == 0) {
+                                factor.invoiceCategoryId = null
+                                return
+                            }
+
+                            val selectedCategory = list[position - 1]
+                            factor.invoiceCategoryId = selectedCategory.id
+
+                            // LOAD SALE CENTERS
+                            headerOrderViewModel.saleCenters.observe(viewLifecycleOwner) { centers ->
+                                allSaleCenter.clear()
+                                allSaleCenter.addAll(centers)
+                                //  mSaleCenterAdapter.notifyDataSetChanged() // اگر adapter داری
+                            }
+
+                            // وقتی دسته انتخاب شد
+                            selectedCategory?.let {
+                                headerOrderViewModel.loadSaleCenters(it.id)
+                            }
+
+
+                            // LOAD PATTERNS
+                            allPattern.clear()
+                            if (factor.customerId != null) {
+                                val patterns = headerOrderViewModel.loadPatterns(
+                                    factor.customerId!!,
+                                    factor.saleCenterId,
+                                    factor.invoiceCategoryId,
+                                    factor.settlementKind,
+                                    factor.persianDate!!
+                                )
+                                headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
+                                    val items = list.map { it.name }.toMutableList()
+                                    patternAdapter = SpinnerAdapter(requireContext(), items)
+                                    binding.spPattern.adapter = patternAdapter
+
+                                    binding.spPattern.post {
+                                        val margin =
+                                            resources.getDimensionPixelSize(R.dimen.big_size)
+                                        val dropDownWidth = binding.cvPattern.width - margin
+                                        binding.spPattern.dropDownWidth = dropDownWidth
+                                    }
+                                }
+                            }
+                        }
+
+                        override fun onNothingSelected(parent: AdapterView<*>?) {
+                            factor.invoiceCategoryId = null
+                        }
+                    }
+            }
+
+        }
+
+        binding.spCustomerDirection.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    when {
+                        position > 0 -> {
+                            val entry = allCustomerDirection[position - 1]
+                            factor.directionDetailId = entry.directionDetailId
+                        }
+
+                        position == 0 && factor.directionDetailId != null /*&& isLoaded */ -> {
+                            factor.directionDetailId = null
+                        }
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    factor.directionDetailId = null
+                }
+            }
+
+        headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
+            val items = mutableListOf(getString(R.string.label_please_select))
+            items.addAll(list.map { it.name })
+
+            binding.spPattern.adapter = patternAdapter
+
+            binding.spPattern.post {
+                val margin =
+                    resources.getDimensionPixelSize(R.dimen.big_size)
+                val dropDownWidth = binding.cvPattern.width - margin
+                binding.spPattern.dropDownWidth = dropDownWidth
+            }
+        }
+
+        headerOrderViewModel.getAct().observe(viewLifecycleOwner) { act ->
+
+            val items = act.mapNotNull { it.description }
+            //   val adapter = SpinnerAdapter(requireContext(), items)
+            //  binding.spAct.adapter = adapter
+            binding.spAct.post {
+                val margin = resources.getDimensionPixelSize(R.dimen.big_size)
+
+                val dropDownWidth = binding.cvAct.width - margin
+                binding.spAct.dropDownWidth = dropDownWidth
+            }
+        }
+        binding.spPattern.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                // DataHolder.isDirty = true
+
+                if (position == 0) {
+                    // انتخاب نشده
+                    factor.patternId = null
+                    factor.actId = null
+                    return
+                }
+
+                // دریافت Pattern انتخابی
+                val entry = allPattern[position - 1]
+
+                factor.patternId = entry.id
+                // factor.actId = entry.productActId   // اگر داری → مشابه جاوا
+
+                // 🔵 مرحله 1: لود ACT
+                headerOrderViewModel.loadActs(
+                    patternId = entry.id,
+                    actKind = /*ActKind.Product.value*/0
+                )
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                factor.patternId = null
+                factor.actId = null
+            }
+        }
+        headerOrderViewModel.acts.observe(viewLifecycleOwner) { list ->
+            //    allAct.clear()
+            //   allAct.addAll(list)
+
+            // اگر ActId قبلاً انتخاب شده بود، اضافه کن
+            factor.actId?.let { actId ->
+                val exists = list.any { it.id == actId }
+                if (!exists) {
+                    headerOrderViewModel.loadActById(actId)
+                }
+            }
+
+            actAdapter.notifyDataSetChanged()
+        }
+        headerOrderViewModel.selectedAct.observe(viewLifecycleOwner) { act ->
+            if (act != null && !allAct.any { it.id == act.id }) {
+                allAct.add(0, act)
+                actAdapter.notifyDataSetChanged()
+                binding.spAct.setSelection(1)
+            }
+        }
+
+        /*
+                headerOrderViewModel.getPattern().observe(viewLifecycleOwner) { pattern ->
+
+                    val items = pattern.map { it.name }
+                    //   patternAdapter  = SpinnerAdapter(requireContext(), items)
+                    // binding.spPattern.adapter = patternAdapter
+
+                    binding.spPattern.onItemSelectedListener =
+                        object : AdapterView.OnItemSelectedListener {
+                            override fun onItemSelected(
+                                parent: AdapterView<*>?, view: View?, position: Int, id: Long
+                            ) {
+                                val selectedPattern = pattern[position]
+                                fillPaymentType(selectedPattern)
+                            }
+
+                            override fun onNothingSelected(parent: AdapterView<*>?) {
+                                fillPaymentType(null)
+                            }
+                        }
+                    binding.spPattern.post {
+                        val margin = resources.getDimensionPixelSize(R.dimen.big_size)
+
+                        val dropDownWidth = binding.cvPattern.width - margin
+                        binding.spPattern.dropDownWidth = dropDownWidth
+                    }
+                }
+        */
+    }
+
     private fun setupClicks() {
 
         binding.hfHeaderOrder.setOnClickImgTwoListener {
@@ -179,18 +416,14 @@ class HeaderOrderFragment : Fragment() {
 
         val openAt = PersianCalendar.getToday().timeInMillis
 
-        val constraints = CalendarConstraints.Builder()
-            .setStart(start)
-            .setEnd(end)
-            .setOpenAt(openAt)
-            .setValidator(DateValidatorPointForward.from(start))
-            .build()
+        val constraints =
+            CalendarConstraints.Builder().setStart(start).setEnd(end).setOpenAt(openAt)
+                .setValidator(DateValidatorPointForward.from(start)).build()
 
         // ------------------------- Helper: Create & Handle Date Picker -------------------------
         fun showPersianDatePicker(onDateSelected: (String) -> Unit) {
             val picker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText(getString(R.string.label_choose))
-                .setCalendarConstraints(constraints)
+                .setTitleText(getString(R.string.label_choose)).setCalendarConstraints(constraints)
                 .build()
 
             picker.addOnPositiveButtonClickListener(object :
@@ -236,30 +469,28 @@ class HeaderOrderFragment : Fragment() {
         }
 
         // ------------------------- Listen to Customer Selection -------------------------
-        parentFragmentManager.setFragmentResultListener(
-            CustomerListBottomSheet.REQ_CLICK_ITEM,
-            viewLifecycleOwner
-        ) { _, bundle ->
-            val customer =
-                bundle.getParcelable<CustomerEntity>(CustomerListBottomSheet.ARG_CUSTOMER)
-            customer?.let {
-                loadCustomerData(
-                    it
-                )
-            }
-        }
 
+        parentFragmentManager.setFragmentResultListener(
+            CustomerListBottomSheet.REQ_CLICK_ITEM, viewLifecycleOwner
+        ) { _, bundle ->
+            val customerName = bundle.getString(CustomerListBottomSheet.ARG_CUSTOMER_NAME)
+            val customerId = bundle.getInt(CustomerListBottomSheet.ARG_CUSTOMER_ID)
+            loadCustomerData(customerId, customerName!!)
+
+        }
     }
 
-    private fun loadCustomerData(customer: CustomerEntity) {
-        binding.tvCustomerName.text = customer.name
-        factor.customerId = customer.id
+    private fun loadCustomerData(customerId: Int, customerName: String) {
+        binding.tvCustomerName.text = customerName
+        factor.customerId = customerId
+
+        headerOrderViewModel.loadAssignDirectionCustomerByCustomerId(customerId)
 
         allCustomerDirection.clear()
         allPattern.clear()
 
         // بارگذاری مسیرهای مشتری
-        headerOrderViewModel.getCustomerDirectionsByCustomer(customer.id)
+        headerOrderViewModel.getCustomerDirectionsByCustomer(customerId)
             .observe(viewLifecycleOwner) { list ->
                 val items = list.mapNotNull { it.fullAddress }.toMutableList()
 
@@ -287,98 +518,12 @@ class HeaderOrderFragment : Fragment() {
         }
 
         headerOrderViewModel.loadPatterns(
-            customer = customer,
+            customer = customerId,
             centerId = factor.saleCenterId,
             invoiceCategoryId = 0,
             settlementKind = factor.settlementKind,
             date = factor.persianDate.toString()
         )
-
-    }
-
-
-    private fun observeData() {
-        lifecycleScope.launch {
-            val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
-            val userId = userPreferences.id.first() ?:0
-
-            if (controlVisit) {
-                //  با برنامه ویزیت
-                customerViewModel.loadCustomersWithSchedule(persianDate)
-            } else {
-                //  بدون برنامه ویزیت
-                customerViewModel.loadCustomersWithoutSchedule()
-            }
-
-        /*     customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
-                 if (customers.isNotEmpty()) {
-                     val first = customers.first()
-                     customerId = first.id
-                     binding.tvCustomerName.text = first.name
-                 }
-             }*/
-
-        headerOrderViewModel.getInvoiceCategory(userId)
-            .observe(viewLifecycleOwner) { invoiceCategory ->
-
-                val items = invoiceCategory
-                    .map { it.name }
-                //  val adapter = SpinnerAdapter(requireContext(), items)
-                //   binding.spInvoiceCategory.adapter = adapter
-                binding.spInvoiceCategory.post {
-                    val margin = resources.getDimensionPixelSize(R.dimen.big_size)
-
-                    val dropDownWidth = binding.cvInvoiceCategory.width - margin
-                    binding.spInvoiceCategory.dropDownWidth = dropDownWidth
-                }
-            }
-        }
-        headerOrderViewModel.getAct()
-            .observe(viewLifecycleOwner) { act ->
-
-                val items = act
-                    .mapNotNull { it.description }
-                //   val adapter = SpinnerAdapter(requireContext(), items)
-                //  binding.spAct.adapter = adapter
-                binding.spAct.post {
-                    val margin = resources.getDimensionPixelSize(R.dimen.big_size)
-
-                    val dropDownWidth = binding.cvAct.width - margin
-                    binding.spAct.dropDownWidth = dropDownWidth
-                }
-            }
-
-        headerOrderViewModel.getPattern()
-            .observe(viewLifecycleOwner) { pattern ->
-
-                val items = pattern
-                    .map { it.name }
-                //   patternAdapter  = SpinnerAdapter(requireContext(), items)
-                // binding.spPattern.adapter = patternAdapter
-
-                binding.spPattern.onItemSelectedListener =
-                    object : AdapterView.OnItemSelectedListener {
-                        override fun onItemSelected(
-                            parent: AdapterView<*>?,
-                            view: View?,
-                            position: Int,
-                            id: Long
-                        ) {
-                            val selectedPattern = pattern[position]
-                            fillPaymentType(selectedPattern)
-                        }
-
-                        override fun onNothingSelected(parent: AdapterView<*>?) {
-                            fillPaymentType(null)
-                        }
-                    }
-                binding.spPattern.post {
-                    val margin = resources.getDimensionPixelSize(R.dimen.big_size)
-
-                    val dropDownWidth = binding.cvPattern.width - margin
-                    binding.spPattern.dropDownWidth = dropDownWidth
-                }
-            }
     }
 
     // تابع برای پر کردن Spinner نوع پرداخت
@@ -407,19 +552,25 @@ class HeaderOrderFragment : Fragment() {
     }
 
     private fun showChooseDialog() {
-        BottomSheetChooseDialog.newInstance()
-            .setTitle(R.string.label_choose)
+        BottomSheetChooseDialog.newInstance().setTitle(R.string.label_choose)
             .addOption(R.string.label_product_catalog, R.drawable.ic_home_catalog) {
-                val action = HeaderOrderFragmentDirections
-                    .actionHeaderOrderFragmentToProductListFragment(true)
+                val action =
+                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToProductListFragment(
+                        true
+                    )
                 findNavController().navigate(action)
-            }
-            .addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {
-                val action = HeaderOrderFragmentDirections
-                    .actionHeaderOrderFragmentToGroupProductFragment(true)
+            }.addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {
+                val action =
+                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToGroupProductFragment(
+                        true
+                    )
                 findNavController().navigate(action)
-            }
-            .show(childFragmentManager, "chooseDialog")
+            }.show(childFragmentManager, "chooseDialog")
+    }
+
+    private fun rotateArrow(isExpanded: Boolean) {
+        val rotation = if (isExpanded) 180f else 0f
+        binding.ivCustomerName.animate().rotation(rotation).setDuration(200).start()
     }
 
     override fun onDestroyView() {

@@ -3,19 +3,38 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+
 @Entity(tableName = "customer_direction_table")
 data class CustomerDirectionEntity(
     @PrimaryKey val id: Int,
     val customerId: Int,
-    val fullAddress: String?,
-    val cityName: String?,
-    val mainStreet: String?,
-    val subStreet: String?,
-    val phone1: String?,
+    val sortCode: Int,
+    val cityId: Int,
+    val directionId: Int,
+    val areaId: Int,
+    val directionDetailId: Int,
+    val fullAddress: String,
+    val cityCode: String,
+    val cityName: String,
     val latitude: Double?,
     val longitude: Double?,
-    val isMainAddress: Boolean?
+    val mainStreet: String,
+    val subStreet: String,
+    val mahalehCode: String,
+    val mahalehName: String,
+    val phone1: String?,
+    val phone2: String?,
+    val mobile: String?,
+    val fax: String?,
+    val webSite: String?,
+    val email: String?,
+    val isVisit: Boolean,
+    val isDistribution: Boolean,
+    val isPayment: Boolean,
+    val isActive: Boolean,
+    val isMainAddress: Boolean
 )
+
 /*
 {
     "id": 424,

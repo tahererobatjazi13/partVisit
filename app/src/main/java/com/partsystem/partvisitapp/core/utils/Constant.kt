@@ -24,3 +24,14 @@ enum class ImageProductType(val value: String) {
     GROUP_PRODUCT("Store.GroupProduct"), PRODUCT("Store.Product")
 }
 
+enum class ActKind(val value: String) {
+    None("none"),
+    // [Description("خدمات")]
+    Service("service"),
+    //[Description("کالا")]
+    Product("product"),
+    //        [Description("خرید خدمات")]
+    BoughtService("boughtService"),
+    //        [Description("خرید کالا")]
+    BoughtProduct("boughtProduct"),
+}
