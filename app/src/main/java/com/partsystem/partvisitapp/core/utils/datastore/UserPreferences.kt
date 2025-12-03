@@ -45,7 +45,6 @@ class UserPreferences @Inject constructor(
         saleCenterId: Int
     ) {
         context.dataStore.edit { prefs ->
-            prefs[KEY_ID] = id
             prefs[KEY_SALE_CENTER_ID] = saleCenterId
         }
     }

@@ -1,11 +1,19 @@
 package com.partsystem.partvisitapp.core.utils.extensions
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.view.View
+import androidx.annotation.RequiresApi
 import com.jakewharton.rxbinding4.view.clicks
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import ir.huri.jcal.JalaliCalendar
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 fun View.show() {
@@ -75,9 +83,18 @@ fun getTodayPersianDate(): String {
     )
 }
 
+fun getTodayGregorian(): String {
+    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    return formatter.format(Date())
+}
+
+fun getCurrentTime(): String {
+    val formatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    return formatter.format(Date())
+}
 /*
 git add .
-git commit -m "getInvoiceCategory"
+git commit -m "factor header"
 git push -u origin master
 git push
 */

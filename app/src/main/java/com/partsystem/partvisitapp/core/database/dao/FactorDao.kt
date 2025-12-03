@@ -17,4 +17,7 @@ interface FactorDao {
 
     @Query("SELECT * FROM factor_table WHERE id = :id")
     fun getFactorById(id: Int): FactorEntity?
+
+    @Query("SELECT * FROM factor_table")
+    suspend fun getAllFactors(): List<FactorEntity>
 }

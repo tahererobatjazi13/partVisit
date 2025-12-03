@@ -112,5 +112,7 @@ class HeaderOrderRepository @Inject constructor(
     suspend fun getAssignDirectionCustomerByCustomerId(customerId: Int) =
         assignDirectionCustomerDao.getAssignDirectionCustomerByCustomerId(customerId)
 
-
+    suspend fun getActiveSaleCenterAnbar(saleCenterId: Int): Int {
+        return saleCenterDao.getActiveSaleCenterAnbar(saleCenterId) ?: 0
+    }
 }

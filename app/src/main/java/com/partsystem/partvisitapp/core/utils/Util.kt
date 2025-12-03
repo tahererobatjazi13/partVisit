@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.File
 import java.io.IOException
+import java.util.UUID
 
 /** دانلود عکس و ذخیره روی حافظه داخلی */
 suspend fun saveBase64ImageToFile(base64Data: String, fileName: String, context: Context): String? {
@@ -176,16 +177,16 @@ object ErrorHandler {
     }
 }
 
- fun fixPersianChars(input: String): String {
+fun fixPersianChars(input: String): String {
     return input
         .replace('ي', 'ی') // Arabic yeh to Persian yeh
         .replace('ك', 'ک') // Arabic kaf to Persian kaf
 }
 
- fun convertNumbersToEnglish(input: String): String {
-    val arabicNumbers = listOf('٠','١','٢','٣','٤','٥','٦','٧','٨','٩')
-    val persianNumbers = listOf('۰','۱','۲','۳','۴','۵','۶','۷','۸','۹')
-    val englishNumbers = listOf('0','1','2','3','4','5','6','7','8','9')
+fun convertNumbersToEnglish(input: String): String {
+    val arabicNumbers = listOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
+    val persianNumbers = listOf('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹')
+    val englishNumbers = listOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
 
     var result = input
     for (i in 0..9) {
@@ -195,4 +196,7 @@ object ErrorHandler {
     return result
 }
 
+fun getGUID(): String {
+    return UUID.randomUUID().toString()
+}
 

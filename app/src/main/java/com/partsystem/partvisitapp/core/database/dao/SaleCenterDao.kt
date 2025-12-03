@@ -52,4 +52,6 @@ interface SaleCenterDao {
     fun getSaleCenters(invoiceCategoryId: Int): List<SaleCenterEntity>
 
 
+    @Query("SELECT anbarId FROM sale_center_anbar_table WHERE saleCenterId = :saleCenterId LIMIT 1")
+    suspend fun getActiveSaleCenterAnbar(saleCenterId: Int): Int?
 }

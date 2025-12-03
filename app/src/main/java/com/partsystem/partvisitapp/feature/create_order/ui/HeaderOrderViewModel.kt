@@ -13,13 +13,16 @@ import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.feature.create_order.repository.HeaderOrderRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 import javax.inject.Inject
 
 @HiltViewModel
 class HeaderOrderViewModel @Inject constructor(
-    private val repository: HeaderOrderRepository
+    private val repository: HeaderOrderRepository,
+    private val factorRepository: FactorRepository,
 ) : ViewModel() {
 
     private val _currentFactor = MutableLiveData<FactorEntity>()
@@ -111,7 +114,6 @@ class HeaderOrderViewModel @Inject constructor(
     }
 
 
-
     private val _acts = MutableLiveData<List<ActEntity>>()
     val acts: LiveData<List<ActEntity>> get() = _acts
 
@@ -131,5 +133,32 @@ class HeaderOrderViewModel @Inject constructor(
             _selectedAct.postValue(result)
         }
     }
+
+    private val _defaultAnbarId = MutableStateFlow<Int?>(null)
+    val defaultAnbarId: StateFlow<Int?> get() = _defaultAnbarId
+
+    // دریافت DefaultAnbarId بر اساس SaleCenterId
+    fun fetchDefaultAnbarId(saleCenterId: Int) {
+        viewModelScope.launch {
+            val anbarId = repository.getActiveSaleCenterAnbar(saleCenterId)
+            _defaultAnbarId.value = anbarId
+        }
+    }
+/*
+    fun createFactor(saleCenterId: Int, formKind: FactorFormKind, date: String) {
+        viewModelScope.launch {
+            val defaultAnbarId = repository.getActiveSaleCenterAnbar(saleCenterId)
+
+            val factor = FactorEntity(
+                saleCenterId = saleCenterId,
+                defaultAnbarId = defaultAnbarId,
+                formKind = formKind
+            )
+
+            val newId = factorRepository.insertFactor(factor)
+            println("New Factor inserted with ID: $newId")
+        }
+    }
+*/
 
 }
