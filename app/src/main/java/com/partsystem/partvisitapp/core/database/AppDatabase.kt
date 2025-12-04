@@ -16,7 +16,8 @@ import com.partsystem.partvisitapp.core.database.entity.*
         ActEntity::class, ActDetailEntity::class,
         VatEntity::class, VatDetailEntity::class,
         SaleCenterEntity::class, SaleCenterAnbarEntity::class, SaleCenterUserEntity::class,
-        DiscountEntity::class, FactorEntity::class],
+        DiscountEntity::class, FactorHeaderEntity::class, FactorDetailEntity::class,
+        FactorDiscountEntity::class, FactorGiftInfoEntity::class],
     version = 1,
     exportSchema = false
 )

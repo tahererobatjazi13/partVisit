@@ -1,23 +1,23 @@
 package com.partsystem.partvisitapp.core.database.dao
 
 import androidx.room.*
-import com.partsystem.partvisitapp.core.database.entity.FactorEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 
 @Dao
 interface FactorDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertFactor(factor: FactorEntity): Long
+    fun insertFactor(factor: FactorHeaderEntity): Long
 
     @Update
-    fun updateFactor(factor: FactorEntity)
+    fun updateFactor(factor: FactorHeaderEntity)
 
     @Delete
-    fun deleteFactor(factor: FactorEntity)
+    fun deleteFactor(factor: FactorHeaderEntity)
 
-    @Query("SELECT * FROM factor_table WHERE id = :id")
-    fun getFactorById(id: Int): FactorEntity?
+    @Query("SELECT * FROM factor_header_table WHERE id = :id")
+    fun getFactorById(id: Int): FactorHeaderEntity?
 
-    @Query("SELECT * FROM factor_table")
-    suspend fun getAllFactors(): List<FactorEntity>
+    @Query("SELECT * FROM factor_header_table")
+    suspend fun getAllFactors(): List<FactorHeaderEntity>
 }

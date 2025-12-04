@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.core.network
 
 
+import com.partsystem.partvisitapp.core.database.entity.FinalFactorRequest
 import com.partsystem.partvisitapp.core.network.modelDto.GroupProductDto
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.core.network.modelDto.ActDto
@@ -21,6 +22,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.VatDto
 import com.partsystem.partvisitapp.core.network.modelDto.VisitScheduleDto
 import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -103,4 +105,6 @@ interface ApiService {
         @Query("CustomerId") customerId: Int
     ): Response<List<ReportFactorDto>>
 
+    @POST("InsertFactor")
+    suspend fun sendFactor(@Body request: FinalFactorRequest): Response<Any>
 }

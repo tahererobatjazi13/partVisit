@@ -11,10 +11,11 @@ import com.partsystem.partvisitapp.core.database.dao.SaleCenterDao
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
-import com.partsystem.partvisitapp.core.database.entity.FactorEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
+import com.partsystem.partvisitapp.core.utils.ActKind
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -29,11 +30,11 @@ class HeaderOrderRepository @Inject constructor(
     private val assignDirectionCustomerDao: AssignDirectionCustomerDao,
     private val actDao: ActDao,
 ) {
-    fun insert(factor: FactorEntity) = factorDao.insertFactor(factor)
+    fun insert(factor: FactorHeaderEntity) = factorDao.insertFactor(factor)
 
-    fun update(factor: FactorEntity) = factorDao.updateFactor(factor)
+    fun update(factor: FactorHeaderEntity) = factorDao.updateFactor(factor)
 
-    fun delete(factor: FactorEntity) = factorDao.deleteFactor(factor)
+    fun delete(factor: FactorHeaderEntity) = factorDao.deleteFactor(factor)
 
     fun getById(id: Int) = factorDao.getFactorById(id)
 
@@ -55,23 +56,38 @@ class HeaderOrderRepository @Inject constructor(
         actDao.getAllActs()
 
 
+    suspend fun getPatternById(id: Int): PatternEntity? {
+        return patternDao.getPatternById(id)
+    }
 //    suspend fun getPatterns(): List<PatternEntity> {
 //        return patternDao.getAllPatterns()
 //    }
 
-/*    suspend fun getActsByPattern(patternId: Int, actKind: Int): List<ActEntity> {
-        return actDao.getActsByPattern(patternId, actKind)
-    }
+    /*    suspend fun getActsByPattern(patternId: Int, actKind: Int): List<ActEntity> {
+            return actDao.getActsByPattern(patternId, actKind)
+        }
 
-    suspend fun getActById(actId: Int): ActEntity? {
-        return actDao.getActById(actId)
-    }*/
+        suspend fun getActById(actId: Int): ActEntity? {
+            return actDao.getActById(actId)
+        }*/
     suspend fun getActsByPatternId(patternId: Int, kind: Int): List<ActEntity> {
         return actDao.getActsByPatternId(patternId, kind)
     }
 
-    suspend fun getActById(id: Int): ActEntity? {
-        return actDao.getAct(id)
+    private var productActIdCache: Int? = null
+
+    suspend fun getProductActId(patternId: Int): Int? {
+        if (productActIdCache == null) {
+            productActIdCache = actDao.getPatternDetailActId(
+                patternId,
+                ActKind.Product.ordinal
+            )
+        }
+        return productActIdCache
+    }
+
+    suspend fun getActById(actId: Int): ActEntity? {
+        return actDao.getActById(actId)
     }
 
     suspend fun clearAll() = customerDirectionDao.clearCustomerDirection()

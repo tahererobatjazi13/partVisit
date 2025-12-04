@@ -42,8 +42,24 @@ interface ActDao {
     """)
     suspend fun getActsByPatternId(patternId: Int, kind: Int): List<ActEntity>
 
-    @Query("SELECT * FROM act_table WHERE id = :id LIMIT 1")
-    suspend fun getAct(id: Int): ActEntity?
+    @Query("SELECT * FROM act_table WHERE id = :actId LIMIT 1")
+    suspend fun getActById(actId: Int): ActEntity?
 
+    @Query(
+        """
+        SELECT pd.actId
+        FROM pattern_details_table pd
+        INNER JOIN act_table a 
+            ON a.id = pd.actId 
+            AND pd.isDefault = 1
+        WHERE pd.patternId = :patternId
+          AND a.kind = :kind
+        LIMIT 1
+        """
+    )
+    suspend fun getPatternDetailActId(
+        patternId: Int,
+        kind: Int
+    ): Int?
 
 }

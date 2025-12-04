@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.*
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
+import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
-import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
-import com.partsystem.partvisitapp.core.database.entity.FactorEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
@@ -25,19 +25,19 @@ class HeaderOrderViewModel @Inject constructor(
     private val factorRepository: FactorRepository,
 ) : ViewModel() {
 
-    private val _currentFactor = MutableLiveData<FactorEntity>()
-    val currentFactor: LiveData<FactorEntity> get() = _currentFactor
+    private val _currentFactor = MutableLiveData<FactorHeaderEntity>()
+    val currentFactor: LiveData<FactorHeaderEntity> get() = _currentFactor
 
-    fun setFactor(factor: FactorEntity) {
+    fun setFactor(factor: FactorHeaderEntity) {
         _currentFactor.value = factor
     }
 
-    fun updateFactor(factor: FactorEntity) = viewModelScope.launch {
+    fun updateFactor(factor: FactorHeaderEntity) = viewModelScope.launch {
         repository.update(factor)
         _currentFactor.postValue(factor)
     }
 
-    fun insertFactor(factor: FactorEntity) = viewModelScope.launch {
+    fun insertFactor(factor: FactorHeaderEntity) = viewModelScope.launch {
         val id = repository.insert(factor)
         // factor.id = id.toInt()
         _currentFactor.postValue(factor)
@@ -57,32 +57,43 @@ class HeaderOrderViewModel @Inject constructor(
         return repository.getInvoiceCategory(userId).asLiveData()
     }
 
-    fun getPattern(): LiveData<List<PatternEntity>> {
+  /*  fun getPattern(): LiveData<List<PatternEntity>> {
         return repository.getPattern().asLiveData()
     }
-
+*/
     fun getAct(): LiveData<List<ActEntity>> {
         return repository.getAct().asLiveData()
     }
 
 
+    private val _pattern = MutableLiveData<PatternEntity?>()
+    val pattern: LiveData<PatternEntity?> get() = _pattern
+
+    fun loadPatternById(id: Int) {
+        viewModelScope.launch {
+            val result = repository.getPatternById(id)
+            _pattern.postValue(result)
+        }
+    }
     private val _patterns = MutableLiveData<List<PatternEntity>>()
     val patterns: LiveData<List<PatternEntity>> = _patterns
+
+    private val _assignDirection = MutableLiveData<FactorHeaderEntity>()
+    val assignDirection: LiveData<FactorHeaderEntity> get() = _assignDirection
 
     fun loadAssignDirectionCustomerByCustomerId(customerId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             val directions = repository.getAssignDirectionCustomerByCustomerId(customerId)
-
-            _currentFactor.value?.let { factor ->
+            _assignDirection.value?.let { data ->
                 directions.forEach { item ->
-                    if (item.isDistribution) factor.distributorId = item.tafsiliId
-                    if (item.isDemands) factor.recipientId = item.tafsiliId
+                    if (item.isDistribution) data.distributorId = item.tafsiliId
+                    if (item.isDemands) data.recipientId = item.tafsiliId
                 }
-
-                _currentFactor.postValue(factor)
+                _assignDirection.postValue(data)
             }
         }
     }
+
 
     fun loadPatterns(
         customer: Int,
@@ -117,9 +128,6 @@ class HeaderOrderViewModel @Inject constructor(
     private val _acts = MutableLiveData<List<ActEntity>>()
     val acts: LiveData<List<ActEntity>> get() = _acts
 
-    private val _selectedAct = MutableLiveData<ActEntity?>()
-    val selectedAct: LiveData<ActEntity?> get() = _selectedAct
-
     fun loadActs(patternId: Int, actKind: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             val result = repository.getActsByPatternId(patternId, actKind)
@@ -127,12 +135,26 @@ class HeaderOrderViewModel @Inject constructor(
         }
     }
 
-    fun loadActById(id: Int) {
+    private val _productActId = MutableLiveData<Int?>()
+    val productActId: LiveData<Int?> get() = _productActId
+
+    fun loadProductActId(patternId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val result = repository.getActById(id)
-            _selectedAct.postValue(result)
+            val result = repository.getProductActId(patternId)
+            _productActId.postValue(result)
         }
     }
+    private val _addedAct = MutableLiveData<ActEntity?>()
+    val addedAct: LiveData<ActEntity?> get() = _addedAct
+
+    fun loadAct(actId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val act = repository.getActById(actId)
+            _addedAct.postValue(act)
+        }
+    }
+
+
 
     private val _defaultAnbarId = MutableStateFlow<Int?>(null)
     val defaultAnbarId: StateFlow<Int?> get() = _defaultAnbarId
