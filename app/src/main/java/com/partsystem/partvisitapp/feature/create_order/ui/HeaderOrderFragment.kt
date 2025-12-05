@@ -148,14 +148,13 @@ class HeaderOrderFragment : Fragment() {
         if (args.typeCustomer && args.customerId != 0) {
             loadCustomerData(args.customerId, args.customerName)
         } else {
-            binding.tvCustomerName.text = getString(R.string.label_please_select)
             val defaultList = mutableListOf(getString(R.string.label_please_select))
             val defaultAdapter = SpinnerAdapter(requireContext(), defaultList)
 
             binding.spCustomerDirection.adapter = defaultAdapter
+            binding.spInvoiceCategory.adapter = defaultAdapter
             binding.spPattern.adapter = defaultAdapter
             binding.spAct.adapter = defaultAdapter
-            binding.spPaymentType.adapter = defaultAdapter
         }
     }
 
@@ -168,6 +167,14 @@ class HeaderOrderFragment : Fragment() {
         } else {
             //  بدون برنامه ویزیت
             customerViewModel.loadCustomersWithoutSchedule()
+        }
+        customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
+            if (customers.isNotEmpty()) {
+                val first = customers.first()
+                factorViewModel.factorHeader.value!!.customerId = first.id
+                binding.tvCustomerName.text = first.name
+                loadCustomerData(first.id, first.name)
+            }
         }
         binding.spCustomerDirection.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -208,7 +215,9 @@ class HeaderOrderFragment : Fragment() {
             allInvoiceCategory.clear()
             allInvoiceCategory.addAll(list)
 
-            val items = list.mapNotNull { it.name }.toMutableList()
+            val items = mutableListOf<String>()
+            items.add(getString(R.string.label_please_select))
+            items.addAll(list.map { it.name })
             invoiceCategoryAdapter = SpinnerAdapter(requireContext(), items)
             binding.spInvoiceCategory.adapter = invoiceCategoryAdapter
 
@@ -273,12 +282,6 @@ class HeaderOrderFragment : Fragment() {
         }
 
 
-        headerOrderViewModel.patterns.observe(viewLifecycleOwner)
-        { list ->
-            val items = mutableListOf(getString(R.string.label_please_select))
-            items.addAll(list.map { it.name })
-        }
-
 
         binding.spPattern.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -292,6 +295,9 @@ class HeaderOrderFragment : Fragment() {
                     if (position == 0 && factorViewModel.factorHeader.value!!.patternId != null) {
                         factorViewModel.factorHeader.value!!.patternId = null
                         factorViewModel.factorHeader.value!!.actId = null
+                        return
+                    }
+                    if (allPattern.isEmpty() || position >= allPattern.size) {
                         return
                     }
 
@@ -309,13 +315,18 @@ class HeaderOrderFragment : Fragment() {
                         patternId = entry.id,
                         actKind = ActKind.Product.ordinal
                     )
-                    headerOrderViewModel.acts.observe(viewLifecycleOwner) { list ->
-                        allAct.clear()
-                        allAct.addAll(list)
-                        val items = list.mapNotNull { it.description }.toMutableList()
-                        actAdapter = SpinnerAdapter(requireContext(), items)
-                        binding.spAct.adapter = actAdapter
-                    }
+//                    headerOrderViewModel.acts.observe(viewLifecycleOwner) { list ->
+//                        allAct.clear()
+//                        allAct.addAll(list)
+//                        val items = mutableListOf<String>()
+//                        items.add(getString(R.string.label_please_select))
+//
+//                        items.addAll(list.map { it.description })
+//
+//                       // val items = list.mapNotNull { it.description }.toMutableList()
+//                        actAdapter = SpinnerAdapter(requireContext(), items)
+//                        binding.spAct.adapter = actAdapter
+//                    }
                     if (factorViewModel.factorHeader.value!!.actId != null) {
 
                         val actId = factorViewModel.factorHeader.value!!.actId!!
@@ -343,12 +354,23 @@ class HeaderOrderFragment : Fragment() {
                     }
                 }
 
+
                 override fun onNothingSelected(parent: AdapterView<*>?) {
                     factorViewModel.factorHeader.value!!.patternId = null
                     factorViewModel.factorHeader.value!!.actId = null
                 }
             }
 
+        headerOrderViewModel.getAct().observe(viewLifecycleOwner) { list ->
+
+            val items = mutableListOf<String>()
+            items.add(getString(R.string.label_please_select))
+            items.addAll(list.map { it.description!! })
+            actAdapter = SpinnerAdapter(requireContext(), items)
+            binding.spAct.adapter = actAdapter
+
+
+        }
 
         binding.spAct.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -386,7 +408,28 @@ class HeaderOrderFragment : Fragment() {
             }
         fillPaymentType()
 
+        binding.spPaymentType.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val entry = allPayementType[position].id
+                    factorViewModel.factorHeader.value =
+                        factorViewModel.factorHeader.value!!.copy(
+                            settlementKind = entry,
+                        )
+                }
 
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    factorViewModel.factorHeader.value =
+                        factorViewModel.factorHeader.value!!.copy(
+                            settlementKind = 0,
+                        )
+                }
+            }
     }
 
     private fun setupClicks() {
@@ -477,7 +520,7 @@ class HeaderOrderFragment : Fragment() {
 
     private fun loadCustomerData(customerId: Int, customerName: String) {
         binding.tvCustomerName.text = customerName
-        factor.customerId = customerId
+        factorViewModel.factorHeader.value!!.customerId = customerId
 
         headerOrderViewModel.assignDirection.observe(viewLifecycleOwner) { factor ->
             factor?.let {
@@ -496,8 +539,11 @@ class HeaderOrderFragment : Fragment() {
             .observe(viewLifecycleOwner) { list ->
                 allCustomerDirection.clear()
                 allCustomerDirection.addAll(list)
+                val items = mutableListOf<String>()
+                items.add(getString(R.string.label_please_select))
 
-                val items = list.mapNotNull { it.fullAddress }.toMutableList()
+                //val items = list.map { it.fullAddress }.toMutableList()
+                items.addAll(list.map { it.fullAddress })
 
                 customerDirectionAdapter = SpinnerAdapter(requireContext(), items)
                 binding.spCustomerDirection.adapter = customerDirectionAdapter
@@ -521,38 +567,41 @@ class HeaderOrderFragment : Fragment() {
         )
     }
 
+
     private fun fillPaymentType() {
         allPayementType.clear()
-        if (factorViewModel.factorHeader.value!!.patternId != null) {
-            headerOrderViewModel.loadPatternById(factorViewModel.factorHeader.value!!.patternId!!)
-
-            headerOrderViewModel.pattern.observe(viewLifecycleOwner) { pattern ->
-                if (pattern == null || pattern.hasCash) allPayementType.add(KeyValue(0, "نقدی"))
-                if (pattern == null || pattern.hasMaturityCash) allPayementType.add(
-                    KeyValue(
-                        1,
-                        "نقدی در سررسید"
-                    )
-                )
-                if (pattern == null || pattern.hasSanadAndCash) allPayementType.add(
-                    KeyValue(
-                        2,
-                        "نقد و اسناد"
-                    )
-                )
-                if (pattern == null || pattern.hasSanad) allPayementType.add(KeyValue(3, "اسناد"))
-                if (pattern == null || pattern.hasCredit) allPayementType.add(
-                    KeyValue(
-                        4,
-                        "اعتباری"
-                    )
-                )
-            }
-        }
-
         val items = allPayementType.map { it.name }.toMutableList()
         allPayementTypeAdapter = SpinnerAdapter(requireContext(), items)
         binding.spPaymentType.adapter = allPayementTypeAdapter
+
+        if (factorViewModel.factorHeader.value!!.patternId != null) {
+            headerOrderViewModel.loadPatternById(factorViewModel.factorHeader.value!!.patternId!!)
+
+        }
+        headerOrderViewModel.pattern.observe(viewLifecycleOwner) { pattern ->
+            if (pattern == null || pattern.hasCash) allPayementType.add(KeyValue(0, "نقدی"))
+            if (pattern == null || pattern.hasMaturityCash) allPayementType.add(
+                KeyValue(
+                    1,
+                    "نقدی در سررسید"
+                )
+            )
+            if (pattern == null || pattern.hasSanadAndCash) allPayementType.add(
+                KeyValue(
+                    2,
+                    "نقد و اسناد"
+                )
+            )
+            if (pattern == null || pattern.hasSanad) allPayementType.add(KeyValue(3, "اسناد"))
+            if (pattern == null || pattern.hasCredit) allPayementType.add(
+                KeyValue(
+                    4,
+                    "اعتباری"
+                )
+            )
+        }
+
+
     }
 
     private fun showChooseDialog() {

@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "assign_direction_customer_table")
 data class AssignDirectionCustomerEntity(
-    @PrimaryKey val id: Int,
+    val id: Int,
     val assignDirectionId: Int,
     val tafsiliId: Int,
     val mainCode: Int,
@@ -16,7 +16,7 @@ data class AssignDirectionCustomerEntity(
     val isDistribution: Boolean,
     val isDemands: Boolean,
     val isActive: Boolean,
-    val customerId: Int,
+    @PrimaryKey val customerId: Int,
     val saleCenterId: Int,
     val isVisitorDeactive: Boolean,
     val customerCode: Int,

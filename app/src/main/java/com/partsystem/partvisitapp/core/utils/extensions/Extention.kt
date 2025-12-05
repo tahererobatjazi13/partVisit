@@ -94,7 +94,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "fer act"
+git commit -m "factor header"
 git push -u origin master
 git push
 */

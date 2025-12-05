@@ -53,7 +53,7 @@ class HeaderOrderRepository @Inject constructor(
         patternDao.getAllPatterns()
 
     fun getAct(): Flow<List<ActEntity>> =
-        actDao.getAllActs()
+        actDao.getActs()
 
 
     suspend fun getPatternById(id: Int): PatternEntity? {

@@ -17,6 +17,27 @@ interface CustomerDao {
     suspend fun insertCustomers(customers: List<CustomerEntity>)
 
     // کنترل برنامه ویزیت غیرفعال
+
+    @Query(
+        """
+        SELECT c.* 
+        FROM customer_table c
+        INNER JOIN assign_direction_customer_table adc
+            ON c.id = adc.customerId 
+           AND adc.saleCenterId = c.saleCenterId 
+        WHERE c.saleCenterId = :saleCenterId 
+          AND adc.tafsiliId = :visitorId
+        ORDER BY c.code ASC
+    """
+    )
+     fun getCustomersWithoutVisitSchedule(
+        saleCenterId: Int,
+        visitorId: Int
+    ): Flow<List<CustomerEntity>>
+
+
+
+    /*
     @Query(
         """
     SELECT c.*
@@ -31,7 +52,7 @@ interface CustomerDao {
     fun getCustomersWithoutVisitSchedule(
         saleCenterId: Int,
         visitorId: Int
-    ): Flow<List<CustomerEntity>>
+    ): Flow<List<CustomerEntity>>*/
 
 
     // کنترل برنامه ویزیت فعال

@@ -19,12 +19,13 @@ interface ActDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertActDetails(list: List<ActDetailEntity>)
 
-    @Query("SELECT * FROM act_table")
-    fun getAllActs(): Flow<List<ActEntity>>
+    @Query("SELECT * FROM act_table ORDER BY Code ASC")
+    fun getActs(): Flow<List<ActEntity>>
 
     @Transaction
     @Query("SELECT * FROM act_table")
     suspend fun getActWithDetails(): List<ActWithDetails>
+    
 
     @Query("DELETE FROM act_table")
     suspend fun clearAct()
