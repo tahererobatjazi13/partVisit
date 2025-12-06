@@ -127,3 +127,9 @@ enum class FactorFormKind {
      */
     RegisterOrderDistribute
 }
+
+enum class SaleRateKind {
+    Pattern,
+    Act,
+    None
+}

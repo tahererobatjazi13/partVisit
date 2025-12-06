@@ -21,7 +21,10 @@ import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.utils.ActKind
 import com.partsystem.partvisitapp.core.utils.FactorFormKind
+import com.partsystem.partvisitapp.core.utils.SaleRateKind
+import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.BottomSheetChooseDialog
+import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getCurrentTime
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
@@ -63,7 +66,7 @@ class HeaderOrderFragment : Fragment() {
     private lateinit var actAdapter: SpinnerAdapter
     private lateinit var allPayementTypeAdapter: SpinnerAdapter
 
-    private lateinit var factor: FactorHeaderEntity
+    // private lateinit var factor: FactorHeaderEntity
     private var controlVisit: Boolean = false
     private var userId: Int = 0
     private var visitorId: Int = 0
@@ -254,11 +257,11 @@ class HeaderOrderFragment : Fragment() {
                         allPattern.clear()
                         if (factorViewModel.factorHeader.value?.customerId != null) {
                             headerOrderViewModel.loadPatterns(
-                                factor.customerId!!,
-                                factor.saleCenterId,
-                                factor.invoiceCategoryId,
-                                factor.settlementKind,
-                                factor.persianDate!!
+                                factorViewModel.factorHeader.value!!.customerId!!,
+                                factorViewModel.factorHeader.value!!.saleCenterId,
+                                factorViewModel.factorHeader.value!!.invoiceCategoryId,
+                                factorViewModel.factorHeader.value!!.settlementKind,
+                                factorViewModel.factorHeader.value!!.persianDate!!
                             )
                             headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
                                 allPattern.clear()
@@ -503,8 +506,8 @@ class HeaderOrderFragment : Fragment() {
                 description = binding.etDescription.text.toString(),
                 createDate = "2025-11-30"
             )
+            validateHeader()
 
-            showChooseDialog()
         }
 
         // ------------------------- Listen to Customer Selection -------------------------
@@ -515,6 +518,45 @@ class HeaderOrderFragment : Fragment() {
             val customerName = bundle.getString(CustomerListBottomSheet.ARG_CUSTOMER_NAME)
             val customerId = bundle.getInt(CustomerListBottomSheet.ARG_CUSTOMER_ID)
             loadCustomerData(customerId, customerName!!)
+        }
+    }
+
+    private fun validateHeader() {
+
+        val factor = factorViewModel.factorHeader.value ?: return
+
+        // خطای دسته‌بندی فاکتور (خارج از ViewModel)
+        if (factor.invoiceCategoryId == null) {
+            CustomSnackBar.make(
+                requireView(),
+                getString(R.string.error_selecting_invoice_category_mandatory),
+                SnackBarType.Error.value
+            )?.show()
+            return
+        }
+
+        // اجرای اعتبارسنجی ViewModel
+        headerOrderViewModel.validateHeader(
+            saleCenterId = saleCenterId,
+            factor = factor
+        )
+
+        // دریافت نتیجه اعتبارسنجی
+        headerOrderViewModel.validationResult.observe(viewLifecycleOwner) { isValid ->
+            if (isValid) {
+                showChooseDialog()
+            }
+        }
+
+        // دریافت پیام خطا و نمایش با CustomSnackBar
+        headerOrderViewModel.errorMessageRes.observe(viewLifecycleOwner) { msgResId ->
+            msgResId?.let {
+                CustomSnackBar.make(
+                    requireView(),
+                    getString(it),
+                    SnackBarType.Error.value
+                )?.show()
+            }
         }
     }
 

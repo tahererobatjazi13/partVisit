@@ -17,6 +17,9 @@ interface SaleCenterDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUsers(users: List<SaleCenterUserEntity>)
 
+    @Query("SELECT * FROM sale_center_table WHERE id = :id LIMIT 1")
+    suspend fun getSaleCenter(id: Int): SaleCenterEntity?
+
     @Transaction
     suspend fun insertFull(center: SaleCenterEntity, anbars: List<SaleCenterAnbarEntity>, users: List<SaleCenterUserEntity>) {
         insertSaleCenter(center)

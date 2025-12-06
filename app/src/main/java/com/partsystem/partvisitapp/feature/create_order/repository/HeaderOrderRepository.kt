@@ -45,6 +45,10 @@ class HeaderOrderRepository @Inject constructor(
     fun getSaleCenters(invoiceCategoryId: Int): List<SaleCenterEntity> =
         saleCenterDao.getSaleCenters(invoiceCategoryId)
 
+    suspend fun getSaleCenter(id: Int): SaleCenterEntity? {
+        return saleCenterDao.getSaleCenter(id)
+    }
+
     fun getInvoiceCategory(userId: Int): Flow<List<InvoiceCategoryEntity>> {
         return invoiceCategoryDao.getInvoiceCategory(userId)
     }

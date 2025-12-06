@@ -135,7 +135,11 @@
     <string name="error_enter_username">نام کاربری را وارد کنید</string>
     <string name="error_no_items_cart">هیچ آیتمی به سبد خرید اضافه نشده</string>
     <string name="error_user_not_found">کاربر یافت نشد</string>
+    <string name="error_selecting_invoice_category_mandatory">انتخاب گروه صورت حساب اجباری است</string>
+    <string name="error_selecting_pattern_mandatory">انتخاب طرح فروش اجباری است</string>
+    <string name="error_selecting_act_mandatory">انتخاب مصوبه اجباری است</string>
     <string name="error_visitor_not_assigned_account">ویزیتور به این حساب کاربری تخصیص داده نشده است</string>
+    <string name="error_there_not_default_warehouse_sales_center">انبار پیش فرض برای این مرکز فروش وجود ندارد</string>
     <string name="error_sales_center_not_assigned_visitor">مرکز فروش به ویزیتور تخصیص داده نشده است</string>
 
 
