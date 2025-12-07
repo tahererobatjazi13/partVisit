@@ -614,6 +614,13 @@ class HeaderOrderFragment : Fragment() {
 
     private fun fillPaymentType() {
         allPayementType.clear()
+        // ابتدا تمام موارد را اضافه کن
+        allPayementType.add(KeyValue(0, "نقدی"))
+        allPayementType.add(KeyValue(1, "نقدی در سررسید"))
+        allPayementType.add(KeyValue(2, "نقد و اسناد"))
+        allPayementType.add(KeyValue(3, "اسناد"))
+        allPayementType.add(KeyValue(4, "اعتباری"))
+
         val items = allPayementType.map { it.name }.toMutableList()
         allPayementTypeAdapter = SpinnerAdapter(requireContext(), items)
         binding.spPaymentType.adapter = allPayementTypeAdapter

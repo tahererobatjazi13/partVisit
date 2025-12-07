@@ -13,6 +13,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
+import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -114,7 +116,8 @@ class ProductListFragment : Fragment() {
     private fun initAdapter() {
         val currentQuantities = mutableMapOf<Int, Int>()
 
-        productListAdapter = ProductListAdapter(fromFactor = args.fromFactor,
+        productListAdapter = ProductListAdapter(
+            fromFactor = args.fromFactor,
 
             onAddToCart = { item, quantity ->
                 cartViewModel.addToCart(item, quantity)
@@ -139,68 +142,21 @@ class ProductListFragment : Fragment() {
         }
     }
 
-    /*
-        private fun observeData() {
-            // لیست محصولات فیلترشده
-            productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
-                if (filteredProducts.isEmpty()) {
-                    binding.info.show()
-                    binding.info.message(requireContext().getString(R.string.msg_no_product))
-                    binding.rvProduct.hide()
-                } else {
-                    binding.info.gone()
-                    binding.rvProduct.show()
-                    productListAdapter.setData(
-                        filteredProducts,
-                        productViewModel.productImages.value ?: emptyMap()
-                    )
-
-                    // بارگذاری عکس‌ها برای این محصولات
-                    productViewModel.loadProductImages(filteredProducts)
-                }
-            }
-
-            // مشاهده تغییرات عکس‌ها
-            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-                val products = productViewModel.filteredList.value ?: emptyList()
-                productListAdapter.setData(products, imagesMap)
-            }
-        }
-    */
     private fun observeData() {
+
         if (args.fromFactor) {
-//            //  مشاهده محصولات فاکتور
-//            productViewModel.products.observe(viewLifecycleOwner) { list ->
-//                if (list.isEmpty()) {
-//                    binding.info.show()
-//                    binding.info.message(requireContext().getString(R.string.msg_no_product))
-//                    binding.rvProduct.hide()
-//                } else {
-//                    binding.info.gone()
-//                    binding.rvProduct.show()
-//                    productListAdapter.setData(list)  // Adapter با ProductEntity یا ProductModel
-//                }
-//            }
-
-            productViewModel.filteredList.observe(viewLifecycleOwner) { list ->
-                val images = productViewModel.productImages.value ?: emptyMap()
-                if (list.isEmpty()) {
-                    binding.info.show()
-                    binding.info.message(requireContext().getString(R.string.msg_no_product))
-                    binding.rvProduct.hide()
-                } else {
-                    binding.info.gone()
-                    binding.rvProduct.show()
-                    productListAdapter.setData(list, images)
-                    // Adapter با ProductEntity یا ProductModel
-                }
-            }
-
-// فراخوانی
-            productViewModel.loadProducts(
+            productViewModel.loadProductsWithAct(
                 groupProductId = null,
                 actId = 195
             )
+            productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
+                val images = productViewModel.productImages.value ?: emptyMap()
+                updateUI(list, images)
+            }
+            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+                val list = productViewModel.filteredWithActList.value ?: emptyList()
+                productListAdapter.setProductWithActData(list, imagesMap)
+            }
         } else {
             // مشاهده محصولات
             productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
@@ -213,23 +169,44 @@ class ProductListFragment : Fragment() {
                 } else {
                     binding.info.gone()
                     binding.rvProduct.show()
-                    productListAdapter.setData(filteredProducts, imagesMap)
-
+                    productListAdapter.setProductData(filteredProducts, imagesMap)
                 }
             }
-        }
 
-        // مشاهده تغییرات عکس‌ها
-        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-            val products = productViewModel.filteredList.value ?: emptyList()
-            productListAdapter.setData(products, imagesMap)
+            // مشاهده تغییرات عکس‌ها
+            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+                val products = productViewModel.filteredList.value ?: emptyList()
+                productListAdapter.setProductData(products, imagesMap)
+            }
+        }
+    }
+
+    private fun updateUI(
+        list: List<ProductWithPacking>,
+        images: Map<Int, List<ProductImageEntity>>
+    ) {
+        if (list.isEmpty()) {
+            binding.info.show()
+            binding.info.message(getString(R.string.msg_no_product))
+            binding.rvProduct.hide()
+        } else {
+            binding.info.gone()
+            binding.rvProduct.show()
+            productListAdapter.setProductWithActData(list, images)
         }
     }
 
     private fun setupSearch() {
-        binding.etSearch.addTextChangedListener { editable ->
-            val query = editable.toString()
-            productViewModel.filterProducts(query)
+        if (args.fromFactor) {
+            binding.etSearch.addTextChangedListener { editable ->
+                val query = editable.toString()
+                productViewModel.filterProducts(query)
+            }
+        } else {
+            binding.etSearch.addTextChangedListener { editable ->
+                val query = editable.toString()
+                productViewModel.filterProductsWithAct(query)
+            }
         }
     }
 
@@ -239,8 +216,6 @@ class ProductListFragment : Fragment() {
             binding.hfProduct.textBadge = if (count > 0) count.toString() else ""
         }
     }
-
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

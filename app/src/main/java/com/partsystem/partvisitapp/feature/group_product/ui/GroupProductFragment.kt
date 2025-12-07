@@ -10,8 +10,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
+import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
+import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentGroupProductBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.CartViewModel
@@ -66,7 +69,7 @@ class GroupProductFragment : Fragment() {
             latestCategoryId?.let { categoryId ->
                 val products =
                     groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
-              //  productListAdapter.setData(products, imagesMap)
+               productListAdapter.setProductData(products, imagesMap)
             }
         }
     }
@@ -105,7 +108,7 @@ class GroupProductFragment : Fragment() {
         val currentQuantities = mutableMapOf<Int, Int>()
 
         productListAdapter = ProductListAdapter(
-           fromFactor =  args.fromFactor,
+            fromFactor =  args.fromFactor,
             onAddToCart = { item, quantity ->
                 cartViewModel.addToCart(item, quantity)
             },
@@ -206,14 +209,14 @@ class GroupProductFragment : Fragment() {
                 }
             }
 
-      /*  productViewModel.groupProductImages.observe(viewLifecycleOwner) { imagesMap ->
+        productViewModel.groupProductImages.observe(viewLifecycleOwner) { imagesMap ->
             if (latestSubGroupId == subGroupId) {
                 categoryAdapter.setImages(imagesMap)
             }
-        }*/
+        }
     }
 
-    private fun observeProductsByCategory(categoryId: Int) {
+/*    private fun observeProductsByCategory(categoryId: Int) {
         latestCategoryId = categoryId
         groupProductViewModel.getProductsByCategory(categoryId)
             .observe(viewLifecycleOwner) { products ->
@@ -228,12 +231,66 @@ class GroupProductFragment : Fragment() {
                         binding.infoProduct.gone()
                         binding.tvTitleProduct.show()
                         binding.rvProduct.show()
-                      //  productListAdapter.setData(products, imagesMap)
+                        productListAdapter.setProductData(products, imagesMap)
                     }
                 }
             }
-    }
+    }*/
 
+    private fun observeProductsByCategory(categoryId: Int) {
+
+        if (args.fromFactor) {
+
+            productViewModel.loadProductsWithAct(
+                groupProductId = categoryId,
+                actId = 195
+            )
+
+
+            productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
+                val images = productViewModel.productImages.value ?: emptyMap()
+                updateUI(list, images)
+            }
+            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+                val list = productViewModel.filteredWithActList.value ?: emptyList()
+                productListAdapter.setProductWithActData(list, imagesMap)
+            }
+        } else {
+
+            latestCategoryId = categoryId
+            groupProductViewModel.getProductsByCategory(categoryId)
+                .observe(viewLifecycleOwner) { products ->
+                    if (latestCategoryId == categoryId) {
+                        val imagesMap = productViewModel.productImages.value ?: emptyMap()
+                        if (products.isNullOrEmpty()) {
+                            binding.infoProduct.show()
+                            binding.tvTitleProduct.show()
+                            binding.infoProduct.message(getString(R.string.msg_no_product))
+                            binding.rvProduct.gone()
+                        } else {
+                            binding.infoProduct.gone()
+                            binding.tvTitleProduct.show()
+                            binding.rvProduct.show()
+                            productListAdapter.setProductData(products, imagesMap)
+                        }
+                    }
+                }
+        }
+    }
+    private fun updateUI(
+        list: List<ProductWithPacking>,
+        images: Map<Int, List<ProductImageEntity>>
+    ) {
+        if (list.isEmpty()) {
+            binding.info.show()
+            binding.info.message(getString(R.string.msg_no_product))
+            binding.rvProduct.hide()
+        } else {
+            binding.info.gone()
+            binding.rvProduct.show()
+            productListAdapter.setProductWithActData(list, images)
+        }
+    }
     private fun observeCartBadge() {
         cartViewModel.totalCount.observe(viewLifecycleOwner) { count ->
             binding.hfGroupProduct.isShowBadge = count > 0
