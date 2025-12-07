@@ -30,4 +30,6 @@ data class ProductDto(
     val saleGroupId: Int?,
     val saleGroupDetailId: Int?,
     val saleRastehId: Int?,
+    val convertRatio: Double?,
+    val calculateUnit2Type: Int?,
 )

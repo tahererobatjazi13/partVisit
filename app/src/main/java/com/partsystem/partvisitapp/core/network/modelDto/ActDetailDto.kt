@@ -12,5 +12,8 @@ data class ActDetailDto(
     val arzRate: Double,
     val description: String?,
     val saleRate: Double,
-    val dataDictionaryId: Int?
+    val dataDictionaryId: Int?,
+    var rateAfterVatAndToll: Float? = null,
+    var vatPercent: Float? = null,
+    var tollPercent: Float? = null
 )

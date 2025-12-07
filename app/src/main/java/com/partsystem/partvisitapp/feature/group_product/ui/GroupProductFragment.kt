@@ -66,13 +66,13 @@ class GroupProductFragment : Fragment() {
             latestCategoryId?.let { categoryId ->
                 val products =
                     groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
-                productListAdapter.setData(products, imagesMap)
+              //  productListAdapter.setData(products, imagesMap)
             }
         }
     }
 
     private fun init() {
-        binding.hfGroupProduct.isShowImgOne = args.typeShow
+        binding.hfGroupProduct.isShowImgOne = args.fromFactor
         binding.collapsingToolbar.title = getString(R.string.label_product_group)
     }
 
@@ -105,7 +105,7 @@ class GroupProductFragment : Fragment() {
         val currentQuantities = mutableMapOf<Int, Int>()
 
         productListAdapter = ProductListAdapter(
-            args.typeShow,
+           fromFactor =  args.fromFactor,
             onAddToCart = { item, quantity ->
                 cartViewModel.addToCart(item, quantity)
             },
@@ -206,11 +206,11 @@ class GroupProductFragment : Fragment() {
                 }
             }
 
-        productViewModel.groupProductImages.observe(viewLifecycleOwner) { imagesMap ->
+      /*  productViewModel.groupProductImages.observe(viewLifecycleOwner) { imagesMap ->
             if (latestSubGroupId == subGroupId) {
                 categoryAdapter.setImages(imagesMap)
             }
-        }
+        }*/
     }
 
     private fun observeProductsByCategory(categoryId: Int) {
@@ -228,7 +228,7 @@ class GroupProductFragment : Fragment() {
                         binding.infoProduct.gone()
                         binding.tvTitleProduct.show()
                         binding.rvProduct.show()
-                        productListAdapter.setData(products, imagesMap)
+                      //  productListAdapter.setData(products, imagesMap)
                     }
                 }
             }

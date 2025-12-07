@@ -94,7 +94,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "validate header"
+git commit -m "product query"
 git push -u origin master
 git push
 */

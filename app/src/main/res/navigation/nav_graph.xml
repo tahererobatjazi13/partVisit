@@ -89,7 +89,7 @@
         android:label="GroupProductFragment"
         tools:layout="@layout/fragment_group_product">
         <argument
-            android:name="typeShow"
+            android:name="fromFactor"
             app:argType="boolean" />
         <action
             android:id="@+id/action_groupProductFragment_to_productDetailFragment"
@@ -134,7 +134,7 @@
             app:destination="@id/productDetailFragment" />
 
         <argument
-            android:name="typeShow"
+            android:name="fromFactor"
             app:argType="boolean" />
         <action
             android:id="@+id/action_productListFragment_to_orderFragment"

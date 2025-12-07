@@ -35,6 +35,9 @@ data class ProductEntity(
     val saleGroupId: Int?,
     val saleGroupDetailId: Int?,
     val saleRastehId: Int?,
+    val convertRatio: Double?,
+    var calculateUnit2Type: Int? = null
+
 )
 
 /*{

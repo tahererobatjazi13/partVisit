@@ -139,9 +139,10 @@ fun ProductDto.toEntity() = ProductEntity(
     saleName = saleName,
     saleGroupId = saleGroupId,
     saleGroupDetailId = saleGroupDetailId,
-    saleRastehId = saleRastehId
+    saleRastehId = saleRastehId,
+    convertRatio = convertRatio,
+    calculateUnit2Type = calculateUnit2Type,
 )
-
 
 suspend fun ProductImageDto.toEntity(context: Context): ProductImageEntity {
     val localPath = saveBase64ImageToFile(fileData, "image_${id}", context)
@@ -342,7 +343,10 @@ fun ActDetailDto.toEntity() = ActDetailEntity(
     arzRate = arzRate,
     description = description,
     saleRate = saleRate,
-    dataDictionaryId = dataDictionaryId
+    dataDictionaryId = dataDictionaryId,
+    rateAfterVatAndToll = rateAfterVatAndToll,
+    vatPercent = vatPercent,
+    tollPercent = tollPercent,
 )
 
 fun VatDto.toEntity() = VatEntity(

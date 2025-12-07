@@ -37,6 +37,7 @@ class ProductDetailFragment : Fragment() {
         observeData()
         setupClicks()
     }
+
     private fun observeData() {
         productViewModel.getProductById(args.productId).observe(viewLifecycleOwner) { product ->
             if (product != null) {
@@ -54,16 +55,17 @@ class ProductDetailFragment : Fragment() {
         // مشاهده عکس
         productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
             val images = imagesMap[args.productId]
-        if (!images.isNullOrEmpty()) {
-            val localPath = images.first().localPath
-            Glide.with(binding.ivProduct.context)
-                .load(File(localPath))
-                .placeholder(R.drawable.ic_placeholder)
-                .error(R.drawable.ic_placeholder)
-                .into(binding.ivProduct)
-        } else {
-            binding.ivProduct.setImageResource(R.drawable.ic_placeholder)
-        }}
+            if (!images.isNullOrEmpty()) {
+                val localPath = images.first().localPath
+                Glide.with(binding.ivProduct.context)
+                    .load(File(localPath))
+                    .placeholder(R.drawable.ic_placeholder)
+                    .error(R.drawable.ic_placeholder)
+                    .into(binding.ivProduct)
+            } else {
+                binding.ivProduct.setImageResource(R.drawable.ic_placeholder)
+            }
+        }
     }
 
     private fun setupClicks() {

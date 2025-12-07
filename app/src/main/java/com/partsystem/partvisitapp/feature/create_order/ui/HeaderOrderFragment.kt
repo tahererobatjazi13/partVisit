@@ -506,7 +506,9 @@ class HeaderOrderFragment : Fragment() {
                 description = binding.etDescription.text.toString(),
                 createDate = "2025-11-30"
             )
-            validateHeader()
+            showChooseDialog()
+
+            // validateHeader()
 
         }
 

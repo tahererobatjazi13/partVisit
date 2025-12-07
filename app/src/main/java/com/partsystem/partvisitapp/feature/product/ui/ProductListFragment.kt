@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.product.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -20,6 +21,7 @@ import com.partsystem.partvisitapp.feature.create_order.ui.CartViewModel
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
+@SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
 
@@ -54,7 +56,7 @@ class ProductListFragment : Fragment() {
     }
 
     private fun init() {
-        binding.hfProduct.isShowImgOne = args.typeShow
+        binding.hfProduct.isShowImgOne = args.fromFactor
     }
 
     private fun setupClicks() {
@@ -112,7 +114,7 @@ class ProductListFragment : Fragment() {
     private fun initAdapter() {
         val currentQuantities = mutableMapOf<Int, Int>()
 
-        productListAdapter = ProductListAdapter(typeShow = args.typeShow,
+        productListAdapter = ProductListAdapter(fromFactor = args.fromFactor,
 
             onAddToCart = { item, quantity ->
                 cartViewModel.addToCart(item, quantity)
@@ -137,53 +139,87 @@ class ProductListFragment : Fragment() {
         }
     }
 
-/*
-    private fun observeData() {
-        // لیست محصولات فیلترشده
-        productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
-            if (filteredProducts.isEmpty()) {
-                binding.info.show()
-                binding.info.message(requireContext().getString(R.string.msg_no_product))
-                binding.rvProduct.hide()
-            } else {
-                binding.info.gone()
-                binding.rvProduct.show()
-                productListAdapter.setData(
-                    filteredProducts,
-                    productViewModel.productImages.value ?: emptyMap()
-                )
+    /*
+        private fun observeData() {
+            // لیست محصولات فیلترشده
+            productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
+                if (filteredProducts.isEmpty()) {
+                    binding.info.show()
+                    binding.info.message(requireContext().getString(R.string.msg_no_product))
+                    binding.rvProduct.hide()
+                } else {
+                    binding.info.gone()
+                    binding.rvProduct.show()
+                    productListAdapter.setData(
+                        filteredProducts,
+                        productViewModel.productImages.value ?: emptyMap()
+                    )
 
-                // بارگذاری عکس‌ها برای این محصولات
-                productViewModel.loadProductImages(filteredProducts)
+                    // بارگذاری عکس‌ها برای این محصولات
+                    productViewModel.loadProductImages(filteredProducts)
+                }
+            }
+
+            // مشاهده تغییرات عکس‌ها
+            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+                val products = productViewModel.filteredList.value ?: emptyList()
+                productListAdapter.setData(products, imagesMap)
+            }
+        }
+    */
+    private fun observeData() {
+        if (args.fromFactor) {
+//            //  مشاهده محصولات فاکتور
+//            productViewModel.products.observe(viewLifecycleOwner) { list ->
+//                if (list.isEmpty()) {
+//                    binding.info.show()
+//                    binding.info.message(requireContext().getString(R.string.msg_no_product))
+//                    binding.rvProduct.hide()
+//                } else {
+//                    binding.info.gone()
+//                    binding.rvProduct.show()
+//                    productListAdapter.setData(list)  // Adapter با ProductEntity یا ProductModel
+//                }
+//            }
+
+            productViewModel.filteredList.observe(viewLifecycleOwner) { list ->
+                val images = productViewModel.productImages.value ?: emptyMap()
+                if (list.isEmpty()) {
+                    binding.info.show()
+                    binding.info.message(requireContext().getString(R.string.msg_no_product))
+                    binding.rvProduct.hide()
+                } else {
+                    binding.info.gone()
+                    binding.rvProduct.show()
+                    productListAdapter.setData(list, images)
+                    // Adapter با ProductEntity یا ProductModel
+                }
+            }
+
+// فراخوانی
+            productViewModel.loadProducts(
+                groupProductId = null,
+                actId = 195
+            )
+        } else {
+            // مشاهده محصولات
+            productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
+                val imagesMap = productViewModel.productImages.value ?: emptyMap()
+
+                if (filteredProducts.isEmpty()) {
+                    binding.info.show()
+                    binding.info.message(requireContext().getString(R.string.msg_no_product))
+                    binding.rvProduct.hide()
+                } else {
+                    binding.info.gone()
+                    binding.rvProduct.show()
+                    productListAdapter.setData(filteredProducts, imagesMap)
+
+                }
             }
         }
 
         // مشاهده تغییرات عکس‌ها
-        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-            val products = productViewModel.filteredList.value ?: emptyList()
-            productListAdapter.setData(products, imagesMap)
-        }
-    }
-*/
-    private fun observeData() {
-
-        // مشاهده محصولات
-        productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
-            val imagesMap = productViewModel.productImages.value ?: emptyMap()
-
-            if (filteredProducts.isEmpty()) {
-                binding.info.show()
-                binding.info.message(requireContext().getString(R.string.msg_no_product))
-                binding.rvProduct.hide()
-            } else {
-                binding.info.gone()
-                binding.rvProduct.show()
-                productListAdapter.setData(filteredProducts, imagesMap)
-
-            }
-        }
-
-    // مشاهده تغییرات عکس‌ها
         productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
             val products = productViewModel.filteredList.value ?: emptyList()
             productListAdapter.setData(products, imagesMap)

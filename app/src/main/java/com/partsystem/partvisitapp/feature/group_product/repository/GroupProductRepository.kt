@@ -1,6 +1,5 @@
 package com.partsystem.partvisitapp.feature.group_product.repository
 
-import androidx.lifecycle.LiveData
 import com.partsystem.partvisitapp.core.database.dao.GroupProductDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
