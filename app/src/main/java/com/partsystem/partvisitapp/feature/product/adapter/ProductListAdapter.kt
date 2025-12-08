@@ -3,7 +3,9 @@ package com.partsystem.partvisitapp.feature.product.adapter
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.partsystem.partvisitapp.R
@@ -13,6 +15,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemProductBinding
+import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
 import java.io.File
 import java.text.DecimalFormat
 
@@ -24,6 +27,7 @@ class ProductListAdapter(
 ) : RecyclerView.Adapter<ProductListAdapter.ProductViewHolder>() {
 
     private val formatter = DecimalFormat("#,###")
+    private lateinit var productPacking: SpinnerAdapter
 
     private var productEntities: List<ProductEntity> = emptyList()
     private var productWithAct: List<ProductWithPacking> = emptyList()
@@ -140,6 +144,37 @@ class ProductListAdapter(
                     .into(ivProduct)
             } else {
                 ivProduct.setImageResource(R.drawable.ic_placeholder)
+            }
+
+
+
+            val packingNames: MutableList<String> = product.packings
+                .map { it.packingName ?: "" }
+                .toMutableList()
+
+           // اگر می‌خوای نمایش کاربر پسند باشه و موارد خالی رو حذف کنی:
+            // val packingNames = product.packings.mapNotNull { it.packingName }.toMutableList()
+
+            val spinnerAdapter = SpinnerAdapter(root.context, packingNames)
+            spProductPacking.adapter = spinnerAdapter
+
+            // تعیین انتخاب پیش‌فرض (اگر وجود داشته باشد)
+            val defaultIndex = product.packings.indexOfFirst { it.isDefault == true }
+            if (defaultIndex >= 0 && defaultIndex < packingNames.size) {
+                spProductPacking.setSelection(defaultIndex)
+            } else if (packingNames.isNotEmpty()) {
+                spProductPacking.setSelection(0)
+            }
+
+           // هندل انتخاب کاربر
+            spProductPacking.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    val selectedPacking = product.packings.getOrNull(position)
+                    // اینجا می‌تونی callback بزنی یا ViewModel رو آپدیت کنی:
+                    // onPackingSelected(product.product.id, selectedPacking?.id)
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) { /* no-op */ }
             }
 
             clUnitName.gone()

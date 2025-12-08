@@ -44,6 +44,26 @@ interface ProductDao {
     """)
     fun getProductsWithActDetails(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>>
 
+/*
+    @Transaction
+    @Query("""
+    SELECT p.*,
+           ad.rate AS rate,
+           ad.vatPercent AS vatPercent,
+           ad.tollPercent AS tollPercent,
+           ad.rate * ad.tollPercent AS toll,
+           ad.rate * ad.vatPercent AS vat,
+           ad.rateAfterVatAndToll AS rateAfterVatAndToll
+    FROM product_table p
+    INNER JOIN act_detail_table ad ON ad.productId = p.id
+    WHERE (:groupProductId = '' OR
+           p.saleGroupId = :groupProductId OR
+           p.saleGroupDetailId = :groupProductId OR
+           p.saleRastehId = :groupProductId)
+      AND (:actId = '' OR ad.actId = :actId)
+    ORDER BY p.code
+""")
+    fun getProductsWithActDetails(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>>*/
 }
 
 

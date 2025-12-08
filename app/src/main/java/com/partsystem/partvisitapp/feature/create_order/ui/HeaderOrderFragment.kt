@@ -15,13 +15,11 @@ import androidx.navigation.fragment.navArgs
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
-import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.utils.ActKind
 import com.partsystem.partvisitapp.core.utils.FactorFormKind
-import com.partsystem.partvisitapp.core.utils.SaleRateKind
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.BottomSheetChooseDialog
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar

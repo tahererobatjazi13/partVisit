@@ -22,6 +22,7 @@
     <string name="label_unsent_orders">سفارشات ارسال نشده</string>
     <string name="label_date_item">تاریخ:</string>
     <string name="label_number">تعداد:</string>
+    <string name="label_number_units">تعدادواحد:</string>
     <string name="label_number_packing">تعداد بسته:</string>
     <string name="label_order_number">شماره سفارش:</string>
     <string name="label_agent">نماینده:</string>
