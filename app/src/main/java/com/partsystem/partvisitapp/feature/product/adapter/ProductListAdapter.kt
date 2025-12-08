@@ -34,14 +34,20 @@ class ProductListAdapter(
     private var imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()
     private var useModel = false
 
-    fun setProductData(list: List<ProductEntity>, imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()) {
+    fun setProductData(
+        list: List<ProductEntity>,
+        imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()
+    ) {
         this.productEntities = list
         this.imagesMap = imagesMap
         this.useModel = false
         notifyDataSetChanged()
     }
 
-    fun setProductWithActData(list: List<ProductWithPacking>, imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()) {
+    fun setProductWithActData(
+        list: List<ProductWithPacking>,
+        imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()
+    ) {
         this.productWithAct = list
         this.imagesMap = imagesMap
         this.useModel = true
@@ -67,8 +73,8 @@ class ProductListAdapter(
         }
     }
 
-
-    inner class ProductViewHolder(private val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ProductViewHolder(private val binding: ItemProductBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         private var watcher: TextWatcher? = null
 
@@ -88,47 +94,18 @@ class ProductListAdapter(
             } else {
                 ivProduct.setImageResource(R.drawable.ic_placeholder)
             }
-
-            if (fromFactor) {
-                llPrice.show()
-                clAmount.show()
-                tvPrice.text = formatter.format(product.unitId ?: 0) + " ریال"
-
-                watcher?.let { etAmount.removeTextChangedListener(it) }
-
-                val quantity = currentQuantities[product.id] ?: 0
-                if (etAmount.text.toString() != quantity.toString()) etAmount.setText(quantity.toString())
-
-                watcher = object : TextWatcher {
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                    override fun afterTextChanged(s: Editable?) {
-                        val newQty = s.toString().toIntOrNull() ?: 0
-                        onAddToCart(product, newQty)
-                    }
-                }
-                etAmount.addTextChangedListener(watcher)
-
-                ivMax.setOnClickListener {
-                    val currentQty = etAmount.text.toString().toIntOrNull() ?: 0
-                    etAmount.setText((currentQty + 1).toString())
-                }
-
-                ivMin.setOnClickListener {
-                    val currentQty = etAmount.text.toString().toIntOrNull() ?: 0
-                    etAmount.setText((currentQty - 1).coerceAtLeast(0).toString())
-                }
-
-                root.setOnClickListener(null)
-            } else {
-                llPrice.gone()
-                clAmount.gone()
-                root.setOnClickListener { onClick(product) }
-            }
+            llPrice.gone()
+            cvProductPacking.gone()
+            clAmount.gone()
+            root.setOnClickListener { onClick(product) }
         }
 
         // برای ProductModel
         fun bind(product: ProductWithPacking, images: List<ProductImageEntity>) = with(binding) {
+
+            llPrice.show()
+            clAmount.show()
+            cvProductPacking.show()
 
             tvNameProduct.text = "${bindingAdapterPosition + 1}_  ${product.product.name ?: ""}"
             tvUnitName.text = "" // در ProductModel unitName نداریم، می‌توان اضافه کرد اگر لازم باشد
@@ -146,13 +123,37 @@ class ProductListAdapter(
                 ivProduct.setImageResource(R.drawable.ic_placeholder)
             }
 
+            watcher?.let { etAmount.removeTextChangedListener(it) }
 
+               val quantity = currentQuantities[product.product.id] ?: 0
+             if (etAmount.text.toString() != quantity.toString()) etAmount.setText(quantity.toString())
 
+            watcher = object : TextWatcher {
+                  override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                  override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                  override fun afterTextChanged(s: Editable?) {
+                      val newQty = s.toString().toIntOrNull() ?: 0
+                      onAddToCart(product.product, newQty)
+                  }
+              }
+            etAmount.addTextChangedListener(watcher)
+
+            ivMax.setOnClickListener {
+                val currentQty = etAmount.text.toString().toIntOrNull() ?: 0
+                etAmount.setText((currentQty + 1).toString())
+            }
+
+            ivMin.setOnClickListener {
+                val currentQty = etAmount.text.toString().toIntOrNull() ?: 0
+                etAmount.setText((currentQty - 1).coerceAtLeast(0).toString())
+            }
+
+            root.setOnClickListener(null)
             val packingNames: MutableList<String> = product.packings
                 .map { it.packingName ?: "" }
                 .toMutableList()
 
-           // اگر می‌خوای نمایش کاربر پسند باشه و موارد خالی رو حذف کنی:
+            // اگر می‌خوای نمایش کاربر پسند باشه و موارد خالی رو حذف کنی:
             // val packingNames = product.packings.mapNotNull { it.packingName }.toMutableList()
 
             val spinnerAdapter = SpinnerAdapter(root.context, packingNames)
@@ -166,15 +167,21 @@ class ProductListAdapter(
                 spProductPacking.setSelection(0)
             }
 
-           // هندل انتخاب کاربر
+            // هندل انتخاب کاربر
             spProductPacking.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
                     val selectedPacking = product.packings.getOrNull(position)
                     // اینجا می‌تونی callback بزنی یا ViewModel رو آپدیت کنی:
                     // onPackingSelected(product.product.id, selectedPacking?.id)
                 }
 
-                override fun onNothingSelected(parent: AdapterView<*>?) { /* no-op */ }
+                override fun onNothingSelected(parent: AdapterView<*>?) { /* no-op */
+                }
             }
 
             clUnitName.gone()
