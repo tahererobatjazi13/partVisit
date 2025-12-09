@@ -20,6 +20,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentProductListBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.CartViewModel
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -33,7 +34,7 @@ class ProductListFragment : Fragment() {
     private val args: ProductListFragmentArgs by navArgs()
 
     private val productViewModel: ProductViewModel by viewModels()
-    private val cartViewModel: CartViewModel by viewModels()
+    private val factorViewModel: FactorViewModel by viewModels()
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
     private val clearIcon by lazy { requireContext().getDrawable(R.drawable.ic_clear) }
@@ -119,8 +120,8 @@ class ProductListFragment : Fragment() {
         productListAdapter = ProductListAdapter(
             fromFactor = args.fromFactor,
 
-            onAddToCart = { item, quantity ->
-                cartViewModel.addToCart(item, quantity)
+            onAddToCart = { item ->
+                factorViewModel.addToCart(item)
             },
             currentQuantities = currentQuantities,
 
@@ -211,7 +212,7 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartBadge() {
-        cartViewModel.totalCount.observe(viewLifecycleOwner) { count ->
+        factorViewModel.totalCount.observe(viewLifecycleOwner) { count ->
             binding.hfProduct.isShowBadge = count > 0
             binding.hfProduct.textBadge = if (count > 0) count.toString() else ""
         }

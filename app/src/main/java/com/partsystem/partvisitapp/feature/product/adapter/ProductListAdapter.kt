@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.card.MaterialCardView
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
@@ -21,14 +23,11 @@ import java.text.DecimalFormat
 
 class ProductListAdapter(
     private val fromFactor: Boolean = false,
-    private val onAddToCart: (ProductEntity, Int) -> Unit = { _, _ -> },
+    private val onAddToCart: (FactorDetailEntity) -> Unit,
     private val currentQuantities: Map<Int, Int> = emptyMap(),
     private val onClick: (ProductEntity) -> Unit = {}
 ) : RecyclerView.Adapter<ProductListAdapter.ProductViewHolder>() {
-
     private val formatter = DecimalFormat("#,###")
-    private lateinit var productPacking: SpinnerAdapter
-
     private var productEntities: List<ProductEntity> = emptyList()
     private var productWithAct: List<ProductWithPacking> = emptyList()
     private var imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()
@@ -65,7 +64,7 @@ class ProductListAdapter(
         if (useModel) {
             val product = productWithAct[position]
             val images = imagesMap[product.product.id] ?: emptyList()
-            holder.bind(product, images)   // ✔ درست
+            holder.bind(product, images)
         } else {
             val product = productEntities[position]
             val images = imagesMap[product.id] ?: emptyList()
@@ -76,7 +75,8 @@ class ProductListAdapter(
     inner class ProductViewHolder(private val binding: ItemProductBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        private var watcher: TextWatcher? = null
+        private var watcherUnit1Value: TextWatcher? = null
+        private var watcherPackingValue: TextWatcher? = null
 
         // برای ProductEntity
         fun bind(product: ProductEntity, images: List<ProductImageEntity>) = with(binding) {
@@ -106,10 +106,18 @@ class ProductListAdapter(
             llPrice.show()
             clAmount.show()
             cvProductPacking.show()
+            clUnitName.gone()
 
+            // حذف Ripple فقط در این حالت
+            (root as MaterialCardView).apply {
+                isClickable = false
+                isFocusable = false
+                rippleColor = null
+                foreground = null
+            }
             tvNameProduct.text = "${bindingAdapterPosition + 1}_  ${product.product.name ?: ""}"
             tvUnitName.text = "" // در ProductModel unitName نداریم، می‌توان اضافه کرد اگر لازم باشد
-            tvPrice.text = formatter.format(product.product.unitId ?: 0.0) + " ریال"
+            tvPrice.text = "قیمت: ${formatter.format(product.finalRate)}"+ " ریال"
 
             // نمایش تصویر
             if (!images.isNullOrEmpty()) {
@@ -123,32 +131,77 @@ class ProductListAdapter(
                 ivProduct.setImageResource(R.drawable.ic_placeholder)
             }
 
-            watcher?.let { etAmount.removeTextChangedListener(it) }
+            watcherUnit1Value?.let { etUnit1Value.removeTextChangedListener(it) }
+            watcherPackingValue?.let { etPackingValue.removeTextChangedListener(it) }
 
                val quantity = currentQuantities[product.product.id] ?: 0
-             if (etAmount.text.toString() != quantity.toString()) etAmount.setText(quantity.toString())
+             if (etUnit1Value.text.toString() != quantity.toString()) etUnit1Value.setText(quantity.toString())
 
-            watcher = object : TextWatcher {
-                  override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                  override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                  override fun afterTextChanged(s: Editable?) {
-                      val newQty = s.toString().toIntOrNull() ?: 0
-                      onAddToCart(product.product, newQty)
-                  }
-              }
-            etAmount.addTextChangedListener(watcher)
+            watcherUnit1Value = object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+                override fun afterTextChanged(s: Editable?) {
+
+                    val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
+                    val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+
+                    val selectedPacking = product.packings.getOrNull(spProductPacking.selectedItemPosition)
+
+                    val factorItem = FactorDetailEntity(
+                        id = null,
+                        sortCode = bindingAdapterPosition,
+                        productId = product.product.id,
+                        actId = 195,
+                        unit1Value = unit1Value,
+                        unit2Value = 0.0,
+                        price = product.finalRate,
+                        packingId = selectedPacking?.id,
+                        packingValue = packingValue,
+                        vat = 0.0
+                    )
+                    factorItem.setProduct(product.product)
+
+                    onAddToCart(factorItem)
+                }
+            }
+
+            watcherPackingValue = object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: Editable?) {
+                    val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
+                    val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+
+                    val selectedPacking = product.packings.getOrNull(spProductPacking.selectedItemPosition)
+                    val factorItem = FactorDetailEntity(
+                        id = null,
+                        sortCode = bindingAdapterPosition,
+                        productId = product.product.id,
+                        actId = 195,
+                        unit1Value = unit1Value,
+                        unit2Value = 0.0,
+                        price = product.finalRate,
+                        packingId = selectedPacking?.id,
+                        packingValue = packingValue,
+                        vat = 0.0
+                    )
+                    onAddToCart(factorItem)
+                }
+            }
+            etUnit1Value.addTextChangedListener(watcherUnit1Value)
+            etPackingValue.addTextChangedListener(watcherPackingValue)
 
             ivMax.setOnClickListener {
-                val currentQty = etAmount.text.toString().toIntOrNull() ?: 0
-                etAmount.setText((currentQty + 1).toString())
+                val currentQty = etUnit1Value.text.toString().toIntOrNull() ?: 0
+                etUnit1Value.setText((currentQty + 1).toString())
             }
 
             ivMin.setOnClickListener {
-                val currentQty = etAmount.text.toString().toIntOrNull() ?: 0
-                etAmount.setText((currentQty - 1).coerceAtLeast(0).toString())
+                val currentQty = etUnit1Value.text.toString().toIntOrNull() ?: 0
+                etUnit1Value.setText((currentQty - 1).coerceAtLeast(0).toString())
             }
 
-            root.setOnClickListener(null)
             val packingNames: MutableList<String> = product.packings
                 .map { it.packingName ?: "" }
                 .toMutableList()
@@ -184,10 +237,6 @@ class ProductListAdapter(
                 }
             }
 
-            clUnitName.gone()
-            llPrice.show()
-            clAmount.show()
-            root.setOnClickListener(null)
         }
     }
 }

@@ -59,7 +59,7 @@ class SpinnerAdapter(
                 ContextCompat.getColor(context, R.color.gray_dark)
             binding.root.setBackgroundColor(bgColor)
         } else {
-            binding.root.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+            binding.root.setBackgroundColor(ContextCompat.getColor(context, R.color.transparent))
             binding.view.gone()
         }
 

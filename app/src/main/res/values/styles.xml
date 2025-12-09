@@ -135,7 +135,13 @@
         <!--<item name="strokeColor">?attr/colorSurface</item>
         <item name="strokeWidth">1dp</item>-->
     </style>
-
+    <style name="RoundedCardViewStrokeStyle">
+        <item name="cardCornerRadius">@dimen/normal_size</item>
+        <item name="cardBackgroundColor">?attr/colorBasic</item>
+        <item name="cardElevation">@dimen/_6sdp</item>
+        <item name="strokeColor">@android:color/transparent</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
     <style name="RoundedCardViewStyleCustom">
         <item name="cardCornerRadius">@dimen/normal_size</item>
         <item name="cardBackgroundColor">?attr/colorBackSurface</item>

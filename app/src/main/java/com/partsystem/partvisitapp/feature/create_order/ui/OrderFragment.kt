@@ -11,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.OrderEntity
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
@@ -26,11 +27,11 @@ class OrderFragment : Fragment() {
     private var _binding: FragmentOrderBinding? = null
     private val binding get() = _binding!!
 
-    private val cartViewModel: CartViewModel by viewModels()
+    private val factorViewModel: FactorViewModel by viewModels()
     private lateinit var orderAdapter: OrderAdapter
 
     private val formatter = DecimalFormat("#,###,###,###")
-    private var currentCartItems: List<OrderEntity> = emptyList()
+    private var currentCartItems: List<FactorDetailEntity> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -106,10 +107,10 @@ class OrderFragment : Fragment() {
 
         orderAdapter = OrderAdapter(
             onQuantityChange = { item, quantity ->
-                cartViewModel.updateQuantity(item.productId, quantity)
+                //  cartViewModel.updateQuantity(item.productId, quantity)
             },
             onDelete = { item ->
-                cartViewModel.removeFromCart(item)
+                factorViewModel.deleteFactorDetail(item)
             }
         )
 
@@ -119,8 +120,8 @@ class OrderFragment : Fragment() {
             adapter = orderAdapter
         }
 
-        // فقط یک observe روی allCartItems
-        cartViewModel.allCartItems.observe(viewLifecycleOwner) { list ->
+        // فقط یک observe روی allFactorDetails
+        factorViewModel.allFactorDetails.observe(viewLifecycleOwner) { list ->
             currentCartItems = list ?: emptyList()
             orderAdapter.submitList(list?.toList())
 
@@ -139,9 +140,12 @@ class OrderFragment : Fragment() {
     }
 
 
-    private fun calculateTotalPrices(items: List<OrderEntity>?) {
+    private fun calculateTotalPrices(items: List<FactorDetailEntity>?) {
         items ?: return
-        val total = items.sumOf { it.price * it.quantity }
+        val total = items.sumOf {
+            it.price!!.toInt()
+            /** it.unit1Value*/
+        }
         with(binding) {
             tvTotalOrder.text = "${formatter.format(total)} ریال"
             //  tvDiscountOrder.text = formatter.format(0) // جایگزین با مقدار واقعی

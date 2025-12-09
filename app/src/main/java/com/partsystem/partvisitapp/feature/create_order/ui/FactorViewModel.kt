@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
@@ -10,6 +11,9 @@ import com.partsystem.partvisitapp.feature.create_order.repository.HeaderOrderRe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+import androidx.lifecycle.viewModelScope
+import com.partsystem.partvisitapp.core.database.entity.OrderEntity
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
@@ -22,6 +26,34 @@ class FactorViewModel @Inject constructor(
     val factorDetails = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
     val factorGifts = MutableLiveData<MutableList<FactorGiftInfoEntity>>(mutableListOf())
 
+    private val factorItems = mutableMapOf<Int, FactorDetailEntity>()
+
+    private val _totalCount = MutableLiveData(0)
+    val totalCount: LiveData<Int> = _totalCount
+
+
+    val allFactorDetails: LiveData<List<FactorDetailEntity>> = factorRepository.getAllFactorDetail()
+
+    fun addToCart(item: FactorDetailEntity) {
+        val productId = item.productId ?: return
+        if ((item.unit1Value ?: 0.0) > 0.0 || (item.packingValue ?: 0.0) > 0.0) {
+            factorItems[productId] = item
+        } else {
+            factorItems.remove(productId)
+        }
+
+        _totalCount.value = factorItems.size
+
+        viewModelScope.launch {
+            factorRepository.insertFactorDetail(item)
+        }
+    }
+
+    fun deleteFactorDetail(item: FactorDetailEntity) {
+        viewModelScope.launch {
+            factorRepository.deleteFactorDetail(item.productId!!)
+        }
+    }
     // اضافه کردن کالا
     fun addDetail(detail: FactorDetailEntity) {
         val list = factorDetails.value!!

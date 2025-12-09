@@ -31,11 +31,17 @@ interface ProductDao {
     /*@Query("SELECT * FROM product_table WHERE subGroupId = :subGroupId")
     fun getProductsBySubGroup(subGroupId: Int): LiveData<List<ProductEntity>>*/
 
+
     @Transaction
     @Query("""
-        SELECT  p.*, ad.rate AS rate, ad.vatPercent AS vatPercent, ad.tollPercent AS tollPercent
-        FROM product_table p
-        INNER JOIN act_detail_table ad ON ad.productId = p.id
+       SELECT  
+        p.*,
+        ad.rate AS actRate,
+        ad.vatPercent AS actVatPercent,
+        ad.tollPercent AS actTollPercent,
+        (ad.rate + (ad.rate * ad.vatPercent) + (ad.rate * ad.tollPercent)) AS finalRate
+    FROM product_table p
+    INNER JOIN act_detail_table ad ON ad.productId = p.id
         WHERE (:groupProductId IS NULL OR p.saleGroupId = :groupProductId 
                OR p.saleGroupDetailId = :groupProductId 
                OR p.saleRastehId = :groupProductId)

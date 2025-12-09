@@ -18,9 +18,8 @@
             android:id="@+id/clName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/clPrice"
+            app:layout_constraintStart_toEndOf="@id/clEnd"
             app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textview.MaterialTextView
@@ -35,17 +34,29 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clAmount"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/small_size"
+                android:layout_marginTop="@dimen/x_small_size"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvName">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvTitleNumberUnits"
+                    style="@style/XSmallTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/label_number_units"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/clAmountValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/x_small_size"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTitleNumberUnits"
                     app:layout_constraintTop_toTopOf="parent">
 
                     <androidx.appcompat.widget.AppCompatImageView
@@ -55,26 +66,38 @@
                         android:layout_marginEnd="@dimen/xx_small_size"
                         android:background="@drawable/background_minus"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/etAmount"
+                        app:layout_constraintEnd_toStartOf="@+id/clUnit1Value"
                         app:layout_constraintTop_toTopOf="parent"
                         app:srcCompat="@drawable/ic_minus" />
 
-                    <androidx.appcompat.widget.AppCompatEditText
-                        android:id="@+id/etAmount"
-                        style="@style/SmallBoldTextStyle"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/clUnit1Value"
                         android:layout_width="@dimen/_33sdp"
-                        android:layout_height="@dimen/_23sdp"
-                        android:layout_centerVertical="true"
+                        android:layout_height="@dimen/_30sdp"
                         android:background="@drawable/background_edittext"
-                        android:cursorVisible="true"
-                        android:gravity="center"
-                        android:inputType="numberDecimal"
-                        android:text="0"
-                        android:textDirection="ltr"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/ivMin"
                         app:layout_constraintStart_toEndOf="@+id/ivMax"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/etUnit1Value"
+                            style="@style/Input"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_centerVertical="true"
+                            android:layout_marginHorizontal="@dimen/xx_small_size"
+                            android:cursorVisible="true"
+                            android:gravity="center"
+                            android:inputType="numberDecimal"
+                            android:text="0"
+                            android:textDirection="ltr"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/ivMax"
@@ -85,36 +108,126 @@
                         android:background="@drawable/background_plus"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@+id/etAmount"
+                        app:layout_constraintStart_toEndOf="@+id/clUnit1Value"
                         app:layout_constraintTop_toTopOf="parent"
                         app:srcCompat="@drawable/ic_plus" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/clPacking"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/medium_size"
+                    app:layout_constraintEnd_toStartOf="@+id/clAmountValue"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvTitleNumberPacking"
+                        style="@style/XSmallTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_number_packing"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/clPackingValue"
+                        android:layout_width="@dimen/_45sdp"
+                        android:layout_height="@dimen/_30sdp"
+                        android:layout_marginEnd="@dimen/x_small_size"
+                        android:background="@drawable/background_edittext"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/tvTitleNumberPacking"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/etPackingValue"
+                            style="@style/Input"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_centerVertical="true"
+                            android:layout_marginHorizontal="@dimen/xx_small_size"
+                            android:cursorVisible="true"
+                            android:gravity="center"
+                            android:inputType="numberDecimal"
+                            android:textDirection="ltr"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clProductPacking"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/xx_small_size"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/clAmount">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvTitleProductPacking"
+                    style="@style/XSmallTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/small_size"
+                    android:text="@string/label_packing_type"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvProductPacking"
+                    style="@style/SmallTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    android:layout_marginHorizontal="@dimen/xx_small_size"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvTitleProductPacking"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/xx_small_size"
+            android:layout_marginVertical="@dimen/xxx_small_size"
+            android:background="@drawable/dashline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/clName" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clPrice"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/small_size"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/clName"
-            app:layout_constraintStart_toEndOf="@id/clEnd"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvPrice"
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/medium_size"
                 android:drawableEnd="@drawable/ic_price"
                 android:drawablePadding="@dimen/xxx_small_size"
-                android:text="1000 ریال"
+                android:text="@string/app_price_item"
                 android:textColor="@color/colorPrimary"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tvDiscountPrice"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
@@ -122,26 +235,28 @@
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1000 ریال"
+                android:layout_marginEnd="@dimen/medium_size"
+                android:text="@string/app_price_item"
+                app:layout_constraintEnd_toStartOf="@+id/tvPrice"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvPrice" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clDiscount"
                 android:layout_width="wrap_content"
-                android:layout_marginTop="@dimen/x_small_size"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/x_small_size"
                 android:background="@drawable/bg_rounded_rectangle_green"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvDiscountPrice">
+                app:layout_constraintTop_toBottomOf="@+id/tvPrice">
 
                 <com.google.android.material.textview.MaterialTextView
                     style="@style/SmallBoldTextStyle"
-                    android:drawableEnd="@drawable/ic_price_discount"
                     android:layout_width="wrap_content"
-                    android:drawablePadding="@dimen/xx_small_size"
                     android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/ic_price_discount"
+                    android:drawablePadding="@dimen/xx_small_size"
                     android:paddingHorizontal="@dimen/medium_size"
                     android:paddingVertical="@dimen/xxx_small_size"
                     android:text="@string/label_apply_discount"
@@ -157,7 +272,6 @@
             android:id="@+id/clEnd"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -177,7 +291,7 @@
         android:id="@+id/vSeparator"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@drawable/bg_shadow"
+        android:background="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/clMain" />

@@ -18,6 +18,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentGroupProductBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.CartViewModel
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.group_product.adapter.CategoryAdapter
 import com.partsystem.partvisitapp.feature.group_product.adapter.MainGroupAdapter
 import com.partsystem.partvisitapp.feature.group_product.adapter.SubGroupAdapter
@@ -42,7 +43,8 @@ class GroupProductFragment : Fragment() {
     private val args: GroupProductFragmentArgs by navArgs()
     private val groupProductViewModel: GroupProductViewModel by viewModels()
     private val productViewModel: ProductViewModel by viewModels()
-    private val cartViewModel: CartViewModel by viewModels()
+
+    private val factorViewModel: FactorViewModel by viewModels()
 
     private var latestMainGroupId: Int? = null
     private var latestSubGroupId: Int? = null
@@ -109,8 +111,8 @@ class GroupProductFragment : Fragment() {
 
         productListAdapter = ProductListAdapter(
             fromFactor =  args.fromFactor,
-            onAddToCart = { item, quantity ->
-                cartViewModel.addToCart(item, quantity)
+            onAddToCart = { item ->
+                factorViewModel.addToCart(item)
             },
             currentQuantities = currentQuantities,
             onClick = { product ->
@@ -292,7 +294,7 @@ class GroupProductFragment : Fragment() {
         }
     }
     private fun observeCartBadge() {
-        cartViewModel.totalCount.observe(viewLifecycleOwner) { count ->
+        factorViewModel.totalCount.observe(viewLifecycleOwner) { count ->
             binding.hfGroupProduct.isShowBadge = count > 0
             binding.hfGroupProduct.textBadge = if (count > 0) count.toString() else ""
         }

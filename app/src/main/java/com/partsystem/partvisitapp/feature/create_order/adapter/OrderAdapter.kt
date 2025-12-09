@@ -14,7 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.core.database.entity.Discount
+import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.OrderEntity
+import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.DialogSelectDiscountBinding
@@ -22,9 +24,9 @@ import com.partsystem.partvisitapp.databinding.ItemOrderBinding
 import java.text.DecimalFormat
 
 class OrderAdapter(
-    private val onQuantityChange: (OrderEntity, Int) -> Unit,
-    private val onDelete: (OrderEntity) -> Unit,
-) : ListAdapter<OrderEntity, OrderAdapter.OrderViewHolder>(
+    private val onQuantityChange: (FactorDetailEntity, Int) -> Unit,
+    private val onDelete: (FactorDetailEntity) -> Unit,
+) : ListAdapter<FactorDetailEntity, OrderAdapter.OrderViewHolder>(
     OrderDiffCallback()
 ) {
     private val formatter = DecimalFormat("#,###,###,###")
@@ -34,9 +36,10 @@ class OrderAdapter(
         private var watcher: TextWatcher? = null
 
         @SuppressLint("SetTextI18n")
-        fun bind(item: OrderEntity) = with(binding) {
-            tvName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
-            etAmount.setText(item.quantity.toString())
+        fun bind(item: FactorDetailEntity) = with(binding) {
+            tvName.text = "${bindingAdapterPosition + 1}_ ${item.product?.name ?: ""}"
+            etUnit1Value.setText(item.unit1Value.toString())
+            //tvProductPacking.text =item.packingValue
             if (bindingAdapterPosition % 2 == 0) {
                 clDiscount.show()
                 tvDiscountPrice.show()
@@ -44,19 +47,19 @@ class OrderAdapter(
                 tvDiscountPrice.text = formatter.format(item.price) + " ریال"
 
             } else {
-                clDiscount.hide()
-                tvDiscountPrice.hide()
-                tvPrice.text = formatter.format(item.price * item.quantity) + " ریال"
+                clDiscount.gone()
+                tvDiscountPrice.gone()
+                tvPrice.text = formatter.format(item.price ) + " ریال"
 
             }
             // حذف Watcher قبلی
             watcher?.let {
-                etAmount.removeTextChangedListener(it)
+                etUnit1Value.removeTextChangedListener(it)
             }
 
-            val quantity = item.quantity
-            if (etAmount.text.toString() != quantity.toString()) {
-                etAmount.setText(quantity.toString())
+            val quantity = item.unit1Value
+            if (etUnit1Value.text.toString() != quantity.toString()) {
+                etUnit1Value.setText(quantity.toString())
             }
 
             // ساخت Watcher جدید
@@ -75,24 +78,24 @@ class OrderAdapter(
                     onQuantityChange(item, newQty)
                 }
             }
-            etAmount.addTextChangedListener(watcher)
+            etUnit1Value.addTextChangedListener(watcher)
 
             ivMax.setOnClickListener {
-                item.quantity += 1
-                etAmount.setText(item.quantity.toString())
+            /*    item.unit1Value += 1
+                etUnit1Value.setText(item.unit1Value.toString())
                 tvPrice.text =
-                    formatter.format(item.price * item.quantity) + " ریال"
-                onQuantityChange(item, item.quantity)
+                    formatter.format(item.price * item.unit1Value) + " ریال"
+                onQuantityChange(item, item.unit1Value)*/
             }
 
             ivMin.setOnClickListener {
-                if (item.quantity > 0) {
-                    item.quantity -= 1
-                    etAmount.setText(item.quantity.toString())
+               /* if (item.unit1Value > 0) {
+                    item.unit1Value -= 1
+                    etUnit1Value.setText(item.unit1Value.toString())
                     tvPrice.text =
-                        formatter.format(item.price * item.quantity) + " ریال"
+                        formatter.format(item.price * item.unit1Value) + " ریال"
                 }
-                onQuantityChange(item, item.quantity)
+                onQuantityChange(item, item.unit1Value)*/
             }
 
             binding.ivDelete.setOnClickListener {
@@ -108,8 +111,8 @@ class OrderAdapter(
                         binding.tvPrice.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
 
                     // نمایش قیمت جدید (فرضی)
-                    val discountedPrice = item.price - (item.price * selectedDiscount.percent / 100)
-                    binding.tvDiscountPrice.text = "${discountedPrice.toInt()} ریال"
+                    val discountedPrice = item.price /*- (item.price * selectedDiscount.percent / 100)*/
+                    binding.tvDiscountPrice.text = "${discountedPrice!!.toInt()} ریال"
                 }
             }
 
@@ -160,15 +163,14 @@ class OrderAdapter(
         val isLastItem = position == itemCount - 1
         holder.binding.vSeparator.visibility = if (isLastItem) View.GONE else View.VISIBLE
     }
-
 }
 
-class OrderDiffCallback : DiffUtil.ItemCallback<OrderEntity>() {
-    override fun areItemsTheSame(oldItem: OrderEntity, newItem: OrderEntity): Boolean {
+class OrderDiffCallback : DiffUtil.ItemCallback<FactorDetailEntity>() {
+    override fun areItemsTheSame(oldItem: FactorDetailEntity, newItem: FactorDetailEntity): Boolean {
         return oldItem.productId == newItem.productId
     }
 
-    override fun areContentsTheSame(oldItem: OrderEntity, newItem: OrderEntity): Boolean {
+    override fun areContentsTheSame(oldItem: FactorDetailEntity, newItem: FactorDetailEntity): Boolean {
         return oldItem == newItem
     }
 }
