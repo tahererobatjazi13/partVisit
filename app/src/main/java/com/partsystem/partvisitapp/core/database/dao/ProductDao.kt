@@ -54,7 +54,7 @@ interface ProductDao {
     )
     fun getProductsWithActDetails(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>>
 
-
+    @Transaction
     @Query(
         """
         SELECT 
@@ -62,15 +62,15 @@ interface ProductDao {
             p.Code AS code,
             p.Name AS name,
             p.Description AS description,
-            ad.Rate AS rate,
+            ad.Rate AS actRate,
             ad.Rate * ad.TollPercent AS toll,
             ad.Rate * ad.VatPercent AS vat,
-            ad.TollPercent AS tollPercent,
-            ad.VatPercent AS vatPercent,
+            ad.TollPercent AS actTollPercent,
+            ad.VatPercent AS actVatPercent,
             p.Unit2Id AS unit2Id,
             p.ConvertRatio AS convertRatio,
             p.CalculateUnit2Type AS calculateUnit2Type,
-            ad.RateAfterVatAndToll AS rateAfterVatAndToll,
+            ad.RateAfterVatAndToll AS finalRate,
             a.FileName AS fileName
         FROM product_table p
         INNER JOIN act_detail_table ad ON ad.ProductId = p.Id

@@ -42,12 +42,12 @@ data class FactorDetailEntity(
     @Ignore
     var product: ProductWithPacking? = null
 
-    fun getActId(): Int? = actId
+  //  fun getActId(): Int? = actId
 
     @Ignore
     @Transient
     var factorHeader: FactorHeaderEntity? = null
-
+/*
     @Ignore
     suspend fun getProduct(viewModel: FactorViewModel): ProductWithPacking? {
         if (product == null && productId != null) {
@@ -55,19 +55,19 @@ data class FactorDetailEntity(
             product = viewModel.loadProduct(productId!!, act)
         }
         return product
-    }
+    }*/
 
     @Ignore
     @Transient
     var repository: ProductRepository? = null  // <-- Repository ذخیره شد
 
-    // تابع برای ست کردن Repository (یک بار کافی است)
-    fun setRepository(repo: ProductRepository) {
-        this.repository = repo
-    }
+//    // تابع برای ست کردن Repository (یک بار کافی است)
+//    fun setRepository(repo: ProductRepository) {
+//        this.repository = repo
+//    }
 
     @Ignore
-    fun setProduct(product: ProductWithPacking) {
+    fun applyProduct(product: ProductWithPacking) {
         this.product = product
 
         this.productId = product.product.id
@@ -78,7 +78,7 @@ data class FactorDetailEntity(
 
         val defaultPack = product.packings.firstOrNull { it.isDefault }
         if (defaultPack != null) {
-            setPacking(defaultPack)
+            applyPacking(defaultPack)
         }
     }
 
@@ -93,7 +93,7 @@ data class FactorDetailEntity(
 
 
     // ست کردن Packing
-    fun setPacking(value: ProductPackingEntity?) {
+    fun applyPacking(value: ProductPackingEntity?) {
         if (value == null) {
             packing = null
             packingId = null
