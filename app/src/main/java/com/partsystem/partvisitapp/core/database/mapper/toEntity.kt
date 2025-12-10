@@ -12,6 +12,7 @@ import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
+import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
@@ -35,6 +36,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.DiscountDto
 import com.partsystem.partvisitapp.core.network.modelDto.GroupProductDto
 import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
+import com.partsystem.partvisitapp.core.network.modelDto.MojoodiDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDetailDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
@@ -421,3 +423,16 @@ fun DiscountDto.toEntity() = DiscountEntity(
     toDate = toDate,
     toPersianDate = toPersianDate
 )
+
+fun MojoodiDto.toEntity() = MojoodiEntity(
+    anbarId = this.anbarId,
+    productId = this.productId,
+    productSerial = this.productSerial,
+    remainValue = this.remainValue,
+    remainValue2 = this.remainValue2,
+    kasriValue = this.kasriValue,
+    kasriValue2 = this.kasriValue2,
+    mojoodi = this.mojoodi,
+    mojoodi2 = this.mojoodi2
+)
+

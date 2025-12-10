@@ -17,7 +17,7 @@ import com.partsystem.partvisitapp.core.database.entity.*
         VatEntity::class, VatDetailEntity::class,
         SaleCenterEntity::class, SaleCenterAnbarEntity::class, SaleCenterUserEntity::class,
         DiscountEntity::class, FactorHeaderEntity::class, FactorDetailEntity::class,
-        FactorDiscountEntity::class, FactorGiftInfoEntity::class],
+        FactorDiscountEntity::class, FactorGiftInfoEntity::class, MojoodiEntity::class],
     version = 1,
     exportSchema = false
 )
@@ -43,5 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun saleCenterDao(): SaleCenterDao
     abstract fun discountDao(): DiscountDao
     abstract fun factorDao(): FactorDao
+    abstract fun mojoodiDao(): MojoodiDao
+
 }
 

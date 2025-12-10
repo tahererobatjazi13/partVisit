@@ -13,12 +13,16 @@ import javax.inject.Inject
 
 import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.database.entity.OrderEntity
+import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
+import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
     private val repository: HeaderOrderRepository,
     private val factorRepository: FactorRepository,
+    private val productRepository: ProductRepository,
 ) : ViewModel() {
 
 
@@ -98,5 +102,10 @@ class FactorViewModel @Inject constructor(
             factorDetails = factorDetails.value ?: emptyList(),
             factorGiftInfos = factorGifts.value ?: emptyList()
         )
+
+    }
+
+    suspend fun loadProduct(productId: Int, actId: Int): ProductWithPacking? {
+        return productRepository.getProductByActId(productId, actId)
     }
 }

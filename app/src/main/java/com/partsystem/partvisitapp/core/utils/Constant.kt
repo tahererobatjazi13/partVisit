@@ -133,3 +133,14 @@ enum class SaleRateKind {
     Act,
     None
 }
+
+enum class CalculateUnit2Type {
+    //        [Description("میانگین واحد اول بر اساس واحد دوم")]
+    AverageUnits,
+
+    //        [Description("فرمول استاندارد")]
+    StandardFormula,
+
+    //        [Description("توسط کاربر")]
+    Manual
+}

@@ -10,6 +10,7 @@ import com.partsystem.partvisitapp.core.database.dao.CustomerDirectionDao
 import com.partsystem.partvisitapp.core.database.dao.DiscountDao
 import com.partsystem.partvisitapp.core.database.dao.GroupProductDao
 import com.partsystem.partvisitapp.core.database.dao.InvoiceCategoryDao
+import com.partsystem.partvisitapp.core.database.dao.MojoodiDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDetailDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
@@ -27,6 +28,7 @@ import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
+import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
@@ -68,6 +70,7 @@ class HomeRepository @Inject constructor(
     private val vatDao: VatDao,
     private val saleCenterDao: SaleCenterDao,
     private val discountDao: DiscountDao,
+    private val mojoodiDao: MojoodiDao,
 
     @ApplicationContext private val context: Context
 ) {
@@ -77,6 +80,7 @@ class HomeRepository @Inject constructor(
             userPreferences.personnelId.first() ?: 0
         }
     }
+
     suspend fun fetchAndSaveApplicationSetting(): NetworkResult<List<ApplicationSettingEntity>> {
         return try {
             val response = api.getApplicationSetting()
@@ -353,6 +357,7 @@ class HomeRepository @Inject constructor(
             NetworkResult.Error("Network error: ${e.localizedMessage}")
         }
     }
+
     suspend fun fetchAndSavePatternDetails(): NetworkResult<List<PatternDetailEntity>> {
         return try {
             val response = api.getPatternDetails(visitorId)
@@ -501,6 +506,7 @@ class HomeRepository @Inject constructor(
             return NetworkResult.Error("Network error: ${e.localizedMessage}")
         }
     }
+
 
 }
 

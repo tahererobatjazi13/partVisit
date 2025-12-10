@@ -1,7 +1,16 @@
 package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
+import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.core.utils.CalculateDiscount
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
+import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @Entity(tableName = "factor_detail_table")
@@ -30,20 +39,60 @@ data class FactorDetailEntity(
     // var factorDiscounts: MutableList<FactorDiscountEntity> = mutableListOf()
 ) {
 
-    @Transient
-    var product: ProductEntity? = null
+    @Ignore
+    var product: ProductWithPacking? = null
 
-    fun setProduct(p: ProductEntity) {
-        this.product = p
-        this.productId = p.id
+    fun getActId(): Int? = actId
+
+    @Ignore
+    @Transient
+    var factorHeader: FactorHeaderEntity? = null
+
+    @Ignore
+    suspend fun getProduct(viewModel: FactorViewModel): ProductWithPacking? {
+        if (product == null && productId != null) {
+            val act = getActId() ?: return null
+            product = viewModel.loadProduct(productId!!, act)
+        }
+        return product
     }
 
-    fun getProduct(): ProductEntity? = product
+    @Ignore
+    @Transient
+    var repository: ProductRepository? = null  // <-- Repository ذخیره شد
 
+    // تابع برای ست کردن Repository (یک بار کافی است)
+    fun setRepository(repo: ProductRepository) {
+        this.repository = repo
+    }
+
+    @Ignore
+    fun setProduct(product: ProductWithPacking) {
+        this.product = product
+
+        this.productId = product.product.id
+        this.productCode = product.product.code
+        this.productName = product.product.name
+
+        this.packing = null
+
+        val defaultPack = product.packings.firstOrNull { it.isDefault }
+        if (defaultPack != null) {
+            setPacking(defaultPack)
+        }
+    }
 
     @Transient
     var packing: ProductPackingEntity? = null
+    var anbarCode: String? = null
+    var anbarName: String? = null
+    var productCode: String? = null
+    var productName: String? = null
+    var packingCode: Int? = null
+    var packingName: String = ""
 
+
+    // ست کردن Packing
     fun setPacking(value: ProductPackingEntity?) {
         if (value == null) {
             packing = null
@@ -54,38 +103,34 @@ data class FactorDetailEntity(
             return
         }
 
-        // اگر تازه تنظیم می‌شود یا پَک قبلی متفاوت است
         if (packing == null || packing?.id != value.id) {
             packing = value
-
             packingId = value.packingId
             packingCode = value.packingCode
-            packingName = value.packingName
+            packingName = value.packingName ?: ""
 
-            // محاسبه unit و packingValue
-            val values = CalculateDiscount.getInstance(null)
-                .fillProductValues(
-                    anbarId,
-                    product,
-                    id,
-                    value,
-                    unit1Value,
-                    null,
-                    null,
-                    false
-                )
+            // اگر Repository تنظیم نشده بود، کاری انجام نده
+            val repo = repository ?: return
 
-            unit2Value = values["Unit2Value"] as? Double ?: unit2Value
-            packingValue = values["PackingValue"] as? Double ?: packingValue
+            // چون fillProductValues suspend است، باید Coroutine اجرا شود
+            CoroutineScope(Dispatchers.Main).launch {
+                product?.let { prod ->
+                    val calculator = CalculateDiscount(repo)
+                    val values = calculator.fillProductValues(
+                        anbarId = anbarId,
+                        product = prod.product,
+                        currentId = id,
+                        packing = packing,
+                        unit1ValueInput = unit1Value,
+                        unit2ValueInput = null,
+                        packingValueInput = null,
+                        isInput = false
+                    )
+                    // ست کردن مقادیر خروجی
+                    unit2Value = values.unit2Value
+                    packingValue = values.packingValue
+                }
+            }
         }
     }
-
-    fun getPacking(): ProductPackingEntity? {
-        if (packing == null && packingId != null) {
-            val list = product?.packings ?: return null
-            packing = list.find { it.packingId == packingId }
-        }
-        return packing
-    }
-
 }

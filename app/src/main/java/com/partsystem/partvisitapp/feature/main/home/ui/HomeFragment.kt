@@ -470,13 +470,17 @@ class HomeFragment : Fragment() {
                 when (item.id) {
                     1 -> { /* باز کردن صفحه کاتالوگ */
                         val action =
-                            HomeFragmentDirections.actionHomeFragmentToProductListFragment(fromFactor = false)
+                            HomeFragmentDirections.actionHomeFragmentToProductListFragment(
+                                fromFactor = false
+                            )
                         findNavController().navigate(action)
                     }
 
                     2 -> { /* باز کردن صفحه لیست کالاها */
                         val action =
-                            HomeFragmentDirections.actionHomeFragmentToGroupProductFragment(fromFactor = false)
+                            HomeFragmentDirections.actionHomeFragmentToGroupProductFragment(
+                                fromFactor = false
+                            )
                         findNavController().navigate(action)
                     }
 

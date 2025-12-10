@@ -95,6 +95,10 @@ object DatabaseModule {
         db.discountDao()
 
     @Provides
-    fun provideFactorDaoDao(db: AppDatabase): FactorDao =
+    fun provideFactorDao(db: AppDatabase): FactorDao =
         db.factorDao()
+
+    @Provides
+    fun provideMojoodiDao(db: AppDatabase): MojoodiDao =
+        db.mojoodiDao()
 }

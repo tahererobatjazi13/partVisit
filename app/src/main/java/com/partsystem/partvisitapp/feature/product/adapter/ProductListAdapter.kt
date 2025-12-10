@@ -160,7 +160,7 @@ class ProductListAdapter(
                         packingValue = packingValue,
                         vat = 0.0
                     )
-                    factorItem.setProduct(product.product)
+                    factorItem.setProduct(product)
 
                     onAddToCart(factorItem)
                 }

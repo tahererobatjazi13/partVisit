@@ -11,6 +11,7 @@ import com.partsystem.partvisitapp.core.network.modelDto.CustomerDirectionDto
 import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
 import com.partsystem.partvisitapp.core.network.modelDto.DiscountDto
 import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
+import com.partsystem.partvisitapp.core.network.modelDto.MojoodiDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDetailDto
 import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
 import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
@@ -74,6 +75,7 @@ interface ApiService {
 
     @GET("PatternDetail")
     suspend fun getPatternDetails(@Query("visitorId") visitorId: Int): Response<List<PatternDetailDto>>
+
     @GET("Act")
     suspend fun getAct(): Response<List<ActDto>>
 
@@ -107,4 +109,14 @@ interface ApiService {
 
     @POST("InsertFactor")
     suspend fun sendFactor(@Body request: FinalFactorRequest): Response<Any>
+
+
+    @GET("Mojoodi")
+    suspend fun getMojoodi(
+        @Query("anbarId") anbarId: Int,
+        @Query("productId") productId: Int,
+        @Query("persianDate") persianDate: String
+    ): Response<List<MojoodiDto>>
+
+
 }

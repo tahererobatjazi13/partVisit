@@ -37,6 +37,7 @@ class OrderAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
+            item.getProduct()
             tvName.text = "${bindingAdapterPosition + 1}_ ${item.product?.name ?: ""}"
             etUnit1Value.setText(item.unit1Value.toString())
             //tvProductPacking.text =item.packingValue

@@ -7,7 +7,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
+import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.core.network.modelDto.ProductWithRate
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -33,7 +35,8 @@ interface ProductDao {
 
 
     @Transaction
-    @Query("""
+    @Query(
+        """
        SELECT  
         p.*,
         ad.rate AS actRate,
@@ -47,29 +50,57 @@ interface ProductDao {
                OR p.saleRastehId = :groupProductId)
         AND (:actId IS NULL OR ad.actId = :actId)
         ORDER BY p.code
-    """)
+    """
+    )
     fun getProductsWithActDetails(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>>
 
-/*
-    @Transaction
-    @Query("""
-    SELECT p.*,
-           ad.rate AS rate,
-           ad.vatPercent AS vatPercent,
-           ad.tollPercent AS tollPercent,
-           ad.rate * ad.tollPercent AS toll,
-           ad.rate * ad.vatPercent AS vat,
-           ad.rateAfterVatAndToll AS rateAfterVatAndToll
-    FROM product_table p
-    INNER JOIN act_detail_table ad ON ad.productId = p.id
-    WHERE (:groupProductId = '' OR
-           p.saleGroupId = :groupProductId OR
-           p.saleGroupDetailId = :groupProductId OR
-           p.saleRastehId = :groupProductId)
-      AND (:actId = '' OR ad.actId = :actId)
-    ORDER BY p.code
-""")
-    fun getProductsWithActDetails(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>>*/
+
+    @Query(
+        """
+        SELECT 
+            p.id AS id,
+            p.Code AS code,
+            p.Name AS name,
+            p.Description AS description,
+            ad.Rate AS rate,
+            ad.Rate * ad.TollPercent AS toll,
+            ad.Rate * ad.VatPercent AS vat,
+            ad.TollPercent AS tollPercent,
+            ad.VatPercent AS vatPercent,
+            p.Unit2Id AS unit2Id,
+            p.ConvertRatio AS convertRatio,
+            p.CalculateUnit2Type AS calculateUnit2Type,
+            ad.RateAfterVatAndToll AS rateAfterVatAndToll,
+            a.FileName AS fileName
+        FROM product_table p
+        INNER JOIN act_detail_table ad ON ad.ProductId = p.Id
+        LEFT JOIN product_images_table a ON a.OwnerId = p.Id
+        WHERE p.Id = :id AND ad.ActId = :actId
+        LIMIT 1
+    """
+    )
+    suspend fun getProductWithRate(id: Int, actId: Int): ProductWithPacking?
+
+    /*
+        @Transaction
+        @Query("""
+        SELECT p.*,
+               ad.rate AS rate,
+               ad.vatPercent AS vatPercent,
+               ad.tollPercent AS tollPercent,
+               ad.rate * ad.tollPercent AS toll,
+               ad.rate * ad.vatPercent AS vat,
+               ad.rateAfterVatAndToll AS rateAfterVatAndToll
+        FROM product_table p
+        INNER JOIN act_detail_table ad ON ad.productId = p.id
+        WHERE (:groupProductId = '' OR
+               p.saleGroupId = :groupProductId OR
+               p.saleGroupDetailId = :groupProductId OR
+               p.saleRastehId = :groupProductId)
+          AND (:actId = '' OR ad.actId = :actId)
+        ORDER BY p.code
+    """)
+        fun getProductsWithActDetails(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>>*/
 }
 
 
