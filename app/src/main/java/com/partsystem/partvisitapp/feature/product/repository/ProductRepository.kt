@@ -48,8 +48,6 @@ class ProductRepository @Inject constructor(
         return dao.getProductWithRate(id, actId)
     }
 
-
-
     suspend fun fetchAndSaveMojoodi(
         anbarId: Int,
         productId: Int,

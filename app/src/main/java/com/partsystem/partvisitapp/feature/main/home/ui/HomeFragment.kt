@@ -595,6 +595,10 @@ class HomeFragment : Fragment() {
             db.vatDao().clearVat() // جدول مالیات
             db.saleCenterDao().clearSaleCenters() // جدول مراکز فروش
             db.discountDao().clearDiscounts() // جدول تخفیف
+            db.factorDao().clearFactorHeader() // جدول هدر فاکتور
+            db.factorDao().clearFactorDetails() // جدول جزییلات فاکتور
+            db.factorDao().clearFactorDiscount() // جدول تخفیفات فاکتور
+            db.factorDao().clearFactorGiftInfo() // جدول جایزه فاکتور
 
             // هدایت کاربر به صفحه Splash
             val intent = Intent(requireContext(), SplashActivity::class.java)

@@ -23,7 +23,7 @@ import java.text.DecimalFormat
 
 class ProductListAdapter(
     private val fromFactor: Boolean = false,
-    private val onAddToCart: (FactorDetailEntity) -> Unit,
+    private val onProductChanged: (FactorDetailEntity) -> Unit,
     private val currentQuantities: Map<Int, Int> = emptyMap(),
     private val onClick: (ProductEntity) -> Unit = {}
 ) : RecyclerView.Adapter<ProductListAdapter.ProductViewHolder>() {
@@ -32,6 +32,7 @@ class ProductListAdapter(
     private var productWithAct: List<ProductWithPacking> = emptyList()
     private var imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()
     private var useModel = false
+    private lateinit var productPackingAdapter: SpinnerAdapter
 
     fun setProductData(
         list: List<ProductEntity>,
@@ -108,8 +109,8 @@ class ProductListAdapter(
             cvProductPacking.show()
             clUnitName.gone()
 
-            // حذف Ripple فقط در این حالت
-            (root as MaterialCardView).apply {
+            // حذف Ripple در این حالت
+            root.apply {
                 isClickable = false
                 isFocusable = false
                 rippleColor = null
@@ -117,7 +118,7 @@ class ProductListAdapter(
             }
             tvNameProduct.text = "${bindingAdapterPosition + 1}_  ${product.product.name ?: ""}"
             tvUnitName.text = "" // در ProductModel unitName نداریم، می‌توان اضافه کرد اگر لازم باشد
-            tvPrice.text = "قیمت: ${formatter.format(product.finalRate)}"+ " ریال"
+            tvPrice.text = "قیمت: ${formatter.format(product.finalRate)}" + " ریال"
 
             // نمایش تصویر
             if (!images.isNullOrEmpty()) {
@@ -134,11 +135,52 @@ class ProductListAdapter(
             watcherUnit1Value?.let { etUnit1Value.removeTextChangedListener(it) }
             watcherPackingValue?.let { etPackingValue.removeTextChangedListener(it) }
 
-               val quantity = currentQuantities[product.product.id] ?: 0
-             if (etUnit1Value.text.toString() != quantity.toString()) etUnit1Value.setText(quantity.toString())
+            val quantity = currentQuantities[product.product.id] ?: 0
+            if (etUnit1Value.text.toString() != quantity.toString()) etUnit1Value.setText(quantity.toString())
 
             watcherUnit1Value = object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                }
+
+                override fun afterTextChanged(s: Editable?) {
+
+                    val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
+                    val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+                    val selectedPacking = product.packings.getOrNull(spProductPacking.selectedItemPosition)
+
+                    val detail = FactorDetailEntity(
+                    //    id = product.existingFactorId,   // ‼️ باید مقدار واقعی ذخیره‌شده داشته باشد
+                        sortCode = bindingAdapterPosition,
+                        productId = product.product.id,
+                        actId = 195,
+                        unit1Value = unit1Value,
+                        unit2Value = 0.0,
+                        price = product.finalRate,
+                        packingId = selectedPacking?.id,
+                        packingValue = packingValue,
+                        vat = 0.0
+                    )
+                    onProductChanged(detail)
+                }
+            }
+
+            watcherUnit1Value = object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
                 override fun afterTextChanged(s: Editable?) {
@@ -146,9 +188,10 @@ class ProductListAdapter(
                     val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
                     val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
 
-                    val selectedPacking = product.packings.getOrNull(spProductPacking.selectedItemPosition)
+                    val selectedPacking =
+                        product.packings.getOrNull(spProductPacking.selectedItemPosition)
 
-                    val factorItem = FactorDetailEntity(
+                    val detail = FactorDetailEntity(
                         id = null,
                         sortCode = bindingAdapterPosition,
                         productId = product.product.id,
@@ -160,21 +203,32 @@ class ProductListAdapter(
                         packingValue = packingValue,
                         vat = 0.0
                     )
-                    factorItem.applyProduct(product)
+                    detail.applyProduct(product)
 
-                    onAddToCart(factorItem)
+                    onProductChanged(detail)
                 }
             }
 
             watcherPackingValue = object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
                 override fun afterTextChanged(s: Editable?) {
+
                     val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
                     val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
 
-                    val selectedPacking = product.packings.getOrNull(spProductPacking.selectedItemPosition)
-                    val factorItem = FactorDetailEntity(
+                    val selectedPacking =
+                        product.packings.getOrNull(spProductPacking.selectedItemPosition)
+
+                    val detail = FactorDetailEntity(
                         id = null,
                         sortCode = bindingAdapterPosition,
                         productId = product.product.id,
@@ -186,9 +240,12 @@ class ProductListAdapter(
                         packingValue = packingValue,
                         vat = 0.0
                     )
-                    onAddToCart(factorItem)
+                    detail.applyProduct(product)
+
+                    onProductChanged(detail)
                 }
             }
+
             etUnit1Value.addTextChangedListener(watcherUnit1Value)
             etPackingValue.addTextChangedListener(watcherPackingValue)
 
@@ -209,8 +266,8 @@ class ProductListAdapter(
             // اگر می‌خوای نمایش کاربر پسند باشه و موارد خالی رو حذف کنی:
             // val packingNames = product.packings.mapNotNull { it.packingName }.toMutableList()
 
-            val spinnerAdapter = SpinnerAdapter(root.context, packingNames)
-            spProductPacking.adapter = spinnerAdapter
+            productPackingAdapter = SpinnerAdapter(root.context, packingNames)
+            spProductPacking.adapter = productPackingAdapter
 
             // تعیین انتخاب پیش‌فرض (اگر وجود داشته باشد)
             val defaultIndex = product.packings.indexOfFirst { it.isDefault == true }
@@ -220,7 +277,7 @@ class ProductListAdapter(
                 spProductPacking.setSelection(0)
             }
 
-            // هندل انتخاب کاربر
+
             spProductPacking.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>?,
@@ -229,13 +286,41 @@ class ProductListAdapter(
                     id: Long
                 ) {
                     val selectedPacking = product.packings.getOrNull(position)
-                    // اینجا می‌تونی callback بزنی یا ViewModel رو آپدیت کنی:
-                    // onPackingSelected(product.product.id, selectedPacking?.id)
+
+                    // مقدارهای فعلی
+                    val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
+                    val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+
+                    // ساخت FactorDetail
+                    val detail = FactorDetailEntity(
+                        id = null,
+                        sortCode = bindingAdapterPosition,
+                        productId = product.product.id,
+                        actId = 195,
+                        unit1Value = unit1Value,
+                        unit2Value = 0.0,
+                        price = product.finalRate,
+                        packingId = selectedPacking?.id,
+                        packingValue = packingValue,
+                        vat = 0.0
+                    )
+
+                    // 👈 این‌جا مقدار Packing را کامل اعمال و ذخیره می‌کنیم
+                    detail.applyPacking(selectedPacking)
+
+                    // 👈 ذخیره در Room
+                    //    viewModel.saveFactorItem(factorItem)
+
+                    // اگر لازم داری در سبد ثبت کنی
+                    onProductChanged(detail)
+
+                    // به‌روزرسانی Adapter
+                    productPackingAdapter.notifyDataSetChanged()
                 }
 
-                override fun onNothingSelected(parent: AdapterView<*>?) { /* no-op */
-                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
+
 
         }
     }

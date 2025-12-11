@@ -9,7 +9,7 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 interface FactorDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertFactor(factor: FactorHeaderEntity): Long
+    fun insertFactorHeader(header: FactorHeaderEntity): Long
 
     @Update
     fun updateFactor(factor: FactorHeaderEntity)
@@ -24,11 +24,26 @@ interface FactorDao {
     suspend fun getAllFactors(): List<FactorHeaderEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFactorDetail(item: FactorDetailEntity)
+    suspend fun insertFactorDetail(details: List<FactorDetailEntity>)
+
+    @Update
+    suspend fun updateFactorDetail(item: FactorDetailEntity)
 
     @Query("SELECT * FROM factor_detail_table")
     fun getAllFactorDetail(): LiveData<List<FactorDetailEntity>>
 
     @Query("DELETE FROM factor_detail_table WHERE productId = :productId")
     suspend fun deleteFactorDetail(productId: Int)
+
+    @Query("DELETE FROM factor_header_table")
+    suspend fun clearFactorHeader()
+
+    @Query("DELETE FROM factor_detail_table")
+    suspend fun clearFactorDetails()
+
+    @Query("DELETE FROM factor_discount_table")
+    suspend fun clearFactorDiscount()
+
+    @Query("DELETE FROM factor_gift_info_table")
+    suspend fun clearFactorGiftInfo()
 }

@@ -41,7 +41,6 @@ class OrderAdapter(
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
 
-
             CoroutineScope(Dispatchers.Main).launch {
                 val product =
                     loadProduct(item.productId!!, item.actId)
@@ -50,6 +49,7 @@ class OrderAdapter(
                     tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
                 }
             }
+           // tvName.text = "${bindingAdapterPosition + 1}_ ${item.product}"
 
             etUnit1Value.setText(item.unit1Value.toString())
             //tvProductPacking.text =item.packingValue

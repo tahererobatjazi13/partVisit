@@ -111,8 +111,8 @@ class GroupProductFragment : Fragment() {
 
         productListAdapter = ProductListAdapter(
             fromFactor =  args.fromFactor,
-            onAddToCart = { item ->
-                factorViewModel.addToCart(item)
+            onProductChanged = { item ->
+                factorViewModel.addDetail(item)
             },
             currentQuantities = currentQuantities,
             onClick = { product ->

@@ -12,11 +12,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 import androidx.lifecycle.viewModelScope
-import com.partsystem.partvisitapp.core.database.entity.OrderEntity
-import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
@@ -24,8 +25,6 @@ class FactorViewModel @Inject constructor(
     private val factorRepository: FactorRepository,
     private val productRepository: ProductRepository,
 ) : ViewModel() {
-
-
     val factorHeader = MutableLiveData(FactorHeaderEntity())
     val factorDetails = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
     val factorGifts = MutableLiveData<MutableList<FactorGiftInfoEntity>>(mutableListOf())
@@ -35,10 +34,9 @@ class FactorViewModel @Inject constructor(
     private val _totalCount = MutableLiveData(0)
     val totalCount: LiveData<Int> = _totalCount
 
-
     val allFactorDetails: LiveData<List<FactorDetailEntity>> = factorRepository.getAllFactorDetail()
 
-    fun addToCart(item: FactorDetailEntity) {
+    fun addDetail(item: FactorDetailEntity) {
         val productId = item.productId ?: return
         if ((item.unit1Value ?: 0.0) > 0.0 || (item.packingValue ?: 0.0) > 0.0) {
             factorItems[productId] = item
@@ -49,7 +47,7 @@ class FactorViewModel @Inject constructor(
         _totalCount.value = factorItems.size
 
         viewModelScope.launch {
-            factorRepository.insertFactorDetail(item)
+            // factorRepository.saveFactorDetails(item)
         }
     }
 
@@ -57,12 +55,6 @@ class FactorViewModel @Inject constructor(
         viewModelScope.launch {
             factorRepository.deleteFactorDetail(item.productId!!)
         }
-    }
-    // اضافه کردن کالا
-    fun addDetail(detail: FactorDetailEntity) {
-        val list = factorDetails.value!!
-        list.add(detail)
-        factorDetails.postValue(list)
     }
 
     // اضافه کردن تخفیف
@@ -98,14 +90,73 @@ class FactorViewModel @Inject constructor(
             directionDetailId = h.directionDetailId,
             latitude = h.latitude,
             longitude = h.longitude,
-
             factorDetails = factorDetails.value ?: emptyList(),
             factorGiftInfos = factorGifts.value ?: emptyList()
         )
-
     }
 
     suspend fun loadProduct(productId: Int, actId: Int): ProductWithPacking? {
         return productRepository.getProductByActId(productId, actId)
     }
+
+    suspend fun saveFactorHeader(header: FactorHeaderEntity) =
+        factorRepository.saveFactorHeader(header)
+
+
+    private val _selectedProducts = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
+    val selectedProducts: LiveData<MutableList<FactorDetailEntity>> = _selectedProducts
+
+    var header: FactorHeaderEntity? = null
+
+    fun saveHeader(header: FactorHeaderEntity) {
+        this.header = header
+    }
+
+/*    fun addOrUpdateProduct(detail: FactorDetailEntity) {
+        // اگر محصول تکراری بود، ویرایش شود
+        val index = selectedProducts.indexOfFirst { it.productId == detail.productId }
+        if (index >= 0) selectedProducts[index] = detail
+        else selectedProducts.add(detail)
+    }*/
+    fun addOrUpdateProduct(detail: FactorDetailEntity) {
+        val list = _selectedProducts.value ?: mutableListOf()
+
+        val index = list.indexOfFirst { it.productId == detail.productId }
+        if (index >= 0) list[index] = detail
+        else list.add(detail)
+
+        _selectedProducts.value = list
+    }
+
+/*    suspend fun saveToLocal() {
+        header?.let { hdr ->
+            val headerId = factorRepository.saveFactorHeader(hdr).toInt()
+            val mappedDetails = selectedProducts.map {
+                it.copy(factorId = headerId)
+            }
+            factorRepository.saveFactorDetails(mappedDetails)
+        }
+    }
+
+    fun buildFinalJson(): JSONObject {
+        val json = JSONObject()
+        val hdr = header!!
+
+        json.put("uniqueId", hdr.uniqueId)
+        json.put("formKind", hdr.formKind)
+        json.put("customerId", hdr.customerId)
+
+
+        val detailArray = JSONArray()
+        selectedProducts.forEach { d ->
+            val item = JSONObject()
+            item.put("productId", d.productId)
+            item.put("unit1Value", d.unit1Value)
+            item.put("price", d.price)
+            detailArray.put(item)
+        }
+
+        json.put("factorDetails", detailArray)
+        return json
+    }*/
 }

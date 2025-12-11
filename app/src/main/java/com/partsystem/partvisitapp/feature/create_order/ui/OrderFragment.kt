@@ -1,12 +1,14 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
@@ -19,6 +21,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderBinding
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerDetailFragmentDirections
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
 @AndroidEntryPoint
@@ -48,9 +51,7 @@ class OrderFragment : Fragment() {
         setupObserver()
         initAdapter()
     }
-
     private fun init() {
-
     }
 
     /**
@@ -66,15 +67,21 @@ class OrderFragment : Fragment() {
                 //tryAgain.gone()
             }
             btnDraftOrder.setOnClickListener {
+                lifecycleScope.launch {
+                 //   factorViewModel.saveToLocal()
+                }
+
                 val action =
                     OrderFragmentDirections.actionOrderFragmentToHomeFragment(
                     )
                 findNavController().navigate(action)
             }
+
             btnSendOrder.setOnClickListener {
-                val action =
-                    OrderFragmentDirections.actionOrderFragmentToHomeFragment(
-                    )
+                //val json = factorViewModel.buildFinalJson()
+                // api.sendFactor(json.toString())
+
+                val action = OrderFragmentDirections.actionOrderFragmentToHomeFragment()
                 findNavController().navigate(action)
             }
             btnCreateOrder.setOnClickBtnOneListener {
@@ -105,7 +112,7 @@ class OrderFragment : Fragment() {
 
     private fun initAdapter() {
 
-        orderAdapter = OrderAdapter(      loadProduct = { productId, actId ->
+        orderAdapter = OrderAdapter(loadProduct = { productId, actId ->
             factorViewModel.loadProduct(productId, actId ?: 195)
         },
             onQuantityChange = { item, quantity ->
@@ -113,6 +120,8 @@ class OrderFragment : Fragment() {
             },
             onDelete = { item ->
                 factorViewModel.deleteFactorDetail(item)
+                Log.d("DELETE_TEST", "delete productId = ${item.productId}")
+
             }
         )
 
@@ -121,11 +130,16 @@ class OrderFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = orderAdapter
         }
+//        val list = factorViewModel.selectedProducts
+//        orderAdapter.submitList(list)
+        factorViewModel.selectedProducts.observe(viewLifecycleOwner) {
+            orderAdapter.submitList(it.toList())    // مهم: toList ➜ create new list
+        }
 
-        // فقط یک observe روی allFactorDetails
+/*        // فقط یک observe روی allFactorDetails
         factorViewModel.allFactorDetails.observe(viewLifecycleOwner) { list ->
-            currentCartItems = list ?: emptyList()
-            orderAdapter.submitList(list?.toList())
+            //  currentCartItems = list ?: emptyList()
+            //  orderAdapter.submitList(list?.toList())
 
             orderAdapter.submitList(list)
 
@@ -138,7 +152,7 @@ class OrderFragment : Fragment() {
                 binding.cvList.show()
             }
             calculateTotalPrices(list)
-        }
+        }*/
     }
 
 

@@ -30,7 +30,7 @@ class HeaderOrderRepository @Inject constructor(
     private val assignDirectionCustomerDao: AssignDirectionCustomerDao,
     private val actDao: ActDao,
 ) {
-    fun insert(factor: FactorHeaderEntity) = factorDao.insertFactor(factor)
+   // fun insert(factor: FactorHeaderEntity) = factorDao.insertFactor(factor)
 
     fun update(factor: FactorHeaderEntity) = factorDao.updateFactor(factor)
 

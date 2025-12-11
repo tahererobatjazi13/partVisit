@@ -23,8 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HeaderOrderViewModel @Inject constructor(
-    private val repository: HeaderOrderRepository,
-    private val factorRepository: FactorRepository,
+    private val repository: HeaderOrderRepository
 ) : ViewModel() {
 
     private val _currentFactor = MutableLiveData<FactorHeaderEntity>()
@@ -39,11 +38,11 @@ class HeaderOrderViewModel @Inject constructor(
         _currentFactor.postValue(factor)
     }
 
-    fun insertFactor(factor: FactorHeaderEntity) = viewModelScope.launch {
-        val id = repository.insert(factor)
-        // factor.id = id.toInt()
-        _currentFactor.postValue(factor)
-    }
+//    fun insertFactor(factor: FactorHeaderEntity) = viewModelScope.launch {
+//        val id = repository.insert(factor)
+//        // factor.id = id.toInt()
+//        _currentFactor.postValue(factor)
+//    }
 
     private val _customerDirections = MutableLiveData<List<CustomerDirectionEntity>>()
     val customerDirections: LiveData<List<CustomerDirectionEntity>> = _customerDirections

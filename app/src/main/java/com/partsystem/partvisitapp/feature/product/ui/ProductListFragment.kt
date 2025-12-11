@@ -119,12 +119,10 @@ class ProductListFragment : Fragment() {
 
         productListAdapter = ProductListAdapter(
             fromFactor = args.fromFactor,
-
-            onAddToCart = { item ->
-                factorViewModel.addToCart(item)
+            onProductChanged = { item ->
+                factorViewModel.addOrUpdateProduct(item)
             },
             currentQuantities = currentQuantities,
-
             onClick = { product ->
                 val action = ProductListFragmentDirections
                     .actionProductListFragmentToProductDetailFragment(
