@@ -91,6 +91,11 @@
         <argument
             android:name="fromFactor"
             app:argType="boolean" />
+        <argument
+            android:name="factorId"
+            app:argType="reference"
+            android:defaultValue="0" />
+
         <action
             android:id="@+id/action_groupProductFragment_to_productDetailFragment"
             app:destination="@id/productDetailFragment" />
@@ -117,6 +122,11 @@
             android:name="customerName"
             app:argType="string" />
 
+        <argument
+            android:name="factorId"
+            app:argType="reference"
+            android:defaultValue="0" />
+
         <action
             android:id="@+id/action_headerOrderFragment_to_productListFragment"
             app:destination="@id/productListFragment" />
@@ -136,6 +146,11 @@
         <argument
             android:name="fromFactor"
             app:argType="boolean" />
+        <argument
+            android:name="factorId"
+            app:argType="reference"
+            android:defaultValue="0" />
+
         <action
             android:id="@+id/action_productListFragment_to_orderFragment"
             app:destination="@id/orderFragment" />

@@ -5,24 +5,35 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
-import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.utils.OrderType
+import com.partsystem.partvisitapp.core.utils.extensions.gone
+import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderListBinding
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
+import com.partsystem.partvisitapp.feature.create_order.ui.HeaderOrderViewModel
+import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
+import com.partsystem.partvisitapp.feature.report_factor.adapter.OfflineOrderListAdapter
 
 @AndroidEntryPoint
 class OfflineOrderListFragment : Fragment() {
 
     private var _binding: FragmentOrderListBinding? = null
     private val binding get() = _binding!!
-    private lateinit var orderListAdapter: OrderListAdapter
-    private val fakeOrders = mutableListOf<ReportFactorDto>()
+    private lateinit var offlineOrderListAdapter: OfflineOrderListAdapter
     private var customDialog: CustomDialog? = null
+    private val factorViewModel: FactorViewModel by viewModels()
+    private val customerViewModel: CustomerViewModel by viewModels()
+    private val headerOrderViewModel: HeaderOrderViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,78 +45,55 @@ class OfflineOrderListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initAdapterFake()
         setupClicks()
+        initAdapter()
+        observeData()
         customDialog = CustomDialog.instance
         binding.btnSyncAllOrder.show()
     }
 
-    private fun initAdapterFake() {
-        fakeOrders.clear()
-
-        // داده‌های فیک
-        fakeOrders.add(
-            ReportFactorDto(
-                1,
-                2,
-                3,
-                "13/08/1404",
-                "07:25",
-                1,
-                "", 1,
-                "زهرا احمدی", 2, "طرح فروش",
-                12000.0,
-                120.0,
-                123.0,
-                152.0,
-                1,
-                "", 1,
-                "زهرا احمدی", 2, "",
-                2.0, 1.0,
-                2.0, 2, "", 2.0, 14.2,
-                2.0, 1.0,
-                2.0, 2.0
-            )
-        )
-        fakeOrders.add(
-            ReportFactorDto(
-                2,
-                2,
-                3,
-                "13/08/1404",
-                "07:25",
-                1,
-                "", 1,
-                "احمد رسولی", 2, "طرح فروش",
-                12000.0,
-                120.0,
-                123.0,
-                152.0,
-                1,
-                "", 1,
-                "زهرا احمدی", 2, "",
-                2.0, 1.0,
-                2.0, 2, "", 2.0, 14.2,
-                2.0, 1.0,
-                2.0, 2.0
-            )
-        )
-
-
+    private fun initAdapter() {
         binding.rvOrderList.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
-            orderListAdapter = OrderListAdapter(showSyncButton = true) { factors ->
-                val action =
-                    OfflineOrderListFragmentDirections.actionOfflineOrderListFragmentToOfflineOrderDetailFragment(
-                        factors.id
+            offlineOrderListAdapter = OfflineOrderListAdapter(
+                showSyncButton = true, customerViewModel,
+                headerOrderViewModel
+            ) { factors ->
+                if (factors.hasDetail) {
+                    val action =
+                        OfflineOrderListFragmentDirections.actionOfflineOrderListFragmentToOfflineOrderDetailFragment(
+                            factors.id
+                        )
+                    findNavController().navigate(action)
+                } else {
+                    val bundle = bundleOf(
+                        "typeCustomer" to true,
+                        "typeOrder" to OrderType.Edit.value,
+                        "customerId" to 0,
+                        "customerName" to "",
+                        "factorId" to factors.id
                     )
-                findNavController().navigate(action)
+                    val navController = requireActivity().findNavController(R.id.mainNavHost)
+                    navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
+                }
             }
-            adapter = orderListAdapter
-            orderListAdapter.submitList(fakeOrders)
+            adapter = offlineOrderListAdapter
+        }
+    }
 
+    private fun observeData() {
+        factorViewModel.allHeaders.observe(viewLifecycleOwner) { headers ->
+            if (headers.isNullOrEmpty()) {
+                binding.info.show()
+                binding.info.message(getString(R.string.msg_no_data))
+                binding.rvOrderList.hide()
+            } else {
+                binding.info.gone()
+                binding.rvOrderList.show()
+                offlineOrderListAdapter.setData(headers)
+            }
         }
     }
 

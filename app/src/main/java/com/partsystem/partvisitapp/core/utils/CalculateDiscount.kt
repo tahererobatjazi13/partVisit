@@ -12,7 +12,7 @@ class CalculateDiscount(private val repository: ProductRepository) {
     suspend fun fillProductValues(
         anbarId: Int?,
         product: ProductEntity?,
-        currentId: Int?,
+       // currentId: Int?,
         packing: ProductPackingEntity?,
         unit1ValueInput: Double?,
         unit2ValueInput: Double?,

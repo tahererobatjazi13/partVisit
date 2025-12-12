@@ -28,6 +28,7 @@ foundationLayoutAndroid = "1.9.4"
 uiTextAndroid = "1.9.4"
 material3Android = "1.4.0"
 glide = "4.16.0"
+identityJvm = "202411.1"
 
 
 [libraries]
@@ -64,6 +65,7 @@ androidx-ui-text-android = { group = "androidx.compose.ui", name = "ui-text-andr
 androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+identity-jvm = { group = "com.android.identity", name = "identity-jvm", version.ref = "identityJvm" }
 
 
 [plugins]

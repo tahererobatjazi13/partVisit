@@ -8,6 +8,7 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
+import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
@@ -70,12 +71,18 @@ class HeaderOrderViewModel @Inject constructor(
     private val _pattern = MutableLiveData<PatternEntity?>()
     val pattern: LiveData<PatternEntity?> get() = _pattern
 
-    fun loadPatternById(id: Int) {
+/*    fun loadPatternById(id: Int) {
         viewModelScope.launch {
             val result = repository.getPatternById(id)
             _pattern.postValue(result)
         }
-    }
+    }*/
+
+
+
+    fun getPatternById(id: Int): LiveData<PatternEntity> =
+        repository.getPatternById(id)
+
     private val _patterns = MutableLiveData<List<PatternEntity>>()
     val patterns: LiveData<List<PatternEntity>> = _patterns
 
@@ -135,12 +142,12 @@ class HeaderOrderViewModel @Inject constructor(
             val sc = saleCenterId?.let { repository.getSaleCenter(it) }
             val rateKind = sc?.saleRateKind ?: SaleRateKind.None
 
-            if (rateKind == SaleRateKind.Pattern && factor.patternId == null) {
+            if (/*rateKind == SaleRateKind.Pattern && */factor.patternId == null) {
                 _errorMessageRes.value = R.string.error_selecting_pattern_mandatory
                 return@launch
             }
 
-            if (rateKind != SaleRateKind.None && factor.actId == null) {
+            if (/*rateKind != SaleRateKind.None && */factor.actId == null) {
                 _errorMessageRes.value = R.string.error_selecting_act_mandatory
                 return@launch
             }

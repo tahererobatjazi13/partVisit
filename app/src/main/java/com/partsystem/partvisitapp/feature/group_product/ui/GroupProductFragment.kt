@@ -109,8 +109,8 @@ class GroupProductFragment : Fragment() {
         }
         val currentQuantities = mutableMapOf<Int, Int>()
 
-        productListAdapter = ProductListAdapter(
-            fromFactor =  args.fromFactor,
+        productListAdapter = ProductListAdapter(factorViewModel,
+            fromFactor =  args.fromFactor,factorId = args.factorId,
             onProductChanged = { item ->
                 factorViewModel.addDetail(item)
             },

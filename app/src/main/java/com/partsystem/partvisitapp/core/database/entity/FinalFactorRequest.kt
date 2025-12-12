@@ -2,12 +2,13 @@ package com.partsystem.partvisitapp.core.database.entity
 
 data class FinalFactorRequest(
     var uniqueId: String?,
-    var id: Int?,
+    var id: Long?,
     var formKind: Int?,
     var centerId: Int?,
     var code: Int?,
     var createDate: String?,
     var patternId: Int?,
+    var invoiceCategoryId: Int?,
     var dueDate: String?,
     var saleCenterId: Int?,
     var customerId: Int?,

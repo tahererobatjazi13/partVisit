@@ -5,6 +5,7 @@ import android.os.Build
 import android.view.View
 import androidx.annotation.RequiresApi
 import com.jakewharton.rxbinding4.view.clicks
+import com.partsystem.partvisitapp.core.utils.persiancalendar.calendar.PersianCalendar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import ir.huri.jcal.JalaliCalendar
@@ -12,6 +13,7 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -76,7 +78,7 @@ fun String.toEnglishDigits(): String {
 fun getTodayPersianDate(): String {
     val jalaliDate = JalaliCalendar()
     return String.format(
-        "%d/%02d/%02d",
+        "%d-%02d-%02d",
         jalaliDate.year,
         jalaliDate.month,
         jalaliDate.day
@@ -87,6 +89,24 @@ fun getTodayGregorian(): String {
     val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return formatter.format(Date())
 }
+@SuppressLint("DefaultLocale")
+fun persianToGregorian(persianDate: String): String {
+    val parts = persianDate.split("/")
+    val shYear = parts[0].toInt()
+    val shMonth = parts[1].toInt()
+    val shDay = parts[2].toInt()
+
+    val persianCalendar = PersianCalendar()
+    persianCalendar.setPersian(shYear, shMonth, shDay)
+
+    return String.format(
+        "%04d-%02d-%02d",
+        persianCalendar.get(Calendar.YEAR),
+        persianCalendar.get(Calendar.MONTH) + 1,
+        persianCalendar.get(Calendar.DAY_OF_MONTH)
+    )
+}
+
 
 fun getCurrentTime(): String {
     val formatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
@@ -94,7 +114,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "factor detail"
+git commit -m "factor header save"
 git push -u origin master
 git push
 */

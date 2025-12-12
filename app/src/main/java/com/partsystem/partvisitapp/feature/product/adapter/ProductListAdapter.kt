@@ -18,11 +18,14 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemProductBinding
 import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import java.io.File
 import java.text.DecimalFormat
 
 class ProductListAdapter(
+    private val factorViewModel: FactorViewModel ,
     private val fromFactor: Boolean = false,
+    private val factorId: Int ,
     private val onProductChanged: (FactorDetailEntity) -> Unit,
     private val currentQuantities: Map<Int, Int> = emptyMap(),
     private val onClick: (ProductEntity) -> Unit = {}
@@ -157,16 +160,17 @@ class ProductListAdapter(
                     val selectedPacking = product.packings.getOrNull(spProductPacking.selectedItemPosition)
 
                     val detail = FactorDetailEntity(
-                    //    id = product.existingFactorId,   // ‼️ باید مقدار واقعی ذخیره‌شده داشته باشد
+                        factorId = factorId,
                         sortCode = bindingAdapterPosition,
                         productId = product.product.id,
                         actId = 195,
                         unit1Value = unit1Value,
                         unit2Value = 0.0,
                         price = product.finalRate,
-                        packingId = selectedPacking?.id,
+                        packingId = selectedPacking!!.id,
                         packingValue = packingValue,
-                        vat = 0.0
+                        vat = 0.0,
+
                     )
                     onProductChanged(detail)
                 }
@@ -192,14 +196,14 @@ class ProductListAdapter(
                         product.packings.getOrNull(spProductPacking.selectedItemPosition)
 
                     val detail = FactorDetailEntity(
-                        id = null,
+                        factorId = factorId,
                         sortCode = bindingAdapterPosition,
                         productId = product.product.id,
                         actId = 195,
                         unit1Value = unit1Value,
                         unit2Value = 0.0,
                         price = product.finalRate,
-                        packingId = selectedPacking?.id,
+                        packingId = selectedPacking!!.id,
                         packingValue = packingValue,
                         vat = 0.0
                     )
@@ -229,14 +233,14 @@ class ProductListAdapter(
                         product.packings.getOrNull(spProductPacking.selectedItemPosition)
 
                     val detail = FactorDetailEntity(
-                        id = null,
+                        factorId = factorId,
                         sortCode = bindingAdapterPosition,
                         productId = product.product.id,
                         actId = 195,
                         unit1Value = unit1Value,
                         unit2Value = 0.0,
                         price = product.finalRate,
-                        packingId = selectedPacking?.id,
+                        packingId = selectedPacking!!.id,
                         packingValue = packingValue,
                         vat = 0.0
                     )
@@ -293,14 +297,14 @@ class ProductListAdapter(
 
                     // ساخت FactorDetail
                     val detail = FactorDetailEntity(
-                        id = null,
+                        factorId = factorId,
                         sortCode = bindingAdapterPosition,
                         productId = product.product.id,
                         actId = 195,
                         unit1Value = unit1Value,
                         unit2Value = 0.0,
                         price = product.finalRate,
-                        packingId = selectedPacking?.id,
+                        packingId = selectedPacking!!.id,
                         packingValue = packingValue,
                         vat = 0.0
                     )

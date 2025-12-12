@@ -2,11 +2,14 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +18,7 @@ import androidx.navigation.fragment.navArgs
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
@@ -27,6 +31,7 @@ import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getCurrentTime
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.persianToGregorian
 import com.partsystem.partvisitapp.core.utils.getGUID
 import com.partsystem.partvisitapp.core.utils.persiancalendar.CalendarConstraints
 import com.partsystem.partvisitapp.core.utils.persiancalendar.DateValidatorPointForward
@@ -64,11 +69,11 @@ class HeaderOrderFragment : Fragment() {
     private lateinit var actAdapter: SpinnerAdapter
     private lateinit var allPayementTypeAdapter: SpinnerAdapter
 
-    // private lateinit var factor: FactorHeaderEntity
     private var controlVisit: Boolean = false
     private var userId: Int = 0
     private var visitorId: Int = 0
     private var saleCenterId: Int = 0
+    private var pendingNavigation: String = ""
 
     data class KeyValue(val id: Int, val name: String)
 
@@ -83,6 +88,8 @@ class HeaderOrderFragment : Fragment() {
     private val allSaleCenter = mutableListOf<SaleCenterEntity>()
     private val allAct = mutableListOf<ActEntity>()
     private val allPayementType = ArrayList<KeyValue>()
+
+    private var localHeader: FactorHeaderEntity? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -102,7 +109,40 @@ class HeaderOrderFragment : Fragment() {
     }
 
     private fun fillControls() {
+        //
+        /*      // اگر هدر وجود ندارد، جدید بساز
+              if (factorViewModel.headerId == 0L) {
+                  factorViewModel.createNewHeader()
+              }
 
+
+              factorViewModel.header.observe(viewLifecycleOwner) { header ->
+                  if (header != null) {
+                      header?.let {
+                          localHeader = it
+                          binding.etDescription.setText(it.description)
+                          //edtCustomerId.setText(it.customerId.takeIf { v -> v != 0 }?.toString() ?: "")
+                      }            }
+              }*/
+
+        factorViewModel.currentHeader.observe(viewLifecycleOwner) { header ->
+            header?.let {
+                localHeader = it
+                // edtMainCode.setText(it.mainCode?.toString() ?: "")
+                //edtCustomer.setText(it.customerId?.toString() ?: "")
+                binding.etDescription.setText(it.description ?: "")
+            }
+        }
+
+        // if no draft, create new
+        // if (factorViewModel.currentHeader.value == null) factorViewModel.createDraftHeader()
+
+        /* binding.etDescription.addTextChangedListener {
+             localHeader?.let {
+                 it.description = it.toString()
+                 factorViewModel.updateHeaderLocal(it)
+             }
+         }*/
         lifecycleScope.launch {
             saleCenterId = userPreferences.saleCenterId.first() ?: 0
             controlVisit = userPreferences.controlVisitSchedule.first() ?: false
@@ -115,6 +155,7 @@ class HeaderOrderFragment : Fragment() {
                 settlementKind = 0,
                 formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
                 createDate = getTodayGregorian(),
+                persianDate = getTodayPersianDate(),
                 dueDate = getTodayGregorian(),
                 deliveryDate = getTodayGregorian(),
                 createTime = getCurrentTime(),
@@ -198,7 +239,7 @@ class HeaderOrderFragment : Fragment() {
 
                             factorViewModel.factorHeader.value =
                                 factorViewModel.factorHeader.value!!.copy(
-                                    directionDetailId = null,
+                                    directionDetailId = 0,
                                 )
                         }
                     }
@@ -207,7 +248,7 @@ class HeaderOrderFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {
                     factorViewModel.factorHeader.value =
                         factorViewModel.factorHeader.value!!.copy(
-                            directionDetailId = null,
+                            directionDetailId = 0,
                         )
                 }
             }
@@ -230,7 +271,7 @@ class HeaderOrderFragment : Fragment() {
                         if (position == 0) {
                             factorViewModel.factorHeader.value =
                                 factorViewModel.factorHeader.value!!.copy(
-                                    invoiceCategoryId = null,
+                                    invoiceCategoryId = 0,
                                 )
                             return
                         }
@@ -276,7 +317,7 @@ class HeaderOrderFragment : Fragment() {
                     override fun onNothingSelected(parent: AdapterView<*>?) {
                         factorViewModel.factorHeader.value =
                             factorViewModel.factorHeader.value!!.copy(
-                                invoiceCategoryId = null,
+                                invoiceCategoryId = 0,
                             )
                     }
                 }
@@ -294,8 +335,8 @@ class HeaderOrderFragment : Fragment() {
                 ) {
                     // DataHolder.isDirty = true
                     if (position == 0 && factorViewModel.factorHeader.value!!.patternId != null) {
-                        factorViewModel.factorHeader.value!!.patternId = null
-                        factorViewModel.factorHeader.value!!.actId = null
+                        factorViewModel.factorHeader.value!!.patternId = 0
+                        factorViewModel.factorHeader.value!!.actId = 0
                         return
                     }
                     if (allPattern.isEmpty() || position >= allPattern.size) {
@@ -308,7 +349,7 @@ class HeaderOrderFragment : Fragment() {
 
                     headerOrderViewModel.loadProductActId(entry.id)
                     headerOrderViewModel.productActId.observe(viewLifecycleOwner) { actId ->
-                        factorViewModel.factorHeader.value!!.actId = actId
+                        factorViewModel.factorHeader.value!!.actId = actId!!
 
                     }
                     // load act
@@ -357,8 +398,8 @@ class HeaderOrderFragment : Fragment() {
 
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
-                    factorViewModel.factorHeader.value!!.patternId = null
-                    factorViewModel.factorHeader.value!!.actId = null
+                    factorViewModel.factorHeader.value!!.patternId = 0
+                    factorViewModel.factorHeader.value!!.actId = 0
                 }
             }
 
@@ -369,8 +410,6 @@ class HeaderOrderFragment : Fragment() {
             items.addAll(list.map { it.description!! })
             actAdapter = SpinnerAdapter(requireContext(), items)
             binding.spAct.adapter = actAdapter
-
-
         }
 
         binding.spAct.onItemSelectedListener =
@@ -394,7 +433,7 @@ class HeaderOrderFragment : Fragment() {
 
                             factorViewModel.factorHeader.value =
                                 factorViewModel.factorHeader.value!!.copy(
-                                    actId = null,
+                                    actId = 0,
                                 )
                         }
                     }
@@ -403,7 +442,7 @@ class HeaderOrderFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {
                     factorViewModel.factorHeader.value =
                         factorViewModel.factorHeader.value!!.copy(
-                            actId = null,
+                            actId = 0,
                         )
                 }
             }
@@ -431,6 +470,29 @@ class HeaderOrderFragment : Fragment() {
                         )
                 }
             }
+
+
+        factorViewModel.headerId.observe(viewLifecycleOwner) { id ->
+            if (id == null) return@observe
+
+            if (pendingNavigation == "catalog") {
+                val action =
+                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToProductListFragment(
+                        true, id
+                    )
+                findNavController().navigate(action)
+            } else if (pendingNavigation == "group") {
+                val action =
+                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToGroupProductFragment(
+                        true, id
+                    )
+                findNavController().navigate(action)
+            }
+
+            // جلوگیری از اجرای مجدد ناوبری
+            factorViewModel.headerId.value = null
+            pendingNavigation = ""
+        }
     }
 
     private fun setupClicks() {
@@ -475,19 +537,31 @@ class HeaderOrderFragment : Fragment() {
         // ------------------------- Click Listeners -------------------------
         binding.cvDate.setOnClickListener {
             showPersianDatePicker { date ->
+                val gregorianDate = persianToGregorian(date)
                 binding.tvDate.text = date
+                factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
+                    createDate = gregorianDate,
+                )
             }
         }
 
         binding.cvDuoDate.setOnClickListener {
             showPersianDatePicker { date ->
+                val gregorianDate = persianToGregorian(date)
                 binding.tvDuoDate.text = date
+                factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
+                    dueDate = gregorianDate,
+                )
             }
         }
 
         binding.cvDeliveryDate.setOnClickListener {
             showPersianDatePicker { date ->
+                val gregorianDate = persianToGregorian(date)
                 binding.tvDeliveryDate.text = date
+                factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
+                    deliveryDate = gregorianDate,
+                )
             }
         }
 
@@ -502,13 +576,25 @@ class HeaderOrderFragment : Fragment() {
             factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
                 // customerId = selectedCustomerId,
                 description = binding.etDescription.text.toString(),
-                createDate = "2025-11-30"
             )
-            factorViewModel.saveHeader(factorViewModel.factorHeader.value)
+            /*     // factorViewModel.saveHeader(factorViewModel.factorHeader.value)
+                 if (factorViewModel.currentUniqueId == null) {
+                     // shouldn't happen, but ensure header exists
+                     factorViewModel.createDraftHeader()
+                 }*/
 
-            showChooseDialog()
+           validateHeader()
+         // showChooseDialog()
 
-            // validateHeader()
+            /*       val header = OrderHeader(
+                       uniqueId = UUID.randomUUID().toString(),
+                       customerId = customerSpinnerId,
+                       actId = actSpinnerId,
+                       patternId = patternSpinnerId,
+                       ...
+                   status = 0
+                   )*/
+
 
         }
 
@@ -528,12 +614,13 @@ class HeaderOrderFragment : Fragment() {
         val factor = factorViewModel.factorHeader.value ?: return
 
         // خطای دسته‌بندی فاکتور (خارج از ViewModel)
-        if (factor.invoiceCategoryId == null) {
-            CustomSnackBar.make(
-                requireView(),
-                getString(R.string.error_selecting_invoice_category_mandatory),
-                SnackBarType.Error.value
-            )?.show()
+        if (factor.invoiceCategoryId == 0) {
+
+                  CustomSnackBar.make(
+                      requireActivity().findViewById(android.R.id.content),
+                       getString(R.string.error_selecting_invoice_category_mandatory),
+                       SnackBarType.Error.value
+                   )?.show()
             return
         }
 
@@ -553,11 +640,12 @@ class HeaderOrderFragment : Fragment() {
         // دریافت پیام خطا و نمایش با CustomSnackBar
         headerOrderViewModel.errorMessageRes.observe(viewLifecycleOwner) { msgResId ->
             msgResId?.let {
-                CustomSnackBar.make(
-                    requireView(),
+                Toast.makeText(requireContext(), getString(it), Toast.LENGTH_LONG).show()
+               /* CustomSnackBar.make(
+                    requireActivity().findViewById(android.R.id.content),
                     getString(it),
                     SnackBarType.Error.value
-                )?.show()
+                )?.show()*/
             }
         }
     }
@@ -626,7 +714,7 @@ class HeaderOrderFragment : Fragment() {
         binding.spPaymentType.adapter = allPayementTypeAdapter
 
         if (factorViewModel.factorHeader.value!!.patternId != null) {
-            headerOrderViewModel.loadPatternById(factorViewModel.factorHeader.value!!.patternId!!)
+            headerOrderViewModel.getPatternById(factorViewModel.factorHeader.value!!.patternId!!)
 
         }
         headerOrderViewModel.pattern.observe(viewLifecycleOwner) { pattern ->
@@ -651,24 +739,22 @@ class HeaderOrderFragment : Fragment() {
                 )
             )
         }
-
-
     }
 
     private fun showChooseDialog() {
         BottomSheetChooseDialog.newInstance().setTitle(R.string.label_choose)
             .addOption(R.string.label_product_catalog, R.drawable.ic_home_catalog) {
-                val action =
-                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToProductListFragment(
-                        true
-                    )
-                findNavController().navigate(action)
+
+                pendingNavigation = "catalog"
+                Log.d("factorHeader", factorViewModel.factorHeader.value.toString())
+                factorViewModel.createHeader(factorViewModel.factorHeader.value)
+
             }.addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {
-                val action =
-                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToGroupProductFragment(
-                        true
-                    )
-                findNavController().navigate(action)
+
+                pendingNavigation = "group"
+
+                factorViewModel.createHeader(factorViewModel.factorHeader.value)
+
             }.show(childFragmentManager, "chooseDialog")
     }
 

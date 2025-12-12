@@ -25,7 +25,6 @@ data class FactorHeaderEntity(
     var visitorId: Int? = null,
     var distributorId: Int? = null,
     var description: String = "",
-    var comment: String = "",
     var isCanceled: Int? = null,
     var sabt: Int = 0,
     var hasDetail: Boolean = false,
@@ -39,27 +38,10 @@ data class FactorHeaderEntity(
     var finalPrice: Double = 0.0,
     var defaultAnbarId: Int? = null,
     var latitude: Double? = 0.0,
-    var longitude: Double? = 0.0,
-    /*
-
-     @TypeConverters(FactorConverters::class)
-     @JsonProperty("FactorDetail")
-     var factorDetails: List<FactorDetailEntity>? = null,
-
-     @TypeConverters(FactorConverters::class)
-     @JsonProperty("FactorDiscount")
-     var factorDiscounts: List<FactorDiscountEntity>? = null,
-
-     @TypeConverters(FactorConverters::class)
-     @JsonProperty("FactorGiftInfo")
-     var factorGiftInfos: List<FactorGiftInfoEntity>? = null,*/
-
-    var hasVAT: Boolean? = null
+    var longitude: Double? = 0.0
 )
 
-
-/*
-[
+/*[
 {
     "uniqueId": "669DAF28-506C-4EAE-AAC3-F901B0B62A39",
     "id": 78,

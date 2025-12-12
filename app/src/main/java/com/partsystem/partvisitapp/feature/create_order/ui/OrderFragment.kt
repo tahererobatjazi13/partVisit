@@ -132,8 +132,16 @@ class OrderFragment : Fragment() {
         }
 //        val list = factorViewModel.selectedProducts
 //        orderAdapter.submitList(list)
-        factorViewModel.selectedProducts.observe(viewLifecycleOwner) {
+      /*  factorViewModel.selectedProducts.observe(viewLifecycleOwner) {
             orderAdapter.submitList(it.toList())    // مهم: toList ➜ create new list
+        }
+*/
+
+        factorViewModel.details.observe(viewLifecycleOwner) { details ->
+            // update UI list (در این نمونه ساده نمایش تعداد)
+           // tvDetailsCount.text = "محصولات انتخاب‌شده: ${details.size}"
+            orderAdapter.submitList(details)    // مهم: toList ➜ create new list
+
         }
 
 /*        // فقط یک observe روی allFactorDetails

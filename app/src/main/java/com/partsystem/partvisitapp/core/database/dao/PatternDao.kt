@@ -1,6 +1,8 @@
 package com.partsystem.partvisitapp.core.database.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -137,5 +139,6 @@ interface PatternDao {
 
 
     @Query("SELECT * FROM pattern_table WHERE id = :id LIMIT 1")
-    suspend fun getPatternById(id: Int): PatternEntity?
+    fun getPatternById(id: Int): LiveData<PatternEntity>
+
 }

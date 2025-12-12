@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.repository
 
+import androidx.lifecycle.LiveData
 import com.partsystem.partvisitapp.core.database.dao.ActDao
 import com.partsystem.partvisitapp.core.database.dao.AssignDirectionCustomerDao
 import com.partsystem.partvisitapp.core.database.dao.CustomerDao
@@ -59,10 +60,11 @@ class HeaderOrderRepository @Inject constructor(
     fun getAct(): Flow<List<ActEntity>> =
         actDao.getActs()
 
-
-    suspend fun getPatternById(id: Int): PatternEntity? {
+    fun getPatternById(id: Int): LiveData<PatternEntity> = patternDao.getPatternById(id)
+/*
+     fun getPatternById(id: Int): PatternEntity? {
         return patternDao.getPatternById(id)
-    }
+    }*/
 //    suspend fun getPatterns(): List<PatternEntity> {
 //        return patternDao.getAllPatterns()
 //    }

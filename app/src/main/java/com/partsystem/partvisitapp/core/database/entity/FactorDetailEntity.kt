@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
@@ -12,12 +13,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
-@Entity(tableName = "factor_detail_table")
+@Entity(
+    tableName = "factor_detail_table",
+    foreignKeys = [
+        ForeignKey(
+            entity = FactorHeaderEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["factorId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 data class FactorDetailEntity(
     @PrimaryKey(autoGenerate = true)
-    var factorId: Int? = null,
-    var id: Int? = null,
+    val id: Int = 0,
+    val factorId: Int,
     var sortCode: Int? = null,
     var anbarId: Int? = null,
     var productId: Int? = null,
@@ -119,7 +129,7 @@ data class FactorDetailEntity(
                     val values = calculator.fillProductValues(
                         anbarId = anbarId,
                         product = prod.product,
-                        currentId = id,
+                       // currentId = id,
                         packing = packing,
                         unit1ValueInput = unit1Value,
                         unit2ValueInput = null,
