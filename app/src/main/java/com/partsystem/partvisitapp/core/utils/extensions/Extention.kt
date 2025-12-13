@@ -78,7 +78,7 @@ fun String.toEnglishDigits(): String {
 fun getTodayPersianDate(): String {
     val jalaliDate = JalaliCalendar()
     return String.format(
-        "%d-%02d-%02d",
+        "%d/%02d/%02d",
         jalaliDate.year,
         jalaliDate.month,
         jalaliDate.day
@@ -89,6 +89,7 @@ fun getTodayGregorian(): String {
     val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return formatter.format(Date())
 }
+
 @SuppressLint("DefaultLocale")
 fun persianToGregorian(persianDate: String): String {
     val parts = persianDate.split("/")
@@ -107,6 +108,26 @@ fun persianToGregorian(persianDate: String): String {
     )
 }
 
+@SuppressLint("DefaultLocale")
+fun gregorianToPersian(gregorianDate: String): String {
+    val parts = gregorianDate.split("-")
+    val year = parts[0].toInt()
+    val month = parts[1].toInt()
+    val day = parts[2].toInt()
+
+    val calendar = Calendar.getInstance()
+    calendar.set(year, month - 1, day)
+
+    val persianCalendar = PersianCalendar(calendar)
+
+    return String.format(
+        "%04d/%02d/%02d",
+        persianCalendar.year,
+        persianCalendar.month + 1,
+        persianCalendar.day
+    )
+}
+
 
 fun getCurrentTime(): String {
     val formatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
@@ -114,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "factor header save"
+git commit -m "factor header edit"
 git push -u origin master
 git push
 */

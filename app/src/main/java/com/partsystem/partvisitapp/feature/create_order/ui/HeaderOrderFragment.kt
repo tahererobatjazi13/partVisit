@@ -8,8 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
-import androidx.core.widget.addTextChangedListener
+import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +30,7 @@ import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getCurrentTime
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.gregorianToPersian
 import com.partsystem.partvisitapp.core.utils.extensions.persianToGregorian
 import com.partsystem.partvisitapp.core.utils.getGUID
 import com.partsystem.partvisitapp.core.utils.persiancalendar.CalendarConstraints
@@ -44,7 +44,6 @@ import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
 import com.partsystem.partvisitapp.feature.create_order.bottomSheet.CustomerListBottomSheet
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import ir.huri.jcal.JalaliCalendar
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -81,15 +80,15 @@ class HeaderOrderFragment : Fragment() {
 
     private val persianDate: String = getTodayPersianDate()
     private val allCustomerDirection =
-        mutableListOf<CustomerDirectionEntity>() // فرض کلاس CustomerDirection
+        mutableListOf<CustomerDirectionEntity>()
 
     private val allInvoiceCategory = mutableListOf<InvoiceCategoryEntity>()
     private val allPattern = mutableListOf<PatternEntity>()
     private val allSaleCenter = mutableListOf<SaleCenterEntity>()
     private val allAct = mutableListOf<ActEntity>()
     private val allPayementType = ArrayList<KeyValue>()
+    private var editingHeader: FactorHeaderEntity? = null
 
-    private var localHeader: FactorHeaderEntity? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -100,49 +99,36 @@ class HeaderOrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        fillControls()
+        init()
         initDate()
         initCustomer()
-        observeData()
         setupClicks()
         setWidth()
     }
 
-    private fun fillControls() {
-        //
-        /*      // اگر هدر وجود ندارد، جدید بساز
-              if (factorViewModel.headerId == 0L) {
-                  factorViewModel.createNewHeader()
-              }
-
-
-              factorViewModel.header.observe(viewLifecycleOwner) { header ->
-                  if (header != null) {
-                      header?.let {
-                          localHeader = it
-                          binding.etDescription.setText(it.description)
-                          //edtCustomerId.setText(it.customerId.takeIf { v -> v != 0 }?.toString() ?: "")
-                      }            }
-              }*/
-
-        factorViewModel.currentHeader.observe(viewLifecycleOwner) { header ->
-            header?.let {
-                localHeader = it
-                // edtMainCode.setText(it.mainCode?.toString() ?: "")
-                //edtCustomer.setText(it.customerId?.toString() ?: "")
-                binding.etDescription.setText(it.description ?: "")
-            }
+    fun init() {
+        if (args.factorId > 0) {
+            // حالت ویرایش
+            loadData()
+            initForEdit()
+        } else {
+            // حالت ثبت جدید
+            initForCreate()
         }
+    }
 
-        // if no draft, create new
-        // if (factorViewModel.currentHeader.value == null) factorViewModel.createDraftHeader()
+    private fun initForCreate() {
+        createNewHeader()
+        initAdapter()
+        observeData()
+    }
 
-        /* binding.etDescription.addTextChangedListener {
-             localHeader?.let {
-                 it.description = it.toString()
-                 factorViewModel.updateHeaderLocal(it)
-             }
-         }*/
+    private fun initForEdit() {
+        observeData()
+    }
+
+    private fun createNewHeader() {
+
         lifecycleScope.launch {
             saleCenterId = userPreferences.saleCenterId.first() ?: 0
             controlVisit = userPreferences.controlVisitSchedule.first() ?: false
@@ -169,21 +155,32 @@ class HeaderOrderFragment : Fragment() {
 
             headerOrderViewModel.defaultAnbarId.collect { anbarId ->
                 if (anbarId != null) {
-                    factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
-                        defaultAnbarId = anbarId,
-                    )
+                    factorViewModel.factorHeader.value =
+                        factorViewModel.factorHeader.value!!.copy(
+                            defaultAnbarId = anbarId,
+                        )
                 }
             }
         }
     }
 
+    private fun initAdapter() {
+        val defaultAdapter =
+            SpinnerAdapter(requireContext(), mutableListOf(getString(R.string.label_please_select)))
+
+        binding.spInvoiceCategory.adapter = defaultAdapter
+        binding.spPattern.adapter = defaultAdapter
+        binding.spAct.adapter = defaultAdapter
+        binding.spCustomerDirection.adapter = defaultAdapter
+    }
+
     @SuppressLint("SetTextI18n")
     private fun initDate() {
-        val jalaliDate = JalaliCalendar()
-        val today = "${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}"
-        binding.tvDate.text = today
-        binding.tvDuoDate.text = today
-        binding.tvDeliveryDate.text = today
+        //  val jalaliDate = JalaliCalendar()
+        // val today = "${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}"
+        binding.tvDate.text = getTodayPersianDate()
+        binding.tvDuoDate.text = getTodayPersianDate()
+        binding.tvDeliveryDate.text = getTodayPersianDate()
     }
 
     private fun initCustomer() {
@@ -257,11 +254,19 @@ class HeaderOrderFragment : Fragment() {
             allInvoiceCategory.clear()
             allInvoiceCategory.addAll(list)
 
-            val items = mutableListOf<String>()
-            items.add(getString(R.string.label_please_select))
+            val items = mutableListOf(getString(R.string.label_please_select))
             items.addAll(list.map { it.name })
+
             invoiceCategoryAdapter = SpinnerAdapter(requireContext(), items)
             binding.spInvoiceCategory.adapter = invoiceCategoryAdapter
+
+            // اگر در حالت ویرایش هستیم
+            editingHeader?.invoiceCategoryId?.let { id ->
+                binding.spInvoiceCategory.setSelectionById(
+                    id = id,
+                    items = allInvoiceCategory
+                ) { it.id }
+            }
 
             binding.spInvoiceCategory.onItemSelectedListener =
                 object : AdapterView.OnItemSelectedListener {
@@ -290,10 +295,10 @@ class HeaderOrderFragment : Fragment() {
                         selectedCategory?.let {
                             headerOrderViewModel.loadSaleCenters(it.id)
                         }
+                        val header = editingHeader ?: return
 
 
                         // load patterns
-                        allPattern.clear()
                         if (factorViewModel.factorHeader.value?.customerId != null) {
                             headerOrderViewModel.loadPatterns(
                                 factorViewModel.factorHeader.value!!.customerId!!,
@@ -305,11 +310,16 @@ class HeaderOrderFragment : Fragment() {
                             headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
                                 allPattern.clear()
                                 allPattern.addAll(list)
-                                val items = list.map { it.name }.toMutableList()
+                                val items = mutableListOf(getString(R.string.label_please_select))
+                                items.addAll(list.map { it.name })
                                 patternAdapter = SpinnerAdapter(requireContext(), items)
                                 binding.spPattern.adapter = patternAdapter
 
-
+                                // ⭐ ست Pattern
+                                binding.spPattern.setSelectionById(
+                                    id = header.patternId,
+                                    items = allPattern
+                                ) { it.id }
                             }
                         }
                     }
@@ -322,7 +332,6 @@ class HeaderOrderFragment : Fragment() {
                     }
                 }
         }
-
 
 
         binding.spPattern.onItemSelectedListener =
@@ -357,18 +366,24 @@ class HeaderOrderFragment : Fragment() {
                         patternId = entry.id,
                         actKind = ActKind.Product.ordinal
                     )
-//                    headerOrderViewModel.acts.observe(viewLifecycleOwner) { list ->
-//                        allAct.clear()
-//                        allAct.addAll(list)
-//                        val items = mutableListOf<String>()
-//                        items.add(getString(R.string.label_please_select))
-//
-//                        items.addAll(list.map { it.description })
-//
-//                       // val items = list.mapNotNull { it.description }.toMutableList()
-//                        actAdapter = SpinnerAdapter(requireContext(), items)
-//                        binding.spAct.adapter = actAdapter
-//                    }
+
+                    val header = editingHeader ?: return
+
+                    headerOrderViewModel.acts.observe(viewLifecycleOwner) { list ->
+                        allAct.clear()
+                        allAct.addAll(list)
+                        val items = mutableListOf(getString(R.string.label_please_select))
+                        items.addAll(list.map { it.description!! })
+
+                        actAdapter = SpinnerAdapter(requireContext(), items)
+                        binding.spAct.adapter = actAdapter
+
+                        binding.spAct.setSelectionById(
+                            id = header.actId,
+                            items = allAct
+                        ) { it.id }
+                    }
+
                     if (factorViewModel.factorHeader.value!!.actId != null) {
 
                         val actId = factorViewModel.factorHeader.value!!.actId!!
@@ -396,7 +411,6 @@ class HeaderOrderFragment : Fragment() {
                     }
                 }
 
-
                 override fun onNothingSelected(parent: AdapterView<*>?) {
                     factorViewModel.factorHeader.value!!.patternId = 0
                     factorViewModel.factorHeader.value!!.actId = 0
@@ -404,7 +418,8 @@ class HeaderOrderFragment : Fragment() {
             }
 
         headerOrderViewModel.getAct().observe(viewLifecycleOwner) { list ->
-
+            allAct.clear()
+            allAct.addAll(list)
             val items = mutableListOf<String>()
             items.add(getString(R.string.label_please_select))
             items.addAll(list.map { it.description!! })
@@ -583,8 +598,8 @@ class HeaderOrderFragment : Fragment() {
                      factorViewModel.createDraftHeader()
                  }*/
 
-           validateHeader()
-         // showChooseDialog()
+            validateHeader()
+            // showChooseDialog()
 
             /*       val header = OrderHeader(
                        uniqueId = UUID.randomUUID().toString(),
@@ -609,18 +624,42 @@ class HeaderOrderFragment : Fragment() {
         }
     }
 
+    private fun loadData() {
+        factorViewModel.getHeaderById(args.factorId)
+            .observe(viewLifecycleOwner) { header ->
+                editingHeader = header
+
+                binding.tvDate.text = gregorianToPersian(header.createDate.toString())
+                binding.tvDuoDate.text = gregorianToPersian(header.dueDate.toString())
+                binding.tvDeliveryDate.text = gregorianToPersian(header.deliveryDate.toString())
+                binding.etDescription.setText(header.description)
+            }
+
+    }
+
+    fun <T> Spinner.setSelectionById(
+        id: Int?,
+        items: List<T>,
+        getId: (T) -> Int?
+    ) {
+        if (id == null) return
+
+        val position = items.indexOfFirst { getId(it) == id }
+        if (position >= 0) setSelection(position + 1)
+    }
+
     private fun validateHeader() {
+        factorViewModel.factorHeader.value!!.patternId = 92
+        factorViewModel.factorHeader.value!!.actId = 195
 
         val factor = factorViewModel.factorHeader.value ?: return
-
         // خطای دسته‌بندی فاکتور (خارج از ViewModel)
         if (factor.invoiceCategoryId == 0) {
-
-                  CustomSnackBar.make(
-                      requireActivity().findViewById(android.R.id.content),
-                       getString(R.string.error_selecting_invoice_category_mandatory),
-                       SnackBarType.Error.value
-                   )?.show()
+            CustomSnackBar.make(
+                requireActivity().findViewById(android.R.id.content),
+                getString(R.string.error_selecting_invoice_category_mandatory),
+                SnackBarType.Error.value
+            )?.show()
             return
         }
 
@@ -640,12 +679,11 @@ class HeaderOrderFragment : Fragment() {
         // دریافت پیام خطا و نمایش با CustomSnackBar
         headerOrderViewModel.errorMessageRes.observe(viewLifecycleOwner) { msgResId ->
             msgResId?.let {
-                Toast.makeText(requireContext(), getString(it), Toast.LENGTH_LONG).show()
-               /* CustomSnackBar.make(
+                CustomSnackBar.make(
                     requireActivity().findViewById(android.R.id.content),
                     getString(it),
                     SnackBarType.Error.value
-                )?.show()*/
+                )?.show()
             }
         }
     }
@@ -699,7 +737,6 @@ class HeaderOrderFragment : Fragment() {
         )
     }
 
-
     private fun fillPaymentType() {
         allPayementType.clear()
         // ابتدا تمام موارد را اضافه کن
@@ -744,15 +781,12 @@ class HeaderOrderFragment : Fragment() {
     private fun showChooseDialog() {
         BottomSheetChooseDialog.newInstance().setTitle(R.string.label_choose)
             .addOption(R.string.label_product_catalog, R.drawable.ic_home_catalog) {
-
                 pendingNavigation = "catalog"
                 Log.d("factorHeader", factorViewModel.factorHeader.value.toString())
                 factorViewModel.createHeader(factorViewModel.factorHeader.value)
 
             }.addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {
-
                 pendingNavigation = "group"
-
                 factorViewModel.createHeader(factorViewModel.factorHeader.value)
 
             }.show(childFragmentManager, "chooseDialog")

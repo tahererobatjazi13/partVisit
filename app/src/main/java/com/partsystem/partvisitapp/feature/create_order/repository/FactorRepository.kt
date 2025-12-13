@@ -2,6 +2,7 @@ package com.partsystem.partvisitapp.feature.create_order.repository
 
 import androidx.lifecycle.LiveData
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
+import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
@@ -41,7 +42,7 @@ class FactorRepository @Inject constructor(
 
     // DB ops
 
-    suspend fun saveFactorHeader(header: FactorHeaderEntity): Long =
+     fun saveFactorHeader(header: FactorHeaderEntity): Long =
         factorDao.insertFactorHeader(header)
 
 
@@ -50,7 +51,7 @@ class FactorRepository @Inject constructor(
 
     suspend fun updateHeader(header: FactorHeaderEntity) = factorDao.updateHeader(header)
 
-    suspend fun getHeader(id: Long): FactorHeaderEntity? = factorDao.getHeader(id)
+    fun getHeaderById(id: Int): LiveData<FactorHeaderEntity> = factorDao.getHeaderById(id)
 
     suspend fun saveFactorDetail(detail: FactorDetailEntity): Long =
         factorDao.insertFactorDetail(detail)

@@ -102,7 +102,6 @@ class HeaderOrderViewModel @Inject constructor(
         }
     }
 
-
     fun loadPatterns(
         customer: Int,
         centerId: Int?,
@@ -133,21 +132,21 @@ class HeaderOrderViewModel @Inject constructor(
     }
     private val _validationResult = MutableLiveData<Boolean>()
     val validationResult: LiveData<Boolean> get() = _validationResult
+
     private val _errorMessageRes = MutableLiveData<Int?>()
     val errorMessageRes: LiveData<Int?> get() = _errorMessageRes
 
     fun validateHeader(saleCenterId: Int?, factor: FactorHeaderEntity) {
         viewModelScope.launch {
-
             val sc = saleCenterId?.let { repository.getSaleCenter(it) }
             val rateKind = sc?.saleRateKind ?: SaleRateKind.None
 
-            if (/*rateKind == SaleRateKind.Pattern && */factor.patternId == null) {
+            if (rateKind == SaleRateKind.Pattern && factor.patternId == 0) {
                 _errorMessageRes.value = R.string.error_selecting_pattern_mandatory
                 return@launch
             }
 
-            if (/*rateKind != SaleRateKind.None && */factor.actId == null) {
+            if (rateKind != SaleRateKind.None && factor.actId == 0) {
                 _errorMessageRes.value = R.string.error_selecting_act_mandatory
                 return@launch
             }
@@ -156,11 +155,10 @@ class HeaderOrderViewModel @Inject constructor(
                 _errorMessageRes.value = R.string.error_there_not_default_warehouse_sales_center
                 return@launch
             }
-
             _errorMessageRes.value = null
+            _validationResult.value = true
         }
     }
-
 
     private val _acts = MutableLiveData<List<ActEntity>>()
     val acts: LiveData<List<ActEntity>> get() = _acts

@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 import androidx.lifecycle.viewModelScope
+import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
@@ -104,7 +105,6 @@ class FactorViewModel @Inject constructor(
     suspend fun saveFactorHeader(header: FactorHeaderEntity) =
         factorRepository.saveFactorHeader(header)
 
-
     private val _selectedProducts = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
     val selectedProducts: LiveData<MutableList<FactorDetailEntity>> = _selectedProducts
 
@@ -194,6 +194,8 @@ class FactorViewModel @Inject constructor(
         }
     }
 
+    fun getHeaderById(id: Int): LiveData<FactorHeaderEntity> =
+        factorRepository.getHeaderById(id)
 
     val allHeaders: LiveData<List<FactorHeaderEntity>>
 
