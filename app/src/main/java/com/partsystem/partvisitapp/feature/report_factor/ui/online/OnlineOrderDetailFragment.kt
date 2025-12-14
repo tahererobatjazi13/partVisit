@@ -47,6 +47,7 @@ class OnlineOrderDetailFragment : Fragment() {
         init()
         initAdapter()
         setupClicks()
+        viewModel.fetchReportFactorDetail(1, args.id)
         setupObserver()
     }
 
@@ -81,7 +82,6 @@ class OnlineOrderDetailFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun setupObserver() {
-        viewModel.fetchReportFactorDetail(1, args.id)
 
         viewModel.reportFactorDetail.observe(viewLifecycleOwner) { result ->
             binding.apply {

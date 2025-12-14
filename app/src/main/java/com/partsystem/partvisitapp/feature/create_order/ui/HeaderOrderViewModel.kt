@@ -117,7 +117,6 @@ class HeaderOrderViewModel @Inject constructor(
             settlementKind,
             date
         )
-
         _patterns.postValue(result)
     }
 
@@ -141,12 +140,12 @@ class HeaderOrderViewModel @Inject constructor(
             val sc = saleCenterId?.let { repository.getSaleCenter(it) }
             val rateKind = sc?.saleRateKind ?: SaleRateKind.None
 
-            if (rateKind == SaleRateKind.Pattern && factor.patternId == 0) {
+            if (/*rateKind == SaleRateKind.Pattern && */factor.patternId == null) {
                 _errorMessageRes.value = R.string.error_selecting_pattern_mandatory
                 return@launch
             }
 
-            if (rateKind != SaleRateKind.None && factor.actId == 0) {
+            if (/*rateKind != SaleRateKind.None &&*/ factor.actId == null) {
                 _errorMessageRes.value = R.string.error_selecting_act_mandatory
                 return@launch
             }

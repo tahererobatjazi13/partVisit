@@ -22,6 +22,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSearch"
         android:layout_width="0dp"
+        android:visibility="visible"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/medium_size"
         android:background="@drawable/selector_search_input"

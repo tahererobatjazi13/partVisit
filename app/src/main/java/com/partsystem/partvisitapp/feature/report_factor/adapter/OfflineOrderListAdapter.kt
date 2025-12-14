@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.partsystem.partvisitapp.R
-import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.extensions.gone
@@ -37,12 +36,12 @@ class OfflineOrderListAdapter(
 
             tvOrderNumber.text = item.id.toString()
 
-        /*    customerViewModel.getCustomerById(item.customerId!!).observeForever { item ->
+            customerViewModel.getCustomerById(item.customerId!!).observeForever { item ->
                 if (item != null) {
                     binding.tvCustomerName.text = item.name
                 }
-            }*/
-            headerOrderViewModel.getPatternById(item.patternId).observeForever { item ->
+            }
+            headerOrderViewModel.getPatternById(item.patternId!!).observeForever { item ->
                 if (item != null) {
                     binding.tvPatternName.text = item.name
                 }
@@ -51,7 +50,7 @@ class OfflineOrderListAdapter(
             tvDateTime.text = item.persianDate + " _ " + item.createTime
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             root.setOnClickListener { onClick(item) }
-            if (showSyncButton&&item.hasDetail) {
+            if (showSyncButton && item.hasDetail) {
                 tvSyncOrder.show()
             } else {
                 tvSyncOrder.gone()
@@ -61,10 +60,10 @@ class OfflineOrderListAdapter(
             tvSyncOrder.setOnClickListener {
                 customDialog!!.showDialog(
                     context,
-                  context.getString(R.string.msg_sure_send_order),
+                    context.getString(R.string.msg_sure_send_order),
                     true,
-                   context.getString(R.string.label_no),
-                  context.getString(R.string.label_ok),
+                    context.getString(R.string.label_no),
+                    context.getString(R.string.label_ok),
                     true,
                     true
                 )

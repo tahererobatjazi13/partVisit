@@ -49,7 +49,6 @@ class OfflineOrderListFragment : Fragment() {
         initAdapter()
         observeData()
         customDialog = CustomDialog.instance
-        binding.btnSyncAllOrder.show()
     }
 
     private fun initAdapter() {
@@ -89,13 +88,21 @@ class OfflineOrderListFragment : Fragment() {
                 binding.info.show()
                 binding.info.message(getString(R.string.msg_no_data))
                 binding.rvOrderList.hide()
+                binding.btnSyncAllOrder.gone()
             } else {
                 binding.info.gone()
                 binding.rvOrderList.show()
                 offlineOrderListAdapter.setData(headers)
+
+                if (headers.size > 2) {
+                    binding.btnSyncAllOrder.show()
+                } else {
+                    binding.btnSyncAllOrder.gone()
+                }
             }
         }
     }
+
 
     private fun setupClicks() {
         binding.btnSyncAllOrder.setOnClickBtnOneListener {

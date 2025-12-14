@@ -29,7 +29,6 @@ class OrderDetailAdapter :
         @SuppressLint("SetTextI18n")
         fun bind(item: ReportFactorDto) = with(binding) {
 
-
             if (bindingAdapterPosition % 2 == 0) {
                 binding.root.setBackgroundColor(
                     itemView.context.getColorFromAttr(R.attr.colorBasic)

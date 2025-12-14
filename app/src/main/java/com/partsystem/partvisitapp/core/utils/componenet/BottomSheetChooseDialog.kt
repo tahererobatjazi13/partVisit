@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.core.utils.componenet
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ class BottomSheetChooseDialog : BottomSheetDialogFragment() {
 
     private var _binding: FragmentBottomSheetChooseBinding? = null
     private val binding get() = _binding!!
+    private var onDismissListener: (() -> Unit)? = null
 
     private var dialogTitle: Int? = null
     private val options = mutableListOf<ChooseOption>()
@@ -23,6 +25,7 @@ class BottomSheetChooseDialog : BottomSheetDialogFragment() {
         val iconRes: Int?,
         val onClick: () -> Unit
     )
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,7 +42,8 @@ class BottomSheetChooseDialog : BottomSheetDialogFragment() {
     }
 
     private fun setupUI() {
-        binding.tvTitle.text = dialogTitle?.let { getString(it) } ?: getString(R.string.label_choose)
+        binding.tvTitle.text =
+            dialogTitle?.let { getString(it) } ?: getString(R.string.label_choose)
 
         val optionBindings = listOf(
             binding.firstChoice,
@@ -48,7 +52,7 @@ class BottomSheetChooseDialog : BottomSheetDialogFragment() {
         )
 
         // مخفی کردن همه
-        optionBindings.forEach { it.root.gone()}
+        optionBindings.forEach { it.root.gone() }
 
         // تنظیم گزینه‌های فعال
         options.take(optionBindings.size).forEachIndexed { index, option ->
@@ -76,6 +80,16 @@ class BottomSheetChooseDialog : BottomSheetDialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    fun setOnDismissListener(listener: () -> Unit): BottomSheetChooseDialog {
+        onDismissListener = listener
+        return this
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissListener?.invoke()
     }
 
     companion object {

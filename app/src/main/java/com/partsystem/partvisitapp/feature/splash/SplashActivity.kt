@@ -3,7 +3,6 @@ package com.partsystem.partvisitapp.feature.splash
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.partsystem.partvisitapp.databinding.ActivitySplashBinding
@@ -41,18 +40,20 @@ class SplashActivity : AppCompatActivity() {
         val versionName = BuildConfig.VERSION_NAME
         binding.tvVersion.text = "نسخه $versionName"
     }
+
     private fun checkLoginStatus() {
         lifecycleScope.launch {
             val loggedIn = userPreferences.isLoggedIn.first()
 
-            if (loggedIn == true) {
-                startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            val intent = if (loggedIn == true) {
+                Intent(this@SplashActivity, MainActivity::class.java)
             } else {
-                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+                Intent(this@SplashActivity, LoginActivity::class.java)
             }
+
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             finish()
         }
     }
-
-
 }

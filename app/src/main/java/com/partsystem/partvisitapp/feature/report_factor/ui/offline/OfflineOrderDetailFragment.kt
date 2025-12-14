@@ -11,13 +11,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
-import com.partsystem.partvisitapp.core.utils.ReportFactorListType
 import com.partsystem.partvisitapp.core.utils.extensions.gone
-import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderDetailBinding
-import com.partsystem.partvisitapp.feature.customer.ui.CustomerDetailFragmentDirections
 import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderDetailAdapter
-import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import com.partsystem.partvisitapp.R

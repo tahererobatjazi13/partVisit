@@ -26,6 +26,7 @@
         <argument
             android:name="id"
             app:argType="integer" />
+
         <action
             android:id="@+id/action_onlineOrderListFragment_to_onlineOrderDetailFragment"
             app:destination="@id/onlineOrderDetailFragment" />
@@ -50,6 +51,5 @@
             app:argType="integer" />
 
     </fragment>
-
 
 </navigation>

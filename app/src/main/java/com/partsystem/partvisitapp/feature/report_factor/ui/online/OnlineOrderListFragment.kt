@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.ReportFactorListType
+import com.partsystem.partvisitapp.core.utils.SnackBarType
+import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
@@ -103,13 +105,24 @@ class OnlineOrderListFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
             orderListAdapter = OrderListAdapter(showSyncButton = false) { factors ->
-                val action =
-                    OnlineOrderListFragmentDirections.actionOnlineOrderListFragmentToOnlineOrderDetailFragment(
-                        factors.id
-                    )
-                findNavController().navigate(action)
+          /*      binding.rvOrderList.isEnabled = false
+                binding.rvOrderList.isClickable = false
+                binding.rvOrderList.suppressLayout(true)
+*/
+                if (factors.finalPrice.toInt() != 0) {
+                    val action =
+                        OnlineOrderListFragmentDirections.actionOnlineOrderListFragmentToOnlineOrderDetailFragment(
+                            factors.id
+                        )
+                    findNavController().navigate(action)
+                } else {
+                    CustomSnackBar.make(
+                        requireView(),
+                        getString(R.string.error_not_detail),
+                        SnackBarType.Error.value
+                    )?.show()
+                }
             }
-
             adapter = orderListAdapter
         }
     }
