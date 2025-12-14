@@ -2,11 +2,13 @@ package com.partsystem.partvisitapp.core.database.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FactorDao {
@@ -83,7 +85,7 @@ interface FactorDao {
     suspend fun insertFactorDetail(detail: FactorDetailEntity): Long
 
     @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
-    suspend fun getFactorDetails(factorId: Int): List<FactorDetailEntity>
+    fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>>
 
     @Delete
     suspend fun deleteDetail(detail: FactorDetailEntity)

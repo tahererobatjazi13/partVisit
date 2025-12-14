@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.android.material.card.MaterialCardView
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
@@ -309,10 +308,10 @@ class ProductListAdapter(
                         vat = 0.0
                     )
 
-                    // 👈 این‌جا مقدار Packing را کامل اعمال و ذخیره می‌کنیم
+                    // این‌جا مقدار Packing را کامل اعمال و ذخیره می‌کنیم
                     detail.applyPacking(selectedPacking)
 
-                    // 👈 ذخیره در Room
+                    //  ذخیره در Room
                     //    viewModel.saveFactorItem(factorItem)
 
                     // اگر لازم داری در سبد ثبت کنی

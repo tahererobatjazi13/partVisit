@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -62,12 +61,6 @@ class HeaderOrderFragment : Fragment() {
     private val customerViewModel: CustomerViewModel by viewModels()
     private val factorViewModel: FactorViewModel by viewModels()
 
-    private lateinit var patternAdapter: SpinnerAdapter
-    private lateinit var customerDirectionAdapter: SpinnerAdapter
-    private lateinit var invoiceCategoryAdapter: SpinnerAdapter
-    private lateinit var actAdapter: SpinnerAdapter
-    private lateinit var allPayementTypeAdapter: SpinnerAdapter
-
     private var controlVisit: Boolean = false
     private var userId: Int = 0
     private var visitorId: Int = 0
@@ -88,6 +81,8 @@ class HeaderOrderFragment : Fragment() {
     private val allSaleCenter = mutableListOf<SaleCenterEntity>()
     private val allAct = mutableListOf<ActEntity>()
     private val allPayementType = ArrayList<KeyValue>()
+
+    private val isEditMode get() = args.factorId > 0
     private var editingHeader: FactorHeaderEntity? = null
 
 
@@ -100,40 +95,150 @@ class HeaderOrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        init()
-        initDate()
+
+        initAdapter()
         initCustomer()
+        setupSpinners()
+        observeData()
+
+        if (isEditMode) {
+            loadEditData()
+        } else {
+            createNewHeader()
+        }
         setupClicks()
         setWidth()
-
-
-
-
-
     }
 
-    fun init() {
-        if (args.factorId > 0) {
-            // حالت ویرایش
-            loadData()
-            initForEdit()
-        } else {
-            // حالت ثبت جدید
-            initForCreate()
-        }
-    }
 
-    private fun initForCreate() {
-        createNewHeader()
-        initAdapter()
-        observeData()
-    }
+    private fun setupSpinners() {
 
-    private fun initForEdit() {
-        observeData()
+        binding.spCustomerDirection.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    when {
+                        position > 0 -> {
+                            val selectedCustomerDirection = allCustomerDirection[position - 1]
+                            factorViewModel.updateHeader(directionDetailId = selectedCustomerDirection.directionDetailId)
+                        }
+
+                        position == 0 -> {
+                            factorViewModel.updateHeader(directionDetailId = null)
+                        }
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    factorViewModel.updateHeader(directionDetailId = null)
+                }
+            }
+
+        binding.spInvoiceCategory.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?, view: View?, position: Int, id: Long
+                ) {
+                    if (position == 0) {
+                        factorViewModel.updateHeader(invoiceCategoryId = null)
+                        return
+                    }
+
+                    val selectedCategory = allInvoiceCategory[position - 1]
+
+                    factorViewModel.updateHeader(
+                        invoiceCategoryId = selectedCategory.id
+                    )
+
+                    // load sale centers
+                    headerOrderViewModel.loadSaleCenters(selectedCategory.id)
+
+                    val header = factorViewModel.factorHeader.value ?: return
+
+                    if (header.customerId != null && header.persianDate != null) {
+                        headerOrderViewModel.loadPatterns(
+                            customer = header.customerId!!,
+                            centerId = saleCenterId,
+                            invoiceCategoryId = selectedCategory.id,
+                            settlementKind = 0,
+                            date = header.persianDate!!
+                        )
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    factorViewModel.updateHeader(invoiceCategoryId = null)
+                }
+            }
+
+        binding.spPattern.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?, view: View?, position: Int, id: Long
+                ) {
+                    if (position == 0) {
+                        factorViewModel.updateHeader(patternId = null, actId = null)
+                        return
+                    }
+                    val selectedPattern = allPattern[position - 1]
+                    factorViewModel.updateHeader(patternId = selectedPattern.id)
+
+                    // val selectedPattern = allPattern.getOrNull(position - 1) ?: return
+                    // factorViewModel.factorHeader.value?.patternId = selectedPattern.id
+
+                    // load product ActId
+                    headerOrderViewModel.loadProductActId(selectedPattern.id)
+
+                    // load acts
+                    headerOrderViewModel.loadActs(
+                        patternId = selectedPattern.id,
+                        actKind = ActKind.Product.ordinal
+                    )
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    factorViewModel.updateHeader(patternId = null, actId = null)
+                }
+            }
+
+        binding.spAct.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    when {
+                        position > 0 -> {
+                            val act = allAct[position - 1]
+                            factorViewModel.updateHeader(actId = act.id)
+                            fillPaymentType()
+                        }
+
+                        position == 0 -> {
+                            factorViewModel.updateHeader(actId = null)
+
+                        }
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    factorViewModel.updateHeader(actId = null)
+                }
+            }
+
     }
 
     private fun createNewHeader() {
+        binding.tvDate.text = getTodayPersianDate()
+        binding.tvDuoDate.text = getTodayPersianDate()
+        binding.tvDeliveryDate.text = getTodayPersianDate()
 
         lifecycleScope.launch {
             saleCenterId = userPreferences.saleCenterId.first() ?: 0
@@ -180,15 +285,6 @@ class HeaderOrderFragment : Fragment() {
         binding.spCustomerDirection.adapter = defaultAdapter
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun initDate() {
-        //  val jalaliDate = JalaliCalendar()
-        // val today = "${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}"
-        binding.tvDate.text = getTodayPersianDate()
-        binding.tvDuoDate.text = getTodayPersianDate()
-        binding.tvDeliveryDate.text = getTodayPersianDate()
-    }
-
     private fun initCustomer() {
         if (args.typeCustomer && args.customerId != 0) {
             loadCustomerData(args.customerId, args.customerName)
@@ -222,273 +318,34 @@ class HeaderOrderFragment : Fragment() {
             }
         }
 
-        binding.spCustomerDirection.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    when {
-                        position > 0 -> {
-                            val entry = allCustomerDirection[position - 1]
-                            factorViewModel.factorHeader.value =
-                                factorViewModel.factorHeader.value!!.copy(
-                                    directionDetailId = entry.directionDetailId,
-                                )
-                        }
 
-                        position == 0 -> {
+        headerOrderViewModel.getInvoiceCategory(userId)
+            .observe(viewLifecycleOwner) { list ->
+                allInvoiceCategory.clear()
+                allInvoiceCategory.addAll(list)
 
-                            factorViewModel.factorHeader.value =
-                                factorViewModel.factorHeader.value!!.copy(
-                                    directionDetailId = 0,
-                                )
-                        }
+                val items = mutableListOf(getString(R.string.label_please_select))
+                items.addAll(list.map { it.name })
+
+                binding.spInvoiceCategory.adapter =
+                    SpinnerAdapter(requireContext(), items)
+
+                // در حالت ویرایش
+                if (isEditMode) {
+                    editingHeader?.invoiceCategoryId?.let { id ->
+                        binding.spInvoiceCategory.setSelectionById(
+                            id = id,
+                            items = allInvoiceCategory
+                        ) { it.id }
                     }
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    factorViewModel.factorHeader.value =
-                        factorViewModel.factorHeader.value!!.copy(
-                            directionDetailId = null,
-                        )
                 }
             }
 
-        headerOrderViewModel.getInvoiceCategory(userId).observe(viewLifecycleOwner) { list ->
-            allInvoiceCategory.clear()
-            allInvoiceCategory.addAll(list)
-
-            val items = mutableListOf(getString(R.string.label_please_select))
-            items.addAll(list.map { it.name })
-
-            invoiceCategoryAdapter = SpinnerAdapter(requireContext(), items)
-            binding.spInvoiceCategory.adapter = invoiceCategoryAdapter
-
-            // اگر در حالت ویرایش هستیم
-            editingHeader?.invoiceCategoryId?.let { id ->
-                binding.spInvoiceCategory.setSelectionById(
-                    id = id,
-                    items = allInvoiceCategory
-                ) { it.id }
-            }
-
-            binding.spInvoiceCategory.onItemSelectedListener =
-                object : AdapterView.OnItemSelectedListener {
-
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?, view: View?, position: Int, id: Long
-                    ) {
-
-                        if (position == 0) {
-                            factorViewModel.updateHeader(invoiceCategoryId = null)
-                            return
-                        }
-
-                        val selectedCategory = list[position - 1]
-
-                        factorViewModel.updateHeader(
-                            invoiceCategoryId = selectedCategory.id
-                        )
-
-                        // load sale centers
-                        headerOrderViewModel.loadSaleCenters(selectedCategory.id)
-
-                        //val header = factorViewModel.factorHeader.value ?: return
-                        val header = editingHeader ?: return
-
-                        if (header.customerId != null && header.persianDate != null) {
-                            headerOrderViewModel.loadPatterns(
-                                customer = header.customerId!!,
-                                centerId = saleCenterId,
-                                invoiceCategoryId = factorViewModel.factorHeader.value.invoiceCategoryId,
-                                settlementKind = 0,
-                                date = getTodayPersianDate()
-                            )
-                        } else {
-                            Log.d("PATTERN", "skip loadPatterns: header incomplete -> $header")
-                        }
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        factorViewModel.updateHeader(invoiceCategoryId = null)
-                    }
-                }
-
-            /*
-                        binding.spInvoiceCategory.onItemSelectedListener =
-                            object : AdapterView.OnItemSelectedListener {
-                                override fun onItemSelected(
-                                    parent: AdapterView<*>?, view: View?, position: Int, id: Long
-                                ) {
-                                    if (position == 0) {
-                                        factorViewModel.factorHeader.value =
-                                            factorViewModel.factorHeader.value!!.copy(
-                                                invoiceCategoryId = null,
-                                            )
-                                        return
-                                    }
-
-                                    val selectedCategory = list[position - 1]
-                                    factorViewModel.factorHeader.value =
-                                        factorViewModel.factorHeader.value!!.copy(
-                                            invoiceCategoryId = selectedCategory.id,
-                                        )
-
-                                    // load sale center
-                                    headerOrderViewModel.saleCenters.observe(viewLifecycleOwner) { centers ->
-                                        allSaleCenter.clear()
-                                        allSaleCenter.addAll(centers)
-                                    }
-                                    selectedCategory?.let {
-                                        headerOrderViewModel.loadSaleCenters(it.id)
-                                    }
-                                    val header = editingHeader ?: return
-
-
-                                    // load patterns
-                                    if (factorViewModel.factorHeader.value?.customerId != null) {
-                                        headerOrderViewModel.loadPatterns(
-                                            factorViewModel.factorHeader.value!!.customerId!!,
-                                            factorViewModel.factorHeader.value!!.saleCenterId,
-                                            factorViewModel.factorHeader.value!!.invoiceCategoryId,
-                                            factorViewModel.factorHeader.value!!.settlementKind,
-                                            factorViewModel.factorHeader.value!!.persianDate!!
-                                        )
-                                        headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
-                                            allPattern.clear()
-                                            allPattern.addAll(list)
-                                          //  val items = mutableListOf(getString(R.string.label_please_select))
-                                            items.addAll(list.map { it.name })
-                                            patternAdapter = SpinnerAdapter(requireContext(), items)
-                                            binding.spPattern.adapter = patternAdapter
-
-                                            // ست Pattern
-                                            binding.spPattern.setSelectionById(
-                                                id = header.patternId,
-                                                items = allPattern
-                                            ) { it.id }
-                                        }
-                                    }
-                                }
-
-                                override fun onNothingSelected(parent: AdapterView<*>?) {
-                                    factorViewModel.factorHeader.value =
-                                        factorViewModel.factorHeader.value!!.copy(
-                                            invoiceCategoryId = null,
-                                        )
-                                }
-                            }*/
-        }
         headerOrderViewModel.saleCenters.observe(viewLifecycleOwner) { centers ->
             allSaleCenter.clear()
             allSaleCenter.addAll(centers)
         }
 
-        headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
-            allPattern.clear()
-            allPattern.addAll(list)
-
-            val items = mutableListOf(getString(R.string.label_please_select))
-            items.addAll(list.map { it.name })
-
-            patternAdapter = SpinnerAdapter(requireContext(), items)
-            binding.spPattern.adapter = patternAdapter
-
-            editingHeader?.let { header ->
-                binding.spPattern.setSelectionById(
-                    id = header.patternId,
-                    items = allPattern
-                ) { it.id }
-            }
-        }
-        /*       binding.spPattern.onItemSelectedListener =
-                   object : AdapterView.OnItemSelectedListener {
-                       override fun onItemSelected(
-                           parent: AdapterView<*>?,
-                           view: View?,
-                           position: Int,
-                           id: Long
-                       ) {
-                           // DataHolder.isDirty = true
-                           if (position == 0 && factorViewModel.factorHeader.value!!.patternId != null) {
-                               factorViewModel.factorHeader.value?.apply {
-                                   patternId = null
-                                   actId = null
-                               }
-                               return
-                           }
-
-
-                           if (allPattern.isEmpty() || position - 1 >= allPattern.size) return
-                           val entry = allPattern.getOrNull(position - 1) ?: return
-
-                           factorViewModel.factorHeader.value!!.patternId = entry.id
-
-                           headerOrderViewModel.loadProductActId(entry.id)
-
-                           // load act
-                           headerOrderViewModel.loadActs(
-                               patternId = entry.id,
-                               actKind = ActKind.Product.ordinal
-                           )
-                           headerOrderViewModel.productActId.observe(viewLifecycleOwner) { actId ->
-                               factorViewModel.factorHeader.value!!.actId = actId!!
-
-                           }
-                           if (factorViewModel.factorHeader.value!!.actId != null) {
-
-                               val actId = factorViewModel.factorHeader.value!!.actId!!
-
-                               // آیا این Act قبلاً داخل لیست وجود دارد؟
-                               val exists = allAct.any { it.id == actId }
-
-                               if (!exists) {
-                                   // از دیتابیس بیاورش
-                                   headerOrderViewModel.loadAct(actId)
-
-                                   headerOrderViewModel.addedAct.observe(viewLifecycleOwner) { act ->
-                                       act?.let {
-                                           allAct.add(it)
-                                           (binding.spAct.adapter as ArrayAdapter<ActEntity>).notifyDataSetChanged()
-                                           binding.spAct.setSelection(1)
-                                       }
-                                   }
-
-                                   fillPaymentType()
-
-                               } else {
-                                   binding.spAct.setSelection(1)
-                               }
-                               val header = editingHeader ?: return
-
-                               headerOrderViewModel.acts.observe(viewLifecycleOwner) { list ->
-                                   allAct.clear()
-                                   allAct.addAll(list)
-                                   val items = mutableListOf(getString(R.string.label_please_select))
-                                   items.addAll(list.map { it.description!! })
-
-                                   actAdapter = SpinnerAdapter(requireContext(), items)
-                                   binding.spAct.adapter = actAdapter
-
-                                   binding.spAct.setSelectionById(
-                                       id = header.actId,
-                                       items = allAct
-                                   ) { it.id }
-                               }
-                           }
-                       }
-
-                       override fun onNothingSelected(parent: AdapterView<*>?) {
-                           factorViewModel.factorHeader.value!!.patternId = null
-                           factorViewModel.factorHeader.value!!.actId = null
-                       }
-                   }
-       */
-
-        // observerها فقط یک بار
         headerOrderViewModel.productActId.observe(viewLifecycleOwner) { actId ->
             factorViewModel.factorHeader.value?.actId = actId
             setActSpinnerSelection(actId)
@@ -497,7 +354,16 @@ class HeaderOrderFragment : Fragment() {
         headerOrderViewModel.acts.observe(viewLifecycleOwner) { acts ->
             allAct.clear()
             allAct.addAll(acts)
+
             updateActSpinner()
+            if (isEditMode) {
+                editingHeader?.actId?.let { id ->
+                    binding.spAct.setSelectionById(
+                        id = id,
+                        items = allAct
+                    ) { it.id }
+                }
+            }
         }
 
         headerOrderViewModel.addedAct.observe(viewLifecycleOwner) { act ->
@@ -510,84 +376,18 @@ class HeaderOrderFragment : Fragment() {
             }
         }
 
-        binding.spPattern.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?, view: View?, position: Int, id: Long
-            ) {
-                if (position == 0) {
-                    factorViewModel.factorHeader.value?.apply {
-                        patternId = null
-                        actId = null
-                    }
-                    return
-                }
-
-                val selectedPattern = allPattern.getOrNull(position - 1) ?: return
-
-                factorViewModel.factorHeader.value?.patternId = selectedPattern.id
-
-                // load product ActId
-                headerOrderViewModel.loadProductActId(selectedPattern.id)
-
-                // load acts
-                headerOrderViewModel.loadActs(
-                    patternId = selectedPattern.id,
-                    actKind = ActKind.Product.ordinal
-                )
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                factorViewModel.factorHeader.value?.apply {
-                    patternId = null
-                    actId = null
-                }
-            }
-        }
-
         headerOrderViewModel.getAct().observe(viewLifecycleOwner) { list ->
             allAct.clear()
             allAct.addAll(list)
             val items = mutableListOf<String>()
             items.add(getString(R.string.label_please_select))
             items.addAll(list.map { it.description!! })
-            actAdapter = SpinnerAdapter(requireContext(), items)
-            binding.spAct.adapter = actAdapter
+
+            binding.spAct.adapter =
+                SpinnerAdapter(requireContext(), items)
         }
 
-        binding.spAct.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    when {
-                        position > 0 -> {
-                            val entry = allAct[position - 1]
-                            factorViewModel.factorHeader.value =
-                                factorViewModel.factorHeader.value!!.copy(
-                                    actId = entry.id,
-                                )
-                        }
 
-                        position == 0 -> {
-
-                            factorViewModel.factorHeader.value =
-                                factorViewModel.factorHeader.value!!.copy(
-                                    actId = null,
-                                )
-                        }
-                    }
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    factorViewModel.factorHeader.value =
-                        factorViewModel.factorHeader.value!!.copy(
-                            actId = null,
-                        )
-                }
-            }
         fillPaymentType()
 
         binding.spPaymentType.onItemSelectedListener =
@@ -634,15 +434,32 @@ class HeaderOrderFragment : Fragment() {
             factorViewModel.headerId.value = null
             pendingNavigation = ""
         }
-    }
 
+        // دریافت نتیجه اعتبارسنجی
+        headerOrderViewModel.validationEvent.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let {
+                showChooseDialog()
+            }
+        }
+
+        // دریافت پیام خطا و نمایش با CustomSnackBar
+        headerOrderViewModel.errorMessageRes.observe(viewLifecycleOwner) { msgResId ->
+            msgResId?.let {
+                CustomSnackBar.make(
+                    requireActivity().findViewById(android.R.id.content),
+                    getString(it),
+                    SnackBarType.Error.value
+                )?.show()
+            }
+        }
+    }
 
     // تابع برای آپدیت adapter و spinner
     private fun updateActSpinner() {
         val items = mutableListOf(getString(R.string.label_please_select))
         items.addAll(allAct.map { it.description ?: "" })
-        actAdapter = SpinnerAdapter(requireContext(), items)
-        binding.spAct.adapter = actAdapter
+        binding.spAct.adapter =
+            SpinnerAdapter(requireContext(), items)
     }
 
     // تابع برای ست کردن ActId انتخاب شده در spinner
@@ -685,8 +502,18 @@ class HeaderOrderFragment : Fragment() {
                 MaterialPickerOnPositiveButtonClickListener<Long?> {
                 override fun onPositiveButtonClick(selection: Long?) {
                     selection?.let {
-                        val date = PersianCalendar(it).toString()
-                        onDateSelected(date)
+                        val date = PersianCalendar(it)
+                        val year = date.year
+                        val month = date.month + 1
+                        val day = date.day
+
+                        val dateFinal = String.format(
+                            "%04d/%02d/%02d",
+                            year,
+                            month,
+                            day
+                        )
+                        onDateSelected(dateFinal)
                     }
                 }
             })
@@ -696,6 +523,7 @@ class HeaderOrderFragment : Fragment() {
         // ------------------------- Click Listeners -------------------------
         binding.cvDate.setOnClickListener {
             showPersianDatePicker { date ->
+
                 val gregorianDate = persianToGregorian(date)
                 binding.tvDate.text = date
                 factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
@@ -754,18 +582,22 @@ class HeaderOrderFragment : Fragment() {
         }
     }
 
-    private fun loadData() {
+
+    private fun loadEditData() {
         factorViewModel.getHeaderById(args.factorId)
             .observe(viewLifecycleOwner) { header ->
                 editingHeader = header
+
                 binding.tvDate.text = gregorianToPersian(header.createDate.toString())
                 binding.tvDuoDate.text = gregorianToPersian(header.dueDate.toString())
                 binding.tvDeliveryDate.text = gregorianToPersian(header.deliveryDate.toString())
                 binding.etDescription.setText(header.description)
+
+                factorViewModel.factorHeader.value = header
             }
     }
 
-    fun <T> Spinner.setSelectionById(
+    private fun <T> Spinner.setSelectionById(
         id: Int?,
         items: List<T>,
         getId: (T) -> Int?
@@ -794,24 +626,6 @@ class HeaderOrderFragment : Fragment() {
             saleCenterId = saleCenterId,
             factor = factor
         )
-
-        // دریافت نتیجه اعتبارسنجی
-        headerOrderViewModel.validationResult.observe(viewLifecycleOwner) { isValid ->
-            if (isValid) {
-                showChooseDialog()
-            }
-        }
-
-        // دریافت پیام خطا و نمایش با CustomSnackBar
-        headerOrderViewModel.errorMessageRes.observe(viewLifecycleOwner) { msgResId ->
-            msgResId?.let {
-                CustomSnackBar.make(
-                    requireActivity().findViewById(android.R.id.content),
-                    getString(it),
-                    SnackBarType.Error.value
-                )?.show()
-            }
-        }
     }
 
     private fun loadCustomerData(customerId: Int, customerName: String) {
@@ -838,25 +652,34 @@ class HeaderOrderFragment : Fragment() {
                 items.add(getString(R.string.label_please_select))
 
                 items.addAll(list.map { it.fullAddress })
-
-                customerDirectionAdapter = SpinnerAdapter(requireContext(), items)
-                binding.spCustomerDirection.adapter = customerDirectionAdapter
+                binding.spCustomerDirection.adapter =
+                    SpinnerAdapter(requireContext(), items)
             }
 
         // بارگذاری الگوها
         headerOrderViewModel.patterns.observe(viewLifecycleOwner) { list ->
             allPattern.clear()
             allPattern.addAll(list)
+
             val items = mutableListOf(getString(R.string.label_please_select))
             items.addAll(list.map { it.name })
-            patternAdapter = SpinnerAdapter(requireContext(), items)
-            binding.spPattern.adapter = patternAdapter
-        }
 
+            binding.spPattern.adapter =
+                SpinnerAdapter(requireContext(), items)
+
+            if (isEditMode) {
+                editingHeader?.patternId?.let { id ->
+                    binding.spPattern.setSelectionById(
+                        id = id,
+                        items = allPattern
+                    ) { it.id }
+                }
+            }
+        }
         headerOrderViewModel.loadPatterns(
             customer = customerId,
             centerId = saleCenterId,
-            invoiceCategoryId = factorViewModel.factorHeader.value.invoiceCategoryId,
+            invoiceCategoryId = factorViewModel.factorHeader.value!!.invoiceCategoryId,
             settlementKind = 0,
             date = getTodayPersianDate()
         )
@@ -872,8 +695,8 @@ class HeaderOrderFragment : Fragment() {
         allPayementType.add(KeyValue(4, "اعتباری"))
 
         val items = allPayementType.map { it.name }.toMutableList()
-        allPayementTypeAdapter = SpinnerAdapter(requireContext(), items)
-        binding.spPaymentType.adapter = allPayementTypeAdapter
+        binding.spPaymentType.adapter =
+            SpinnerAdapter(requireContext(), items)
 
         if (factorViewModel.factorHeader.value!!.patternId != null) {
             headerOrderViewModel.getPatternById(factorViewModel.factorHeader.value!!.patternId!!)
@@ -910,7 +733,7 @@ class HeaderOrderFragment : Fragment() {
             .setTitle(R.string.label_choose)
             .addOption(R.string.label_product_catalog, R.drawable.ic_home_catalog) {
                 pendingNavigation = "catalog"
-                Log.d("factorHeader", factorViewModel.factorHeader.value.toString())
+                Log.d("factorHeader", factorViewModel.factorHeader.value!!.toString())
                 factorViewModel.createHeader(factorViewModel.factorHeader.value)
             }
             .addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {

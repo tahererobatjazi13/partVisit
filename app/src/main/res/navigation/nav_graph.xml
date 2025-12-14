@@ -93,8 +93,8 @@
             app:argType="boolean" />
         <argument
             android:name="factorId"
-            app:argType="reference"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="reference" />
 
         <action
             android:id="@+id/action_groupProductFragment_to_productDetailFragment"
@@ -124,8 +124,8 @@
 
         <argument
             android:name="factorId"
-            app:argType="reference"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="reference" />
 
         <action
             android:id="@+id/action_headerOrderFragment_to_productListFragment"
@@ -148,8 +148,8 @@
             app:argType="boolean" />
         <argument
             android:name="factorId"
-            app:argType="reference"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="reference" />
 
         <action
             android:id="@+id/action_productListFragment_to_orderFragment"
@@ -170,6 +170,9 @@
         android:name="com.partsystem.partvisitapp.feature.create_order.ui.OrderFragment"
         android:label="OrderFragment"
         tools:layout="@layout/fragment_order">
+        <argument
+            android:name="factorId"
+            app:argType="integer" />
         <action
             android:id="@+id/action_orderFragment_to_homeFragment"
             app:destination="@id/homeFragment" />

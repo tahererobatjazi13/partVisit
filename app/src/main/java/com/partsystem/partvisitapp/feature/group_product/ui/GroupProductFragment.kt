@@ -88,7 +88,7 @@ class GroupProductFragment : Fragment() {
 
         binding.hfGroupProduct.setOnClickImgOneListener {
             val action =
-                GroupProductFragmentDirections.actionGroupProductFragmentToOrderFragment()
+                GroupProductFragmentDirections.actionGroupProductFragmentToOrderFragment(args.factorId)
             findNavController().navigate(action)
         }
     }

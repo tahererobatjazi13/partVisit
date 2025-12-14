@@ -3,6 +3,7 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
@@ -12,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 import androidx.lifecycle.viewModelScope
+import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
@@ -97,13 +99,42 @@ class FactorViewModel @Inject constructor(
                 factorGiftInfos = factorGifts.value ?: emptyList()
             )
         }*/
-    fun updateHeader(
+
+
+        fun updateHeader(
+            customerId: Int? = null,
+            directionDetailId: Int? = null,
+            invoiceCategoryId: Int? = null,
+            saleCenterId: Int? = null,
+            patternId: Int? = null,
+            actId: Int? = null,
+            settlementKind: Int? = null,
+            persianDate: String? = null,
+            description: String? = null
+        ) {
+            val current = factorHeader.value ?: return
+
+            factorHeader.value = current.copy(
+                customerId = customerId ?: current.customerId,
+                directionDetailId = directionDetailId ?: current.directionDetailId,
+                invoiceCategoryId = invoiceCategoryId ?: current.invoiceCategoryId,
+                saleCenterId = saleCenterId ?: current.saleCenterId,
+                patternId = patternId ?: current.patternId,
+                actId = actId ?: current.actId,
+                settlementKind = settlementKind ?: current.settlementKind,
+                persianDate = persianDate ?: current.persianDate,
+                description = description ?: current.description
+            )
+
+    }
+
+   /* fun updateHeader(
         invoiceCategoryId: Int? = factorHeader.value?.invoiceCategoryId
     ) {
         factorHeader.value = factorHeader.value?.copy(
             invoiceCategoryId = invoiceCategoryId
         )
-    }
+    }*/
 
     suspend fun loadProduct(productId: Int, actId: Int): ProductWithPacking? {
         return productRepository.getProductByActId(productId, actId)
@@ -204,6 +235,9 @@ class FactorViewModel @Inject constructor(
     fun getHeaderById(id: Int): LiveData<FactorHeaderEntity> =
         factorRepository.getHeaderById(id)
 
+    fun getFactorDetails(factorId: Int): LiveData<List<FactorDetailEntity>> {
+        return factorRepository.getFactorDetails(factorId).asLiveData()
+    }
     val allHeaders: LiveData<List<FactorHeaderEntity>>
 
     init {

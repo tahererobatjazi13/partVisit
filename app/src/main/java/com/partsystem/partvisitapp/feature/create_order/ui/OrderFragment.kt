@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
@@ -20,6 +21,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderBinding
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerDetailFragmentDirections
+import com.partsystem.partvisitapp.feature.product.ui.ProductListFragmentArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
@@ -35,6 +37,7 @@ class OrderFragment : Fragment() {
 
     private val formatter = DecimalFormat("#,###,###,###")
     private var currentCartItems: List<FactorDetailEntity> = emptyList()
+    private val args: OrderFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -137,7 +140,7 @@ class OrderFragment : Fragment() {
         }
 */
 
-        factorViewModel.details.observe(viewLifecycleOwner) { details ->
+        factorViewModel.getFactorDetails(factorId = args.factorId).observe(viewLifecycleOwner) { details ->
             // update UI list (در این نمونه ساده نمایش تعداد)
            // tvDetailsCount.text = "محصولات انتخاب‌شده: ${details.size}"
             orderAdapter.submitList(details)    // مهم: toList ➜ create new list

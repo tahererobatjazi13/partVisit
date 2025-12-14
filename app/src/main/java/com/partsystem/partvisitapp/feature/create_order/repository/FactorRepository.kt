@@ -2,12 +2,14 @@ package com.partsystem.partvisitapp.feature.create_order.repository
 
 import androidx.lifecycle.LiveData
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
+import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.FinalFactorRequest
 import com.partsystem.partvisitapp.core.network.ApiService
+import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -56,7 +58,7 @@ class FactorRepository @Inject constructor(
     suspend fun saveFactorDetail(detail: FactorDetailEntity): Long =
         factorDao.insertFactorDetail(detail)
 
-    suspend fun getFactorDetails(factorId: Int): List<FactorDetailEntity> =
+    fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
         factorDao.getFactorDetails(factorId)
 
     suspend fun saveFactorGift(gift: FactorGiftInfoEntity): Long = factorDao.insertFactorGift(gift)

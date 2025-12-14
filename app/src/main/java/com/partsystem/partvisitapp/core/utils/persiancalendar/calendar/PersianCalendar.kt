@@ -53,9 +53,8 @@ class PersianCalendar() : GregorianCalendar() {
     }
 
     override fun toString(): String {
-        return "$year/$month/$day"
+        return "$year/${month + 1}/$day"
     }
-
 
     /**
      * @return first day of Persian month in this calendar

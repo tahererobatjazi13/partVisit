@@ -13,6 +13,7 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
+import com.partsystem.partvisitapp.core.utils.Event
 import com.partsystem.partvisitapp.core.utils.SaleRateKind
 import com.partsystem.partvisitapp.feature.create_order.repository.HeaderOrderRepository
 import kotlinx.coroutines.Dispatchers
@@ -129,8 +130,9 @@ class HeaderOrderViewModel @Inject constructor(
             _saleCenters.postValue(centers)
         }
     }
-    private val _validationResult = MutableLiveData<Boolean>()
-    val validationResult: LiveData<Boolean> get() = _validationResult
+    private val _validationEvent = MutableLiveData<Event<Unit>>()
+    val validationEvent: LiveData<Event<Unit>> get() = _validationEvent
+
 
     private val _errorMessageRes = MutableLiveData<Int?>()
     val errorMessageRes: LiveData<Int?> get() = _errorMessageRes
@@ -155,7 +157,8 @@ class HeaderOrderViewModel @Inject constructor(
                 return@launch
             }
             _errorMessageRes.value = null
-            _validationResult.value = true
+            _validationEvent.value = Event(Unit)
+
         }
     }
 
