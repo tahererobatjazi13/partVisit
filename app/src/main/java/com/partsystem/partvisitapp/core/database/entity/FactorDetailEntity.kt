@@ -45,20 +45,25 @@ data class FactorDetailEntity(
     // var factorDiscounts: MutableList<FactorDiscountEntity> = mutableListOf()
 )
  {
-     @Ignore var product: ProductWithPacking? = null
+
+
+     @Ignore
+     var product: ProductWithPacking? = null
+
 
      @Ignore
      @Transient
-     var repository: ProductRepository? = null
+     var factorHeader: FactorHeaderEntity? = null
+
+
 
      @Ignore
+     @Transient
+     var repository: ProductRepository? = null  // <-- Repository ذخیره شد
+
+
      @Transient
      var packing: ProductPackingEntity? = null
-
-    @Ignore
-    @Transient
-    var factorHeader: FactorHeaderEntity? = null
-
 
     @Ignore
     fun applyProduct(product: ProductWithPacking) {
@@ -136,7 +141,7 @@ data class FactorDetailEntity(
      }
 
      @Ignore
-     fun getPacking(): ProductPackingEntity? {
+     fun resolvePacking(): ProductPackingEntity? {
          if (packing == null && packingId != null) {
              packing = product?.packings
                  ?.firstOrNull { it.packingId == packingId }

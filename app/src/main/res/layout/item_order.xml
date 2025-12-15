@@ -73,7 +73,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/clUnit1Value"
                         android:layout_width="@dimen/_33sdp"
-                        android:layout_height="@dimen/_30sdp"
+                        android:layout_height="@dimen/_25sdp"
                         android:background="@drawable/background_edittext"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/ivMin"
@@ -91,6 +91,7 @@
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="0"
+                            android:padding="0dp"
                             android:textDirection="ltr"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -135,7 +136,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/clPackingValue"
                         android:layout_width="@dimen/_45sdp"
-                        android:layout_height="@dimen/_30sdp"
+                        android:layout_height="@dimen/_25sdp"
                         android:layout_marginEnd="@dimen/x_small_size"
                         android:background="@drawable/background_edittext"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -151,6 +152,7 @@
                             android:layout_marginHorizontal="@dimen/xx_small_size"
                             android:cursorVisible="true"
                             android:gravity="center"
+                            android:padding="0dp"
                             android:inputType="numberDecimal"
                             android:textDirection="ltr"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -165,7 +167,7 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clProductPacking"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/xx_small_size"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -185,13 +187,14 @@
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvProductPacking"
                     style="@style/SmallTextStyle"
-                    android:layout_width="match_parent"
+                    android:text="مکمنکخخهههخ"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_centerVertical="true"
                     android:layout_marginHorizontal="@dimen/xx_small_size"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/tvTitleProductPacking"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTitleProductPacking"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.core.database.entity.Discount
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.core.utils.extensions.clean
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.DialogSelectDiscountBinding
@@ -49,9 +50,9 @@ class OrderAdapter(
                     tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
                 }
             }
-            binding.tvProductPacking.text = item.getPackingValueFormatted()
+            binding.tvProductPacking.text = item.packingName
 
-            etUnit1Value.setText(item.unit1Value.toString())
+           // etUnit1Value.setText(item.unit1Value.clean())
             //tvProductPacking.text =item.packingValue
             if (bindingAdapterPosition % 2 == 0) {
                 clDiscount.show()
@@ -72,7 +73,7 @@ class OrderAdapter(
 
             val quantity = item.unit1Value
             if (etUnit1Value.text.toString() != quantity.toString()) {
-                etUnit1Value.setText(quantity.toString())
+                etUnit1Value.setText(quantity.clean())
             }
 
             // ساخت Watcher جدید
