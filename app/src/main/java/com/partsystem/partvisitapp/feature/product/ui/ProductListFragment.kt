@@ -124,7 +124,7 @@ class ProductListFragment : Fragment() {
         productListAdapter = ProductListAdapter(factorViewModel,
             fromFactor = args.fromFactor,factorId = args.factorId,
             onProductChanged = { item ->
-                factorViewModel.addFactorDetail(item)
+                factorViewModel.addOrUpdateFactorDetail(item)
             },
             currentQuantities = currentQuantities,
             onClick = { product ->
@@ -214,11 +214,18 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartBadge() {
-        factorViewModel.totalCount.observe(viewLifecycleOwner) { count ->
+  /*      factorViewModel.totalCount.observe(viewLifecycleOwner) { count ->
             binding.hfProduct.isShowBadge = count > 0
-            binding.hfProduct.textBadge = if (count > 0) count.toString() else ""
-        }
+            binding.hfProduct.textBadge = count.toString()
+        }*/
+        factorViewModel.getFactorItemCount(args.factorId)
+            .observe(viewLifecycleOwner) { count ->
+                binding.hfProduct.isShowBadge = count > 0
+                binding.hfProduct.textBadge = count.toString()
+            }
+
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

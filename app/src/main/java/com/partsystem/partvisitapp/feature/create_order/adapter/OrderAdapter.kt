@@ -49,7 +49,7 @@ class OrderAdapter(
                     tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
                 }
             }
-           // tvName.text = "${bindingAdapterPosition + 1}_ ${item.product}"
+            binding.tvProductPacking.text = item.getPackingValueFormatted()
 
             etUnit1Value.setText(item.unit1Value.toString())
             //tvProductPacking.text =item.packingValue

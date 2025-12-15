@@ -3,18 +3,17 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
-import androidx.room.PrimaryKey
-import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.CalculateDiscount
-import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.partsystem.partvisitapp.core.utils.formatFloat
 
 @Entity(
     tableName = "factor_detail_table",
+    primaryKeys = ["factorId", "productId"],
     foreignKeys = [
         ForeignKey(
             entity = FactorHeaderEntity::class,
@@ -25,56 +24,41 @@ import kotlinx.coroutines.launch
     ]
 )
 data class FactorDetailEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
     val factorId: Int,
+    var productId: Int,
     var sortCode: Int? = null,
     var anbarId: Int? = null,
-    var productId: Int? = null,
     var actId: Int? = null,
-    var unit1Value: Double? = 0.0,
-    var unit2Value: Double? = 0.0,
-    var price: Double? = 0.0,
+    var unit1Value: Double = 0.0,
+    var unit2Value: Double = 0.0,
+    var price: Double = 0.0,
     var description: String? = null,
     var packingId: Int? = null,
-    var packingValue: Double? = 0.0,
-    var vat: Double? = 0.0,
+    var packingValue: Double = 0.0,
+    var vat: Double = 0.0,
     var productSerial: Int? = null,
-    var isGift: Int? = 0,
-    var returnCauseId: Int? = 0,
-    var isCanceled: Int? = 0,
-    var isModified: Int? = 0,
-    var unit1Rate: Double? = 0.0,
-
+    var isGift: Int = 0,
+    var returnCauseId: Int = 0,
+    var isCanceled: Int = 0,
+    var isModified: Int = 0,
+    var unit1Rate: Double = 0.0
     // var factorDiscounts: MutableList<FactorDiscountEntity> = mutableListOf()
-) {
+)
+ {
+     @Ignore var product: ProductWithPacking? = null
 
-    @Ignore
-    var product: ProductWithPacking? = null
+     @Ignore
+     @Transient
+     var repository: ProductRepository? = null
 
-  //  fun getActId(): Int? = actId
+     @Ignore
+     @Transient
+     var packing: ProductPackingEntity? = null
 
     @Ignore
     @Transient
     var factorHeader: FactorHeaderEntity? = null
-/*
-    @Ignore
-    suspend fun getProduct(viewModel: FactorViewModel): ProductWithPacking? {
-        if (product == null && productId != null) {
-            val act = getActId() ?: return null
-            product = viewModel.loadProduct(productId!!, act)
-        }
-        return product
-    }*/
 
-    @Ignore
-    @Transient
-    var repository: ProductRepository? = null  // <-- Repository ذخیره شد
-
-//    // تابع برای ست کردن Repository (یک بار کافی است)
-//    fun setRepository(repo: ProductRepository) {
-//        this.repository = repo
-//    }
 
     @Ignore
     fun applyProduct(product: ProductWithPacking) {
@@ -92,15 +76,12 @@ data class FactorDetailEntity(
         }
     }
 
-    @Transient
-    var packing: ProductPackingEntity? = null
     var anbarCode: String? = null
     var anbarName: String? = null
     var productCode: String? = null
     var productName: String? = null
     var packingCode: Int? = null
     var packingName: String = ""
-
 
     // ست کردن Packing
     fun applyPacking(value: ProductPackingEntity?) {
@@ -143,4 +124,24 @@ data class FactorDetailEntity(
             }
         }
     }
-}
+
+     @Ignore
+     fun getPackingValueFormatted(): String {
+         val packing = packing ?: return ""
+         if (packingValue > 0) {
+             val remain = unit1Value % packing.unit1Value
+             return "${packingValue.toInt()} : ${formatFloat(remain)}"
+         }
+         return ""
+     }
+
+     @Ignore
+     fun getPacking(): ProductPackingEntity? {
+         if (packing == null && packingId != null) {
+             packing = product?.packings
+                 ?.firstOrNull { it.packingId == packingId }
+         }
+         return packing
+     }
+
+ }

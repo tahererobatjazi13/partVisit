@@ -15,13 +15,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
-import com.partsystem.partvisitapp.core.database.entity.OrderEntity
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderBinding
-import com.partsystem.partvisitapp.feature.customer.ui.CustomerDetailFragmentDirections
-import com.partsystem.partvisitapp.feature.product.ui.ProductListFragmentArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
@@ -50,28 +47,26 @@ class OrderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         init()
-        rxBinding()
-        setupObserver()
+        setupClicks()
         initAdapter()
+        setupObserver()
     }
+
     private fun init() {
     }
 
     /**
      *     تنظیم کلیک روی دکمه ورود و بررسی ورودی‌ها
      */
-    private fun rxBinding() {
+    private fun setupClicks() {
         binding.apply {
             hfOrder.setOnClickImgTwoListener {
                 findNavController().navigateUp()
             }
-            tryAgain.setOnClickListener {
-                // groupViewModel.fetchGroups(kind = 13)
-                //tryAgain.gone()
-            }
+
             btnDraftOrder.setOnClickListener {
                 lifecycleScope.launch {
-                 //   factorViewModel.saveToLocal()
+                    //   factorViewModel.saveToLocal()
                 }
 
                 val action =
@@ -108,11 +103,6 @@ class OrderFragment : Fragment() {
         }
     }
 
-    private fun setupObserver() {
-
-    }
-
-
     private fun initAdapter() {
 
         orderAdapter = OrderAdapter(loadProduct = { productId, actId ->
@@ -124,7 +114,6 @@ class OrderFragment : Fragment() {
             onDelete = { item ->
                 factorViewModel.deleteFactorDetail(item)
                 Log.d("DELETE_TEST", "delete productId = ${item.productId}")
-
             }
         )
 
@@ -133,39 +122,26 @@ class OrderFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = orderAdapter
         }
-//        val list = factorViewModel.selectedProducts
-//        orderAdapter.submitList(list)
-      /*  factorViewModel.selectedProducts.observe(viewLifecycleOwner) {
-            orderAdapter.submitList(it.toList())    // مهم: toList ➜ create new list
-        }
-*/
 
-        factorViewModel.getFactorDetails(factorId = args.factorId).observe(viewLifecycleOwner) { details ->
-            // update UI list (در این نمونه ساده نمایش تعداد)
-           // tvDetailsCount.text = "محصولات انتخاب‌شده: ${details.size}"
-            orderAdapter.submitList(details)    // مهم: toList ➜ create new list
-
-        }
-
-/*        // فقط یک observe روی allFactorDetails
-        factorViewModel.allFactorDetails.observe(viewLifecycleOwner) { list ->
-            //  currentCartItems = list ?: emptyList()
-            //  orderAdapter.submitList(list?.toList())
-
-            orderAdapter.submitList(list)
-
-            if (list.isNullOrEmpty()) {
-                binding.info.show()
-                binding.info.message(requireContext().getString(R.string.msg_no_data))
-                binding.cvList.hide()
-            } else {
-                binding.info.gone()
-                binding.cvList.show()
-            }
-            calculateTotalPrices(list)
-        }*/
     }
 
+    private fun setupObserver() {
+        factorViewModel.getFactorDetails(factorId = args.factorId)
+            .observe(viewLifecycleOwner) { details ->
+
+                if (details.isNullOrEmpty()) {
+                    binding.info.show()
+                    binding.info.message(requireContext().getString(R.string.msg_no_data))
+                    binding.cvList.hide()
+                } else {
+                    binding.info.gone()
+                    binding.cvList.show()
+                }
+                orderAdapter.submitList(details)
+
+                calculateTotalPrices(details)
+            }
+    }
 
     private fun calculateTotalPrices(items: List<FactorDetailEntity>?) {
         items ?: return

@@ -58,8 +58,11 @@ class FactorRepository @Inject constructor(
     suspend fun saveFactorDetail(detail: FactorDetailEntity): Long =
         factorDao.insertFactorDetail(detail)
 
-    fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
-        factorDao.getFactorDetails(factorId)
+
+    // تعداد آیتم‌های سبد خرید (برای badge)
+    fun getFactorItemCount(factorId: Int): LiveData<Int> {
+        return factorDao.getFactorItemCount(factorId)
+    }
 
     suspend fun saveFactorGift(gift: FactorGiftInfoEntity): Long = factorDao.insertFactorGift(gift)
     suspend fun getFactorGifts(factorId: Int) = factorDao.getFactorGifts(factorId)
@@ -68,8 +71,33 @@ class FactorRepository @Inject constructor(
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity? =
         factorDao.getHeaderByLocalId(localId)
 
+
+
+    fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
+        factorDao.getFactorDetails(factorId)
+
+
+    // اضافه یا ویرایش آیتم سبد
+    suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
+        factorDao.upsert(detail)
+    }
+
+    // حذف آیتم وقتی مقدار صفر شد
+    suspend fun deleteFactorDetail(
+        factorId: Int,
+        productId: Int
+    ) {
+        factorDao.deleteByFactorAndProduct(factorId, productId)
+    }
+
+    // پاک کردن کل سبد (اختیاری)
+    suspend fun clearFactor(factorId: Int) {
+        factorDao.clearFactor(factorId)
+    }
     // Network
     suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
+
+
 
 
 }

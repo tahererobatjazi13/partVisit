@@ -235,9 +235,7 @@ class FactorViewModel @Inject constructor(
     fun getHeaderById(id: Int): LiveData<FactorHeaderEntity> =
         factorRepository.getHeaderById(id)
 
-    fun getFactorDetails(factorId: Int): LiveData<List<FactorDetailEntity>> {
-        return factorRepository.getFactorDetails(factorId).asLiveData()
-    }
+
     val allHeaders: LiveData<List<FactorHeaderEntity>>
 
     init {
@@ -401,6 +399,45 @@ class FactorViewModel @Inject constructor(
         viewModelScope.launch {
             factorRepository.saveFactorDetail(detail)
         }
+    }
+
+ /*   fun addOrUpdateFactorDetail(detail: FactorDetailEntity) {
+        viewModelScope.launch {
+            if (detail.unit1Value!! <= 0 && detail.packingValue!! <= 0) {
+                factorRepository.deleteFactorDetail(
+                    factorId = detail.factorId,
+                    productId = detail.productId!!
+                )
+                factorItems.remove(detail.productId!!)
+            } else {
+                factorRepository.upsertFactorDetail(detail)
+                factorItems[detail.productId!!] = detail
+
+            }
+            _totalCount.value = factorItems.size
+        }
+    }*/
+    fun addOrUpdateFactorDetail(detail: FactorDetailEntity) {
+        viewModelScope.launch {
+            if (detail.unit1Value!! <= 0 && detail.packingValue!! <= 0) {
+                factorRepository.deleteFactorDetail(detail.factorId, detail.productId!!)
+            } else {
+                factorRepository.upsertFactorDetail(detail)
+            }
+        }
+    }
+
+    fun clearCart(factorId: Int) {
+        viewModelScope.launch {
+            factorRepository.clearFactor(factorId)
+        }
+    }
+
+    fun getFactorItemCount(factorId: Int): LiveData<Int> =
+        factorRepository.getFactorItemCount(factorId)
+
+    fun getFactorDetails(factorId: Int): LiveData<List<FactorDetailEntity>> {
+        return factorRepository.getFactorDetails(factorId).asLiveData()
     }
 
 }

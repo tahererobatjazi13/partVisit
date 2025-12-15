@@ -338,6 +338,14 @@ class HeaderOrderFragment : Fragment() {
                             items = allInvoiceCategory
                         ) { it.id }
                     }
+
+                    headerOrderViewModel.loadPatterns(
+                        customer = editingHeader!!.customerId!!,
+                        centerId = saleCenterId,
+                        invoiceCategoryId = id,
+                        settlementKind = editingHeader!!.settlementKind,
+                        date = editingHeader!!.persianDate!!
+                    )
                 }
             }
 
@@ -582,18 +590,19 @@ class HeaderOrderFragment : Fragment() {
         }
     }
 
-
     private fun loadEditData() {
         factorViewModel.getHeaderById(args.factorId)
             .observe(viewLifecycleOwner) { header ->
+
                 editingHeader = header
+                factorViewModel.factorHeader.value = header
 
                 binding.tvDate.text = gregorianToPersian(header.createDate.toString())
                 binding.tvDuoDate.text = gregorianToPersian(header.dueDate.toString())
                 binding.tvDeliveryDate.text = gregorianToPersian(header.deliveryDate.toString())
                 binding.etDescription.setText(header.description)
 
-                factorViewModel.factorHeader.value = header
+                loadCustomerData(header.customerId!!, "")
             }
     }
 

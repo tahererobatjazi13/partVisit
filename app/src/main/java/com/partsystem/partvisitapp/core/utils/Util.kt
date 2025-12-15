@@ -21,6 +21,9 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.File
 import java.io.IOException
+import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.util.Locale
 import java.util.UUID
 
 /** دانلود عکس و ذخیره روی حافظه داخلی */
@@ -212,3 +215,15 @@ fun getGUID(): String {
     return UUID.randomUUID().toString()
 }
 
+
+private var floatFormat: DecimalFormat? = null
+
+fun formatFloat(value: Double): String {
+    if (floatFormat == null) {
+        val locale = Locale("en", "UK")
+        floatFormat = NumberFormat
+            .getNumberInstance(locale) as DecimalFormat
+        floatFormat!!.applyPattern("#0.##")
+    }
+    return floatFormat!!.format(value)
+}

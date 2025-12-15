@@ -71,6 +71,7 @@ interface FactorDao {
     @Query("SELECT * FROM factor_header_table WHERE id = :localId LIMIT 1")
 
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity?
+
     @Query("SELECT * FROM factor_header_table ORDER BY id DESC")
     fun getAllHeaders(): LiveData<List<FactorHeaderEntity>>
 
@@ -84,8 +85,6 @@ interface FactorDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorDetail(detail: FactorDetailEntity): Long
 
-    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
-    fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>>
 
     @Delete
     suspend fun deleteDetail(detail: FactorDetailEntity)
@@ -93,6 +92,40 @@ interface FactorDao {
     @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
     suspend fun getDetailsForHeader(factorId: String): List<FactorDetailEntity>
 
+
+    @Query(
+        """
+    SELECT COUNT(*) FROM factor_detail_table 
+    WHERE factorId = :factorId
+    """
+    )
+    fun getFactorItemCount(factorId: Int): LiveData<Int>
+
+
+    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
+    fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>>
+
+    @Upsert
+    suspend fun upsert(detail: FactorDetailEntity)
+
+    @Query(
+        """
+    DELETE FROM factor_detail_table
+    WHERE factorId = :factorId AND productId = :productId
+    """
+    )
+    suspend fun deleteByFactorAndProduct(
+        factorId: Int,
+        productId: Int
+    )
+
+    @Query(
+        """
+    DELETE FROM factor_detail_table 
+    WHERE factorId = :factorId
+    """
+    )
+    suspend fun clearFactor(factorId: Int)
 
     // Discounts
     @Insert(onConflict = OnConflictStrategy.REPLACE)
