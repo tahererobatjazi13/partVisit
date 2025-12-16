@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Paint
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,9 +22,6 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.DialogSelectDiscountBinding
 import com.partsystem.partvisitapp.databinding.ItemOrderBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
 class OrderAdapter(
@@ -42,17 +40,34 @@ class OrderAdapter(
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
 
-            CoroutineScope(Dispatchers.Main).launch {
-                val product =
-                    loadProduct(item.productId!!, item.actId)
+            /*     CoroutineScope(Dispatchers.Main).launch {
+                     val product =
+                         loadProduct(item.productId!!, item.actId)
 
-                product?.let {
-                    tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
-                }
-            }
+                     product?.let {
+                         tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
+                     }
+                 }*/
+
+            /*       if (item.packingValue > 0 && item.packingId != null) {
+
+                       val data = item.getPackingValueFormatted().split(":")
+
+                       if (data.size == 2) {
+                           etPackingValue.setText(data[0].trim())
+                           etUnit1Value.setText(data[1].trim())
+                       }
+
+                   } else {
+                       etUnit1Value.setText(formatFloat(item.unit1Value))
+                   }*/
+
+            binding.tvName.text = item.productName
             binding.tvProductPacking.text = item.packingName
+            etPackingValue.setText(item.getPackingValueFormatted())
+            Log.d("productdetail8", item.getPackingValueFormatted())
 
-           // etUnit1Value.setText(item.unit1Value.clean())
+            //etUnit1Value.setText(item.unit1Value.clean())
             //tvProductPacking.text =item.packingValue
             if (bindingAdapterPosition % 2 == 0) {
                 clDiscount.show()
@@ -64,7 +79,6 @@ class OrderAdapter(
                 clDiscount.gone()
                 tvDiscountPrice.gone()
                 tvPrice.text = formatter.format(item.price) + " ریال"
-
             }
             // حذف Watcher قبلی
             watcher?.let {
@@ -87,7 +101,8 @@ class OrderAdapter(
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                override fun afterTextChanged(s: Editable?) {
+                override fun afterTextChanged(s: Editable?)
+                {
                     val newQty = s.toString().toIntOrNull() ?: 0
                     onQuantityChange(item, newQty)
                 }

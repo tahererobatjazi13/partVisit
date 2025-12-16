@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.core.database.entity
 
+import android.util.Log
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
@@ -43,27 +44,25 @@ data class FactorDetailEntity(
     var isModified: Int = 0,
     var unit1Rate: Double = 0.0
     // var factorDiscounts: MutableList<FactorDiscountEntity> = mutableListOf()
-)
- {
+) {
 
 
-     @Ignore
-     var product: ProductWithPacking? = null
+    @Ignore
+    var product: ProductWithPacking? = null
 
 
-     @Ignore
-     @Transient
-     var factorHeader: FactorHeaderEntity? = null
+    @Ignore
+    @Transient
+    var factorHeader: FactorHeaderEntity? = null
 
 
+    @Ignore
+    @Transient
+    var repository: ProductRepository? = null
 
-     @Ignore
-     @Transient
-     var repository: ProductRepository? = null  // <-- Repository ذخیره شد
 
-
-     @Transient
-     var packing: ProductPackingEntity? = null
+    @Transient
+    var packing: ProductPackingEntity? = null
 
     @Ignore
     fun applyProduct(product: ProductWithPacking) {
@@ -115,7 +114,7 @@ data class FactorDetailEntity(
                     val values = calculator.fillProductValues(
                         anbarId = anbarId,
                         product = prod.product,
-                       // currentId = id,
+                        // currentId = id,
                         packing = packing,
                         unit1ValueInput = unit1Value,
                         unit2ValueInput = null,
@@ -130,23 +129,100 @@ data class FactorDetailEntity(
         }
     }
 
-     @Ignore
-     fun getPackingValueFormatted(): String {
-         val packing = packing ?: return ""
-         if (packingValue > 0) {
-             val remain = unit1Value % packing.unit1Value
-             return "${packingValue.toInt()} : ${formatFloat(remain)}"
-         }
-         return ""
-     }
+    //
+//     @Ignore
+//     fun getPackingValueFormatted(): String {
+//         val packing = packing ?: return ""
+//         if (packingValue > 0) {
+//             val remain = unit1Value % packing.unit1Value
+//             return "${packingValue.toInt()} : ${formatFloat(remain)}"
+//         }
+//         return ""
+//     }
+    @Ignore
+    // @JsonIgnore
+    fun getPackingValueFormatted(): String {
+        val packing = resolvePacking() ?: return ""
 
-     @Ignore
-     fun resolvePacking(): ProductPackingEntity? {
-         if (packing == null && packingId != null) {
-             packing = product?.packings
-                 ?.firstOrNull { it.packingId == packingId }
-         }
-         return packing
-     }
+        if (packingValue > 0) {
 
- }
+            val remain = unit1Value % packing.unit1Value
+            return "${formatFloat(kotlin.math.floor(packingValue))} : ${formatFloat(remain)}"
+            Log.d("productdetailgetremainunit1Value", unit1Value.toString())
+            Log.d("productdetailgetremainunit1Value", packing.unit1Value.toString())
+            Log.d("productdetailgetremain", remain.toString())
+        }
+
+
+        return ""
+    }
+
+
+    @Ignore
+    fun resolvePacking(): ProductPackingEntity? {
+        if (packing == null && packingId != null) {
+            packing = product?.packings
+                ?.firstOrNull { it.packingId == packingId }
+        }
+        return packing
+    }
+
+    @Ignore
+    // @JsonIgnore
+    fun setUnit1Value1(value: Double) {
+        unit1Value = value
+
+        val packing = packing ?: return
+        val repo = repository ?: return
+        val prod = product ?: return
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val calculator = CalculateDiscount(repo)
+
+            val values = calculator.fillProductValues(
+                anbarId = anbarId,
+                product = prod.product,
+                packing = packing,
+                unit1ValueInput = unit1Value,
+                unit2ValueInput = null,
+                packingValueInput = null,
+                isInput = false
+            )
+            Log.d("productdetailunit2Value2", values.unit2Value.toString())
+            Log.d("productdetailpackingValue", values.packingValue.toString())
+
+            unit2Value = values.unit2Value
+            packingValue = values.packingValue
+        }
+    }
+
+    @Ignore
+    fun setPackingValue1(value: Double) {
+        packingValue = value
+
+        val packing = packing ?: return
+        val repo = repository ?: return
+        val prod = product ?: return
+
+        CoroutineScope(Dispatchers.Main).launch {
+
+            val calculator = CalculateDiscount(repo)
+
+            val values = calculator.fillProductValues(
+                anbarId = anbarId,
+                product = prod.product,
+                packing = packing,
+                unit1ValueInput = null,
+                unit2ValueInput = null,
+                packingValueInput = packingValue,
+                isInput = false
+            )
+            Log.d("productdetailunit1Value", values.unit1Value.toString())
+            Log.d("productdetailunit2Value", values.unit2Value.toString())
+
+            unit1Value = values.unit1Value
+            unit2Value = values.unit2Value
+        }
+    }
+
+}

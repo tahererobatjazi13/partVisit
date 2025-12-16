@@ -262,14 +262,14 @@ class ProductListAdapter(
                 ) {
                     val selectedPacking = product.packings.getOrNull(position)
 
-                /*    if (position > 0) {
-                        detail.applyPacking(selectedPacking)
-                    } else {
-                        detail.applyPacking(null)
+                    /*    if (position > 0) {
+                            detail.applyPacking(selectedPacking)
+                        } else {
+                            detail.applyPacking(null)
 
-                        binding.etPackingValue.setText("")
-                    }
-                    productPackingAdapter.notifyDataSetChanged()*/
+                            binding.etPackingValue.setText("")
+                        }
+                        productPackingAdapter.notifyDataSetChanged()*/
 
                     if (!isSpinnerInitialized) {
                         isSpinnerInitialized = true
@@ -284,12 +284,13 @@ class ProductListAdapter(
         }
 
         private fun notifyChange(product: ProductWithPacking) {
+
+
             val unit1Value = binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
             val packingValue = binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
             val selectedPacking =
                 product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
                     ?: return
-
             val detail = FactorDetailEntity(
                 factorId = factorId,
                 sortCode = bindingAdapterPosition,
@@ -302,11 +303,20 @@ class ProductListAdapter(
                 packingValue = packingValue,
                 vat = 0.0
             )
+
+            // اول Product و Packing را ست کن
+            detail.repository = factorViewModel.productRepository   // خیلی مهم
             detail.applyProduct(product)
-          // detail.applyPacking(product.packings.getOrNull(position))
+            detail.applyPacking(selectedPacking)
+
+            // بعد محاسبات
+            detail.setPackingValue1(packingValue)
+            detail.setUnit1Value1(unit1Value)
+
             Log.d("productdetail", detail.toString())
             Log.d("productdetail2", product.toString())
-            Log.d("productdetail3", product.packings.getOrNull(position).toString())
+            Log.d("productdetail3", packingValue.toString())
+
             onProductChanged(detail)
         }
     }

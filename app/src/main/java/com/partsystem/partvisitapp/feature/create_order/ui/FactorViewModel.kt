@@ -16,7 +16,9 @@ import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.core.utils.CalculateDiscount
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlinx.coroutines.launch
@@ -28,7 +30,7 @@ import kotlinx.coroutines.Dispatchers
 class FactorViewModel @Inject constructor(
     private val repository: HeaderOrderRepository,
     private val factorRepository: FactorRepository,
-    private val productRepository: ProductRepository,
+    val productRepository: ProductRepository,
 ) : ViewModel() {
     val factorHeader = MutableLiveData(FactorHeaderEntity())
     val factorDetails = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
@@ -101,40 +103,49 @@ class FactorViewModel @Inject constructor(
         }*/
 
 
-        fun updateHeader(
-            customerId: Int? = null,
-            directionDetailId: Int? = null,
-            invoiceCategoryId: Int? = null,
-            saleCenterId: Int? = null,
-            patternId: Int? = null,
-            actId: Int? = null,
-            settlementKind: Int? = null,
-            persianDate: String? = null,
-            description: String? = null
-        ) {
-            val current = factorHeader.value ?: return
+    fun updateHeader(
+        customerId: Int? = null,
+        directionDetailId: Int? = null,
+        invoiceCategoryId: Int? = null,
+        saleCenterId: Int? = null,
+        defaultAnbarId: Int? = null,
+        patternId: Int? = null,
+        actId: Int? = null,
+        settlementKind: Int? = null,
+        persianDate: String? = null,
+        description: String? = null,
+        createDate: String? = null,
+        dueDate: String? = null,
+        deliveryDate: String? = null,
 
-            factorHeader.value = current.copy(
-                customerId = customerId ?: current.customerId,
-                directionDetailId = directionDetailId ?: current.directionDetailId,
-                invoiceCategoryId = invoiceCategoryId ?: current.invoiceCategoryId,
-                saleCenterId = saleCenterId ?: current.saleCenterId,
-                patternId = patternId ?: current.patternId,
-                actId = actId ?: current.actId,
-                settlementKind = settlementKind ?: current.settlementKind,
-                persianDate = persianDate ?: current.persianDate,
-                description = description ?: current.description
-            )
+        ) {
+        val current = factorHeader.value ?: return
+
+        factorHeader.value = current.copy(
+            customerId = customerId ?: current.customerId,
+            directionDetailId = directionDetailId ?: current.directionDetailId,
+            invoiceCategoryId = invoiceCategoryId ?: current.invoiceCategoryId,
+            saleCenterId = saleCenterId ?: current.saleCenterId,
+            defaultAnbarId = defaultAnbarId ?: current.defaultAnbarId,
+            patternId = patternId ?: current.patternId,
+            actId = actId ?: current.actId,
+            settlementKind = settlementKind ?: current.settlementKind,
+            persianDate = persianDate ?: current.persianDate,
+            description = description ?: current.description,
+            createDate = createDate ?: current.createDate,
+            dueDate = dueDate ?: current.dueDate,
+            deliveryDate = deliveryDate ?: current.deliveryDate
+        )
 
     }
 
-   /* fun updateHeader(
-        invoiceCategoryId: Int? = factorHeader.value?.invoiceCategoryId
-    ) {
-        factorHeader.value = factorHeader.value?.copy(
-            invoiceCategoryId = invoiceCategoryId
-        )
-    }*/
+    /* fun updateHeader(
+         invoiceCategoryId: Int? = factorHeader.value?.invoiceCategoryId
+     ) {
+         factorHeader.value = factorHeader.value?.copy(
+             invoiceCategoryId = invoiceCategoryId
+         )
+     }*/
 
     suspend fun loadProduct(productId: Int, actId: Int): ProductWithPacking? {
         return productRepository.getProductByActId(productId, actId)
@@ -401,22 +412,22 @@ class FactorViewModel @Inject constructor(
         }
     }
 
- /*   fun addOrUpdateFactorDetail(detail: FactorDetailEntity) {
-        viewModelScope.launch {
-            if (detail.unit1Value!! <= 0 && detail.packingValue!! <= 0) {
-                factorRepository.deleteFactorDetail(
-                    factorId = detail.factorId,
-                    productId = detail.productId!!
-                )
-                factorItems.remove(detail.productId!!)
-            } else {
-                factorRepository.upsertFactorDetail(detail)
-                factorItems[detail.productId!!] = detail
+    /*   fun addOrUpdateFactorDetail(detail: FactorDetailEntity) {
+           viewModelScope.launch {
+               if (detail.unit1Value!! <= 0 && detail.packingValue!! <= 0) {
+                   factorRepository.deleteFactorDetail(
+                       factorId = detail.factorId,
+                       productId = detail.productId!!
+                   )
+                   factorItems.remove(detail.productId!!)
+               } else {
+                   factorRepository.upsertFactorDetail(detail)
+                   factorItems[detail.productId!!] = detail
 
-            }
-            _totalCount.value = factorItems.size
-        }
-    }*/
+               }
+               _totalCount.value = factorItems.size
+           }
+       }*/
     fun addOrUpdateFactorDetail(detail: FactorDetailEntity) {
         viewModelScope.launch {
             if (detail.unit1Value!! <= 0 && detail.packingValue!! <= 0) {
@@ -438,6 +449,33 @@ class FactorViewModel @Inject constructor(
 
     fun getFactorDetails(factorId: Int): LiveData<List<FactorDetailEntity>> {
         return factorRepository.getFactorDetails(factorId).asLiveData()
+    }
+
+    fun updateByPacking(
+        detail: FactorDetailEntity,
+        packingValue: Double,
+        product: ProductWithPacking,
+        packing: ProductPackingEntity
+    ) {
+        viewModelScope.launch {
+            val calculator = CalculateDiscount(productRepository)
+
+            val values = calculator.fillProductValues(
+                anbarId = detail.anbarId,
+                product = product.product,
+                packing = packing,
+                unit1ValueInput = null,
+                unit2ValueInput = null,
+                packingValueInput = packingValue,
+                isInput = false
+            )
+
+            detail.unit1Value = values.unit1Value
+            detail.unit2Value = values.unit2Value
+            detail.packingValue = packingValue
+
+           // factorRepository.updateFactorDetail(detail)
+        }
     }
 
 }

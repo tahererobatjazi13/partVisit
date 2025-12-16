@@ -95,7 +95,6 @@ class HeaderOrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         initAdapter()
         initCustomer()
         setupSpinners()
@@ -109,7 +108,6 @@ class HeaderOrderFragment : Fragment() {
         setupClicks()
         setWidth()
     }
-
 
     private fun setupSpinners() {
 
@@ -266,10 +264,7 @@ class HeaderOrderFragment : Fragment() {
 
             headerOrderViewModel.defaultAnbarId.collect { anbarId ->
                 if (anbarId != null) {
-                    factorViewModel.factorHeader.value =
-                        factorViewModel.factorHeader.value!!.copy(
-                            defaultAnbarId = anbarId,
-                        )
+                    factorViewModel.updateHeader(defaultAnbarId = anbarId)
                 }
             }
         }
@@ -312,12 +307,11 @@ class HeaderOrderFragment : Fragment() {
         customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
             if (customers.isNotEmpty()) {
                 val first = customers.first()
-                factorViewModel.factorHeader.value!!.customerId = first.id
+                factorViewModel.updateHeader(customerId = first.id)
                 binding.tvCustomerName.text = first.name
                 loadCustomerData(first.id, first.name)
             }
         }
-
 
         headerOrderViewModel.getInvoiceCategory(userId)
             .observe(viewLifecycleOwner) { list ->
@@ -339,13 +333,13 @@ class HeaderOrderFragment : Fragment() {
                         ) { it.id }
                     }
 
-                    headerOrderViewModel.loadPatterns(
+                   /* headerOrderViewModel.loadPatterns(
                         customer = editingHeader!!.customerId!!,
                         centerId = saleCenterId,
                         invoiceCategoryId = id,
                         settlementKind = editingHeader!!.settlementKind,
                         date = editingHeader!!.persianDate!!
-                    )
+                    )*/
                 }
             }
 
@@ -355,7 +349,7 @@ class HeaderOrderFragment : Fragment() {
         }
 
         headerOrderViewModel.productActId.observe(viewLifecycleOwner) { actId ->
-            factorViewModel.factorHeader.value?.actId = actId
+            factorViewModel.updateHeader(actId = actId)
             setActSpinnerSelection(actId)
         }
 
@@ -407,17 +401,11 @@ class HeaderOrderFragment : Fragment() {
                     id: Long
                 ) {
                     val entry = allPayementType[position].id
-                    factorViewModel.factorHeader.value =
-                        factorViewModel.factorHeader.value!!.copy(
-                            settlementKind = entry,
-                        )
+                    factorViewModel.updateHeader(settlementKind = entry)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
-                    factorViewModel.factorHeader.value =
-                        factorViewModel.factorHeader.value!!.copy(
-                            settlementKind = 0,
-                        )
+                    factorViewModel.updateHeader(settlementKind = 0)
                 }
             }
 
@@ -531,12 +519,9 @@ class HeaderOrderFragment : Fragment() {
         // ------------------------- Click Listeners -------------------------
         binding.cvDate.setOnClickListener {
             showPersianDatePicker { date ->
-
                 val gregorianDate = persianToGregorian(date)
                 binding.tvDate.text = date
-                factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
-                    createDate = gregorianDate,
-                )
+                factorViewModel.updateHeader(createDate = gregorianDate)
             }
         }
 
@@ -544,9 +529,7 @@ class HeaderOrderFragment : Fragment() {
             showPersianDatePicker { date ->
                 val gregorianDate = persianToGregorian(date)
                 binding.tvDuoDate.text = date
-                factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
-                    dueDate = gregorianDate,
-                )
+                factorViewModel.updateHeader(dueDate = gregorianDate)
             }
         }
 
@@ -554,9 +537,7 @@ class HeaderOrderFragment : Fragment() {
             showPersianDatePicker { date ->
                 val gregorianDate = persianToGregorian(date)
                 binding.tvDeliveryDate.text = date
-                factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
-                    deliveryDate = gregorianDate,
-                )
+                factorViewModel.updateHeader(deliveryDate = gregorianDate)
             }
         }
 
@@ -567,16 +548,9 @@ class HeaderOrderFragment : Fragment() {
             }.show(parentFragmentManager, "CustomerListBottomSheet")
         }
 
-
         binding.btnContinue.setOnClickBtnOneListener {
-
-            factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
-                // customerId = selectedCustomerId,
-                description = binding.etDescription.text.toString(),
-            )
-
+            factorViewModel.updateHeader(description = binding.etDescription.text.toString())
             validateHeader()
-            // showChooseDialog()
         }
 
         // ------------------------- Listen to Customer Selection -------------------------
@@ -639,8 +613,7 @@ class HeaderOrderFragment : Fragment() {
 
     private fun loadCustomerData(customerId: Int, customerName: String) {
         binding.tvCustomerName.text = customerName
-        factorViewModel.factorHeader.value!!.customerId = customerId
-
+        factorViewModel.updateHeader(customerId = customerId)
         headerOrderViewModel.assignDirection.observe(viewLifecycleOwner) { factor ->
             factor?.let {
                 factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
