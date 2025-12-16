@@ -29,6 +29,9 @@ interface FactorDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorDetail(details: List<FactorDetailEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdate(detail: FactorDetailEntity)
+
     @Update
     suspend fun updateFactorDetail(item: FactorDetailEntity)
 

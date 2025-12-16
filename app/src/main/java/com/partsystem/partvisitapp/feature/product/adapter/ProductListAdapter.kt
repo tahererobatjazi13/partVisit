@@ -285,40 +285,79 @@ class ProductListAdapter(
 
         private fun notifyChange(product: ProductWithPacking) {
 
+            val unit1Value =
+                binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
 
-            val unit1Value = binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
-            val packingValue = binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+            val packingValue =
+                binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+
             val selectedPacking =
                 product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
                     ?: return
+
             val detail = FactorDetailEntity(
                 factorId = factorId,
-                sortCode = bindingAdapterPosition,
                 productId = product.product.id,
-                actId = 195,
                 unit1Value = unit1Value,
-                unit2Value = 0.0,
                 price = product.finalRate,
                 packingId = selectedPacking.packingId,
-                packingValue = packingValue,
-                vat = 0.0
+               // packingName = selectedPacking.packingName ?: ""
             )
 
-            // اول Product و Packing را ست کن
-            detail.repository = factorViewModel.productRepository   // خیلی مهم
-            detail.applyProduct(product)
-            detail.applyPacking(selectedPacking)
-
-            // بعد محاسبات
-            detail.setPackingValue1(packingValue)
-            detail.setUnit1Value1(unit1Value)
-
-            Log.d("productdetail", detail.toString())
-            Log.d("productdetail2", product.toString())
-            Log.d("productdetail3", packingValue.toString())
-
-            onProductChanged(detail)
+            if (packingValue > 0) {
+                factorViewModel.updateByPacking(
+                    detail,
+                    packingValue,
+                    product,
+                    selectedPacking
+                )
+            } else {
+                factorViewModel.updateByUnit(
+                    detail,
+                    unit1Value,
+                    product,
+                    selectedPacking
+                )
+            }
         }
+
+
+//        private fun notifyChange(product: ProductWithPacking) {
+//
+//
+//            val unit1Value = binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
+//            val packingValue = binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+//            val selectedPacking =
+//                product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
+//                    ?: return
+//            val detail = FactorDetailEntity(
+//                factorId = factorId,
+//                sortCode = bindingAdapterPosition,
+//                productId = product.product.id,
+//                actId = 195,
+//                unit1Value = unit1Value,
+//                unit2Value = 0.0,
+//                price = product.finalRate,
+//                packingId = selectedPacking.packingId,
+//                packingValue = packingValue,
+//                vat = 0.0
+//            )
+//
+//            // اول Product و Packing را ست کن
+//            detail.repository = factorViewModel.productRepository   // خیلی مهم
+//            detail.applyProduct(product)
+//            detail.applyPacking(selectedPacking)
+//
+//            // بعد محاسبات
+//            detail.setPackingValue1(packingValue)
+//            detail.setUnit1Value1(unit1Value)
+//
+//            Log.d("productdetail", detail.toString())
+//            Log.d("productdetail2", product.toString())
+//            Log.d("productdetail3", packingValue.toString())
+//
+//            onProductChanged(detail)
+//        }
     }
 }
 

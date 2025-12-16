@@ -36,6 +36,9 @@ class FactorRepository @Inject constructor(
            }
        }*/
 
+    suspend fun insertOrUpdateFactorDetail(detail: FactorDetailEntity) {
+        factorDao.insertOrUpdate(detail)
+    }
     suspend fun saveFactorDetails(details: List<FactorDetailEntity>) =
         factorDao.insertFactorDetail(details)
 

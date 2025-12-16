@@ -57,13 +57,12 @@ class OrderAdapter(
                            etPackingValue.setText(data[0].trim())
                            etUnit1Value.setText(data[1].trim())
                        }
-
                    } else {
                        etUnit1Value.setText(formatFloat(item.unit1Value))
                    }*/
 
-            binding.tvName.text = item.productName
-            binding.tvProductPacking.text = item.packingName
+         //   binding.tvName.text = item.productName
+          //  binding.tvProductPacking.text = item.packingName
             etPackingValue.setText(item.getPackingValueFormatted())
             Log.d("productdetail8", item.getPackingValueFormatted())
 

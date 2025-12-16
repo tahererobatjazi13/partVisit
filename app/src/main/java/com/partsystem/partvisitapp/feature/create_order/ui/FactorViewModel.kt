@@ -451,31 +451,65 @@ class FactorViewModel @Inject constructor(
         return factorRepository.getFactorDetails(factorId).asLiveData()
     }
 
-    fun updateByPacking(
-        detail: FactorDetailEntity,
-        packingValue: Double,
-        product: ProductWithPacking,
-        packing: ProductPackingEntity
-    ) {
-        viewModelScope.launch {
-            val calculator = CalculateDiscount(productRepository)
+        fun updateByPacking(
+            detail: FactorDetailEntity,
+            packingValue: Double,
+            product: ProductWithPacking,
+            packing: ProductPackingEntity
+        ) {
+            viewModelScope.launch {
 
-            val values = calculator.fillProductValues(
-                anbarId = detail.anbarId,
-                product = product.product,
-                packing = packing,
-                unit1ValueInput = null,
-                unit2ValueInput = null,
-                packingValueInput = packingValue,
-                isInput = false
-            )
+                val calculator = CalculateDiscount(productRepository)
 
-            detail.unit1Value = values.unit1Value
-            detail.unit2Value = values.unit2Value
-            detail.packingValue = packingValue
+                val values = calculator.fillProductValues(
+                    anbarId = detail.anbarId,
+                    product = product.product,
+                    packing = packing,
+                    unit1ValueInput = null,
+                    unit2ValueInput = null,
+                    packingValueInput = packingValue,
+                    isInput = false
+                )
 
-           // factorRepository.updateFactorDetail(detail)
+                val updated = detail.copy(
+                    unit1Value = values.unit1Value,
+                    unit2Value = values.unit2Value,
+                    packingValue = packingValue,
+                    packingId = packing.packingId,
+                  //  packingName = packing.packingName ?: ""
+                )
+
+                factorRepository.insertOrUpdateFactorDetail(updated)
+            }
         }
-    }
 
+        fun updateByUnit(
+            detail: FactorDetailEntity,
+            unit1Value: Double,
+            product: ProductWithPacking,
+            packing: ProductPackingEntity
+        ) {
+            viewModelScope.launch {
+
+                val calculator = CalculateDiscount(productRepository)
+
+                val values = calculator.fillProductValues(
+                    anbarId = detail.anbarId,
+                    product = product.product,
+                    packing = packing,
+                    unit1ValueInput = unit1Value,
+                    unit2ValueInput = null,
+                    packingValueInput = null,
+                    isInput = false
+                )
+
+                val updated = detail.copy(
+                    unit1Value = unit1Value,
+                    unit2Value = values.unit2Value,
+                    packingValue = values.packingValue
+                )
+
+                factorRepository.insertOrUpdateFactorDetail(updated)
+            }
+    }
 }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.partsystem.partvisitapp.core.utils.formatFloat
+import kotlin.math.floor
 
 @Entity(
     tableName = "factor_detail_table",
@@ -45,8 +46,31 @@ data class FactorDetailEntity(
     var unit1Rate: Double = 0.0
     // var factorDiscounts: MutableList<FactorDiscountEntity> = mutableListOf()
 ) {
+    @Transient
+    var packing: ProductPackingEntity? = null
+    @Ignore
+    var product: ProductWithPacking? = null
+    @Ignore
+    fun resolvePacking(): ProductPackingEntity? {
+        if (packing == null && packingId != null) {
+            packing = product?.packings
+                ?.firstOrNull { it.packingId == packingId }
+        }
+        return packing
+    }
 
+    @Ignore
+    fun getPackingValueFormatted(): String {
 
+        if (packingValue <= 0 || unit1Value <= 0) return ""
+
+        val resolvedPacking = resolvePacking() ?: return ""
+
+        val remain = unit1Value % resolvedPacking.unit1Value
+        return "${floor(packingValue)} : ${formatFloat(remain)}"
+    }
+
+/*
     @Ignore
     var product: ProductWithPacking? = null
 
@@ -61,8 +85,6 @@ data class FactorDetailEntity(
     var repository: ProductRepository? = null
 
 
-    @Transient
-    var packing: ProductPackingEntity? = null
 
     @Ignore
     fun applyProduct(product: ProductWithPacking) {
@@ -223,6 +245,6 @@ data class FactorDetailEntity(
             unit1Value = values.unit1Value
             unit2Value = values.unit2Value
         }
-    }
+    }*/
 
 }
