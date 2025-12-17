@@ -135,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "packing value"
+git commit -m "share viewmodel hilt"
 git push -u origin master
 git push
 */

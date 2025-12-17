@@ -1,8 +1,8 @@
 package com.partsystem.partvisitapp.core.utils
 
+import android.util.Log.d
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
-import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
 import com.partsystem.partvisitapp.core.network.modelDto.ProductValuesResult
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 
@@ -19,6 +19,12 @@ class CalculateDiscount(private val repository: ProductRepository) {
         packingValueInput: Double?,
         isInput: Boolean
     ): ProductValuesResult {
+        d("factorViewModelanbarId3", anbarId.toString())
+        d("factorViewModelproduct3", product.toString())
+        d("factorViewModelpacking3", packing.toString())
+        d("factorViewModelunit1ValueInput3", unit1ValueInput.toString())
+        d("factorViewModelunit2ValueInput3", unit2ValueInput.toString())
+        d("factorViewModelpackingValueInput3", packingValueInput.toString())
 
         var unit1Value = unit1ValueInput ?: 0.0
         var unit2Value = unit2ValueInput ?: 0.0
@@ -85,6 +91,10 @@ class CalculateDiscount(private val repository: ProductRepository) {
             unit2Value = unit2Value,
             packingValue = packingValue
         )
+        d("factorViewModelunit1Value4", unit1Value.toString())
+        d("factorViewModelunit2Value4", unit2Value.toString())
+        d("factorViewModelpackinggValue4", packingValue.toString())
+
     }
 
 }

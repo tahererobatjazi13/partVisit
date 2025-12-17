@@ -1,6 +1,5 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,6 +9,7 @@ import android.widget.AdapterView
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -59,7 +59,9 @@ class HeaderOrderFragment : Fragment() {
 
     private val headerOrderViewModel: HeaderOrderViewModel by viewModels()
     private val customerViewModel: CustomerViewModel by viewModels()
-    private val factorViewModel: FactorViewModel by viewModels()
+
+    // private val factorViewModel: FactorViewModel by navGraphViewModels(R.id.nav_graph)
+    private val factorViewModel: FactorViewModel by hiltNavGraphViewModels(R.id.nav_graph)
 
     private var controlVisit: Boolean = false
     private var userId: Int = 0
@@ -99,6 +101,14 @@ class HeaderOrderFragment : Fragment() {
         initCustomer()
         setupSpinners()
         observeData()
+
+        if (!factorViewModel.enteredProductPage) {
+            // ورود اولیه
+            factorViewModel.resetHeader()
+        }
+        if (factorViewModel.factorHeader.value?.createDate == null) {
+            factorViewModel.setDefaultDates()
+        }
 
         if (isEditMode) {
             loadEditData()
@@ -221,7 +231,6 @@ class HeaderOrderFragment : Fragment() {
 
                         position == 0 -> {
                             factorViewModel.updateHeader(actId = null)
-
                         }
                     }
                 }
@@ -230,44 +239,61 @@ class HeaderOrderFragment : Fragment() {
                     factorViewModel.updateHeader(actId = null)
                 }
             }
-
     }
 
     private fun createNewHeader() {
-        binding.tvDate.text = getTodayPersianDate()
-        binding.tvDuoDate.text = getTodayPersianDate()
-        binding.tvDeliveryDate.text = getTodayPersianDate()
 
         lifecycleScope.launch {
-            saleCenterId = userPreferences.saleCenterId.first() ?: 0
-            controlVisit = userPreferences.controlVisitSchedule.first() ?: false
-            userId = userPreferences.id.first() ?: 0
-            visitorId = userPreferences.personnelId.first() ?: 0
 
-            factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
-                uniqueId = getGUID(),
-                saleCenterId = userPreferences.saleCenterId.first() ?: 0,
-                settlementKind = 0,
-                formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
-                createDate = getTodayGregorian(),
-                persianDate = getTodayPersianDate(),
-                dueDate = getTodayGregorian(),
-                deliveryDate = getTodayGregorian(),
-                createTime = getCurrentTime(),
-                createUserId = userId,
-                visitorId = visitorId,
-                sabt = 0,
-                isCanceled = 0,
-            )
+            val current = factorViewModel.factorHeader.value
 
-            headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
+            // فقط اگر هدر واقعاً جدید است
+            if (current?.uniqueId == null) {
 
-            headerOrderViewModel.defaultAnbarId.collect { anbarId ->
-                if (anbarId != null) {
-                    factorViewModel.updateHeader(defaultAnbarId = anbarId)
+                saleCenterId = userPreferences.saleCenterId.first() ?: 0
+                controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+                userId = userPreferences.id.first() ?: 0
+                visitorId = userPreferences.personnelId.first() ?: 0
+
+                factorViewModel.factorHeader.value = current?.copy(
+                    uniqueId = getGUID(),
+                    saleCenterId = saleCenterId,
+                    settlementKind = 0,
+                    formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
+                    createDate = getTodayGregorian(),
+                    persianDate = getTodayPersianDate(),
+                    dueDate = getTodayGregorian(),
+                    deliveryDate = getTodayGregorian(),
+                    createTime = getCurrentTime(),
+                    createUserId = userId,
+                    visitorId = visitorId,
+                    sabt = 0,
+                    isCanceled = 0,
+                ) ?: FactorHeaderEntity(
+                    uniqueId = getGUID(),
+                    saleCenterId = saleCenterId,
+                    settlementKind = 0,
+                    formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
+                    createDate = getTodayGregorian(),
+                    persianDate = getTodayPersianDate(),
+                    dueDate = getTodayGregorian(),
+                    deliveryDate = getTodayGregorian(),
+                    createTime = getCurrentTime(),
+                    createUserId = userId,
+                    visitorId = visitorId,
+                    sabt = 0,
+                    isCanceled = 0,
+                )
+
+                headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
+                headerOrderViewModel.defaultAnbarId.collect { anbarId ->
+                    if (anbarId != null) {
+                        factorViewModel.updateHeader(defaultAnbarId = anbarId)
+                    }
                 }
             }
         }
+
     }
 
     private fun initAdapter() {
@@ -295,6 +321,13 @@ class HeaderOrderFragment : Fragment() {
     }
 
     private fun observeData() {
+        factorViewModel.factorHeader.observe(viewLifecycleOwner) { header ->
+            header.createDate?.let { binding.tvDate.text = gregorianToPersian(it) }
+            header.dueDate?.let { binding.tvDuoDate.text = gregorianToPersian(it) }
+            header.deliveryDate?.let { binding.tvDeliveryDate.text = gregorianToPersian(it) }
+        }
+
+
         // دریافت لیست مشتریان
         if (controlVisit) {
 
@@ -324,6 +357,12 @@ class HeaderOrderFragment : Fragment() {
                 binding.spInvoiceCategory.adapter =
                     SpinnerAdapter(requireContext(), items)
 
+                factorViewModel.factorHeader.value?.invoiceCategoryId?.let { id ->
+                    binding.spInvoiceCategory.setSelectionById(
+                        id,
+                        allInvoiceCategory
+                    ) { it.id }
+                }
                 // در حالت ویرایش
                 if (isEditMode) {
                     editingHeader?.invoiceCategoryId?.let { id ->
@@ -333,13 +372,13 @@ class HeaderOrderFragment : Fragment() {
                         ) { it.id }
                     }
 
-                   /* headerOrderViewModel.loadPatterns(
-                        customer = editingHeader!!.customerId!!,
-                        centerId = saleCenterId,
-                        invoiceCategoryId = id,
-                        settlementKind = editingHeader!!.settlementKind,
-                        date = editingHeader!!.persianDate!!
-                    )*/
+                    /* headerOrderViewModel.loadPatterns(
+                         customer = editingHeader!!.customerId!!,
+                         centerId = saleCenterId,
+                         invoiceCategoryId = id,
+                         settlementKind = editingHeader!!.settlementKind,
+                         date = editingHeader!!.persianDate!!
+                     )*/
                 }
             }
 
@@ -357,6 +396,9 @@ class HeaderOrderFragment : Fragment() {
             allAct.clear()
             allAct.addAll(acts)
 
+            factorViewModel.factorHeader.value?.actId?.let { id ->
+                binding.spAct.setSelectionById(id, allAct) { it.id }
+            }
             updateActSpinner()
             if (isEditMode) {
                 editingHeader?.actId?.let { id ->
@@ -413,6 +455,8 @@ class HeaderOrderFragment : Fragment() {
             if (id == null) return@observe
 
             if (pendingNavigation == "catalog") {
+                factorViewModel.enteredProductPage = true
+
                 val action =
                     HeaderOrderFragmentDirections.actionHeaderOrderFragmentToProductListFragment(
                         true, id
@@ -500,7 +544,7 @@ class HeaderOrderFragment : Fragment() {
                     selection?.let {
                         val date = PersianCalendar(it)
                         val year = date.year
-                        val month = date.month + 1
+                        val month = date.month
                         val day = date.day
 
                         val dateFinal = String.format(
@@ -636,6 +680,21 @@ class HeaderOrderFragment : Fragment() {
                 items.addAll(list.map { it.fullAddress })
                 binding.spCustomerDirection.adapter =
                     SpinnerAdapter(requireContext(), items)
+
+                factorViewModel.factorHeader.value?.directionDetailId?.let { id ->
+                    binding.spCustomerDirection.setSelectionById(
+                        id,
+                        allCustomerDirection
+                    ) { it.directionDetailId }
+                }
+                if (isEditMode) {
+                    editingHeader?.directionDetailId?.let { id ->
+                        binding.spCustomerDirection.setSelectionById(
+                            id = id,
+                            items = allCustomerDirection
+                        ) { it.id }
+                    }
+                }
             }
 
         // بارگذاری الگوها
@@ -648,7 +707,10 @@ class HeaderOrderFragment : Fragment() {
 
             binding.spPattern.adapter =
                 SpinnerAdapter(requireContext(), items)
-
+            // مقدار انتخاب‌شده را ست کن
+            factorViewModel.factorHeader.value?.patternId?.let { id ->
+                binding.spPattern.setSelectionById(id, allPattern) { it.id }
+            }
             if (isEditMode) {
                 editingHeader?.patternId?.let { id ->
                     binding.spPattern.setSelectionById(
@@ -658,6 +720,7 @@ class HeaderOrderFragment : Fragment() {
                 }
             }
         }
+
         headerOrderViewModel.loadPatterns(
             customer = customerId,
             centerId = saleCenterId,
@@ -773,6 +836,14 @@ class HeaderOrderFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        val navController = findNavController()
+        val isGoingToProduct =
+            navController.currentDestination?.id ==
+                    R.id.productListFragment
+
+        if (!isGoingToProduct) {
+            factorViewModel.resetHeader()
+            factorViewModel.enteredProductPage = false
+        }
     }
 }

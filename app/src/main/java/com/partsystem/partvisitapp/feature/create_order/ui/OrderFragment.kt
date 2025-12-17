@@ -106,7 +106,7 @@ class OrderFragment : Fragment() {
     private fun initAdapter() {
 
         orderAdapter = OrderAdapter(loadProduct = { productId, actId ->
-            factorViewModel.loadProduct(productId, actId ?: 195)
+            factorViewModel.loadProduct(productId, actId!!)
         },
             onQuantityChange = { item, quantity ->
                 //  cartViewModel.updateQuantity(item.productId, quantity)

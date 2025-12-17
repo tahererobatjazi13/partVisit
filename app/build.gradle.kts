@@ -101,5 +101,6 @@ dependencies {
     implementation(libs.glide)
     kapt(libs.glide.compiler)
 
+    implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
 
 }

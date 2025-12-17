@@ -22,6 +22,9 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.DialogSelectDiscountBinding
 import com.partsystem.partvisitapp.databinding.ItemOrderBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
 class OrderAdapter(
@@ -40,14 +43,14 @@ class OrderAdapter(
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
 
-            /*     CoroutineScope(Dispatchers.Main).launch {
+               CoroutineScope(Dispatchers.Main).launch {
                      val product =
                          loadProduct(item.productId!!, item.actId)
 
                      product?.let {
                          tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
                      }
-                 }*/
+                 }
 
             /*       if (item.packingValue > 0 && item.packingId != null) {
 

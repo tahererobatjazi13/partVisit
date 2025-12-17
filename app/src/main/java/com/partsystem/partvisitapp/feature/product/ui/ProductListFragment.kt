@@ -12,6 +12,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.navGraphViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
@@ -35,7 +36,7 @@ class ProductListFragment : Fragment() {
     private val args: ProductListFragmentArgs by navArgs()
 
     private val productViewModel: ProductViewModel by viewModels()
-    private val factorViewModel: FactorViewModel by viewModels()
+    private val factorViewModel: FactorViewModel by navGraphViewModels(R.id.nav_graph)
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
     private val clearIcon by lazy { requireContext().getDrawable(R.drawable.ic_clear) }
@@ -57,7 +58,6 @@ class ProductListFragment : Fragment() {
         observeData()
         setupSearch()
         observeCartBadge()
-
         Log.d("factorHeaderargs", args.factorId.toString())
 
     }
@@ -150,8 +150,10 @@ class ProductListFragment : Fragment() {
         if (args.fromFactor) {
             productViewModel.loadProductsWithAct(
                 groupProductId = null,
-                actId = 195
+                actId = factorViewModel.factorHeader.value?.actId
             )
+            Log.d("factoractId", factorViewModel.factorHeader.value?.actId.toString())
+
             productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
                 val images = productViewModel.productImages.value ?: emptyMap()
                 updateUI(list, images)

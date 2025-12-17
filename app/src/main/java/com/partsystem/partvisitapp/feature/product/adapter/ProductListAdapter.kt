@@ -237,9 +237,6 @@ class ProductListAdapter(
                 .map { it.packingName ?: "" }
                 .toMutableList()
 
-            // اگر می‌خوای نمایش کاربر پسند باشه و موارد خالی رو حذف کنی:
-            // val packingNames = product.packings.mapNotNull { it.packingName }.toMutableList()
-
             productPackingAdapter = SpinnerAdapter(root.context, packingNames)
             spProductPacking.adapter = productPackingAdapter
 
@@ -280,7 +277,6 @@ class ProductListAdapter(
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
-
         }
 
         private fun notifyChange(product: ProductWithPacking) {
@@ -311,6 +307,11 @@ class ProductListAdapter(
                     product,
                     selectedPacking
                 )
+
+                Log.d("factorViewModeldetail", detail.toString())
+                Log.d("factorViewModelpackingValue", packingValue.toString())
+                Log.d("factorViewModelproduct", product.toString())
+                Log.d("factorViewModelselectedPacking", selectedPacking.toString())
             } else {
                 factorViewModel.updateByUnit(
                     detail,
@@ -318,6 +319,11 @@ class ProductListAdapter(
                     product,
                     selectedPacking
                 )
+
+                Log.d("factorViewModeldetail2", detail.toString())
+                Log.d("factorViewModelpackingValue2", unit1Value.toString())
+                Log.d("factorViewModelproduct2", product.toString())
+                Log.d("factorViewModelselectedPacking2", selectedPacking.toString())
             }
         }
 

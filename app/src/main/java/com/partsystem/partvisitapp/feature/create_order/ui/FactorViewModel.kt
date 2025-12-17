@@ -1,5 +1,7 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
+import android.util.Log
+import android.util.Log.*
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,6 +21,8 @@ import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.CalculateDiscount
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlinx.coroutines.launch
@@ -28,7 +32,6 @@ import kotlinx.coroutines.Dispatchers
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
-    private val repository: HeaderOrderRepository,
     private val factorRepository: FactorRepository,
     val productRepository: ProductRepository,
 ) : ViewModel() {
@@ -37,6 +40,11 @@ class FactorViewModel @Inject constructor(
     val factorGifts = MutableLiveData<MutableList<FactorGiftInfoEntity>>(mutableListOf())
 
     private val factorItems = mutableMapOf<Int, FactorDetailEntity>()
+    var enteredProductPage = false
+
+    fun resetHeader() {
+        factorHeader.value = FactorHeaderEntity()
+    }
 
     private val _totalCount = MutableLiveData(0)
     val totalCount: LiveData<Int> = _totalCount
@@ -137,6 +145,18 @@ class FactorViewModel @Inject constructor(
             deliveryDate = deliveryDate ?: current.deliveryDate
         )
 
+    }
+    fun setDefaultDates() {
+        val todayGregorian = getTodayGregorian()
+        val todayPersian = getTodayPersianDate()
+
+        val current = factorHeader.value ?: FactorHeaderEntity()
+        factorHeader.value = current.copy(
+            createDate = current.createDate ?: todayGregorian,
+            dueDate = current.dueDate ?: todayGregorian,
+            deliveryDate = current.deliveryDate ?: todayGregorian,
+            persianDate = current.persianDate ?: todayPersian
+        )
     }
 
     /* fun updateHeader(
@@ -462,7 +482,7 @@ class FactorViewModel @Inject constructor(
                 val calculator = CalculateDiscount(productRepository)
 
                 val values = calculator.fillProductValues(
-                    anbarId = detail.anbarId,
+                    anbarId = factorHeader.value?.defaultAnbarId,
                     product = product.product,
                     packing = packing,
                     unit1ValueInput = null,
@@ -494,7 +514,7 @@ class FactorViewModel @Inject constructor(
                 val calculator = CalculateDiscount(productRepository)
 
                 val values = calculator.fillProductValues(
-                    anbarId = detail.anbarId,
+                    anbarId = factorHeader.value?.defaultAnbarId,
                     product = product.product,
                     packing = packing,
                     unit1ValueInput = unit1Value,
@@ -502,13 +522,14 @@ class FactorViewModel @Inject constructor(
                     packingValueInput = null,
                     isInput = false
                 )
+                d("factorViewModelvalues", values.toString())
 
                 val updated = detail.copy(
                     unit1Value = unit1Value,
                     unit2Value = values.unit2Value,
                     packingValue = values.packingValue
                 )
-
+                d("factorViewModelupdated", updated.toString())
                 factorRepository.insertOrUpdateFactorDetail(updated)
             }
     }
