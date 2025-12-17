@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.navGraphViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
@@ -17,7 +19,6 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentGroupProductBinding
-import com.partsystem.partvisitapp.feature.create_order.ui.CartViewModel
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.group_product.adapter.CategoryAdapter
 import com.partsystem.partvisitapp.feature.group_product.adapter.MainGroupAdapter
@@ -44,7 +45,7 @@ class GroupProductFragment : Fragment() {
     private val groupProductViewModel: GroupProductViewModel by viewModels()
     private val productViewModel: ProductViewModel by viewModels()
 
-    private val factorViewModel: FactorViewModel by viewModels()
+    private val factorViewModel: FactorViewModel by hiltNavGraphViewModels(R.id.nav_graph)
 
     private var latestMainGroupId: Int? = null
     private var latestSubGroupId: Int? = null
@@ -71,7 +72,7 @@ class GroupProductFragment : Fragment() {
             latestCategoryId?.let { categoryId ->
                 val products =
                     groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
-               productListAdapter.setProductData(products, imagesMap)
+                productListAdapter.setProductData(products, imagesMap)
             }
         }
     }
@@ -110,7 +111,7 @@ class GroupProductFragment : Fragment() {
         val currentQuantities = mutableMapOf<Int, Int>()
 
         productListAdapter = ProductListAdapter(factorViewModel,
-            fromFactor =  args.fromFactor,factorId = args.factorId,
+            fromFactor = args.fromFactor, factorId = args.factorId,
             onProductChanged = { item ->
                 factorViewModel.addDetail(item)
             },
@@ -218,37 +219,13 @@ class GroupProductFragment : Fragment() {
         }
     }
 
-/*    private fun observeProductsByCategory(categoryId: Int) {
-        latestCategoryId = categoryId
-        groupProductViewModel.getProductsByCategory(categoryId)
-            .observe(viewLifecycleOwner) { products ->
-                if (latestCategoryId == categoryId) {
-                    val imagesMap = productViewModel.productImages.value ?: emptyMap()
-                    if (products.isNullOrEmpty()) {
-                        binding.infoProduct.show()
-                        binding.tvTitleProduct.show()
-                        binding.infoProduct.message(getString(R.string.msg_no_product))
-                        binding.rvProduct.gone()
-                    } else {
-                        binding.infoProduct.gone()
-                        binding.tvTitleProduct.show()
-                        binding.rvProduct.show()
-                        productListAdapter.setProductData(products, imagesMap)
-                    }
-                }
-            }
-    }*/
-
     private fun observeProductsByCategory(categoryId: Int) {
 
         if (args.fromFactor) {
-
             productViewModel.loadProductsWithAct(
                 groupProductId = categoryId,
-                actId = 195
+                actId = factorViewModel.factorHeader.value?.actId
             )
-
-
             productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
                 val images = productViewModel.productImages.value ?: emptyMap()
                 updateUI(list, images)
@@ -279,6 +256,7 @@ class GroupProductFragment : Fragment() {
                 }
         }
     }
+
     private fun updateUI(
         list: List<ProductWithPacking>,
         images: Map<Int, List<ProductImageEntity>>
@@ -293,6 +271,7 @@ class GroupProductFragment : Fragment() {
             productListAdapter.setProductWithActData(list, images)
         }
     }
+
     private fun observeCartBadge() {
         factorViewModel.totalCount.observe(viewLifecycleOwner) { count ->
             binding.hfGroupProduct.isShowBadge = count > 0

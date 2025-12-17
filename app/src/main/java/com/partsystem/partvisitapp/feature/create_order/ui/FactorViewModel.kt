@@ -4,6 +4,7 @@ import android.util.Log
 import android.util.Log.*
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
@@ -30,10 +31,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
 
+
 @HiltViewModel
 class FactorViewModel @Inject constructor(
     private val factorRepository: FactorRepository,
     val productRepository: ProductRepository,
+
 ) : ViewModel() {
     val factorHeader = MutableLiveData(FactorHeaderEntity())
     val factorDetails = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
@@ -110,7 +113,6 @@ class FactorViewModel @Inject constructor(
             )
         }*/
 
-
     fun updateHeader(
         customerId: Int? = null,
         directionDetailId: Int? = null,
@@ -125,10 +127,9 @@ class FactorViewModel @Inject constructor(
         createDate: String? = null,
         dueDate: String? = null,
         deliveryDate: String? = null,
-
         ) {
-        val current = factorHeader.value ?: return
 
+        val current = factorHeader.value ?: FactorHeaderEntity()
         factorHeader.value = current.copy(
             customerId = customerId ?: current.customerId,
             directionDetailId = directionDetailId ?: current.directionDetailId,
@@ -146,6 +147,7 @@ class FactorViewModel @Inject constructor(
         )
 
     }
+
     fun setDefaultDates() {
         val todayGregorian = getTodayGregorian()
         val todayPersian = getTodayPersianDate()

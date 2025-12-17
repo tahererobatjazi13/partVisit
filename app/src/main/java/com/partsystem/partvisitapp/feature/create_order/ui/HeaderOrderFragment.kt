@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Spinner
+import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
@@ -153,6 +154,8 @@ class HeaderOrderFragment : Fragment() {
                     parent: AdapterView<*>?, view: View?, position: Int, id: Long
                 ) {
                     if (position == 0) {
+                        Log.d("DEBUG", "Setting invoiceCategoryId to NULL")
+
                         factorViewModel.updateHeader(invoiceCategoryId = null)
                         return
                     }
@@ -226,6 +229,8 @@ class HeaderOrderFragment : Fragment() {
                         position > 0 -> {
                             val act = allAct[position - 1]
                             factorViewModel.updateHeader(actId = act.id)
+                            Log.d(  "factorHeaderctId1", act.id!!.toString())
+
                             fillPaymentType()
                         }
 
@@ -372,13 +377,6 @@ class HeaderOrderFragment : Fragment() {
                         ) { it.id }
                     }
 
-                    /* headerOrderViewModel.loadPatterns(
-                         customer = editingHeader!!.customerId!!,
-                         centerId = saleCenterId,
-                         invoiceCategoryId = id,
-                         settlementKind = editingHeader!!.settlementKind,
-                         date = editingHeader!!.persianDate!!
-                     )*/
                 }
             }
 
@@ -396,18 +394,9 @@ class HeaderOrderFragment : Fragment() {
             allAct.clear()
             allAct.addAll(acts)
 
-            factorViewModel.factorHeader.value?.actId?.let { id ->
-                binding.spAct.setSelectionById(id, allAct) { it.id }
-            }
+            Log.d(  "factorHeaderctId2",acts.toString())
+            Log.d(  "factorHeaderctId2",acts.toString())
             updateActSpinner()
-            if (isEditMode) {
-                editingHeader?.actId?.let { id ->
-                    binding.spAct.setSelectionById(
-                        id = id,
-                        items = allAct
-                    ) { it.id }
-                }
-            }
         }
 
         headerOrderViewModel.addedAct.observe(viewLifecycleOwner) { act ->
@@ -430,7 +419,6 @@ class HeaderOrderFragment : Fragment() {
             binding.spAct.adapter =
                 SpinnerAdapter(requireContext(), items)
         }
-
 
         fillPaymentType()
 
@@ -500,6 +488,20 @@ class HeaderOrderFragment : Fragment() {
         items.addAll(allAct.map { it.description ?: "" })
         binding.spAct.adapter =
             SpinnerAdapter(requireContext(), items)
+        Log.d(  "factorHeaderctId", factorViewModel.factorHeader.value?.actId.toString())
+        factorViewModel.factorHeader.value?.actId?.let { id ->
+            binding.spAct.setSelectionById(id, allAct) { it.id }
+        }
+        if (isEditMode) {
+            Log.d(  "factorHeaderctId4", factorViewModel.factorHeader.value?.actId.toString())
+
+            editingHeader?.actId?.let { id ->
+                binding.spAct.setSelectionById(
+                    id = id,
+                    items = allAct
+                ) { it.id }
+            }
+        }
     }
 
     // تابع برای ست کردن ActId انتخاب شده در spinner
@@ -636,23 +638,39 @@ class HeaderOrderFragment : Fragment() {
     }
 
     private fun validateHeader() {
-
         val factor = factorViewModel.factorHeader.value ?: return
-        // خطای دسته‌بندی فاکتور (خارج از ViewModel)
-        if (factor.invoiceCategoryId == null) {
-            CustomSnackBar.make(
-                requireActivity().findViewById(android.R.id.content),
-                getString(R.string.error_selecting_invoice_category_mandatory),
-                SnackBarType.Error.value
-            )?.show()
+
+        // Invoice Category
+        if (binding.spInvoiceCategory.selectedItemPosition == 0) {
+            showError(R.string.error_selecting_invoice_category_mandatory)
             return
         }
 
-        // اجرای اعتبارسنجی ViewModel
+        // Pattern
+        if (binding.spPattern.selectedItemPosition == 0) {
+            showError(R.string.error_selecting_pattern_mandatory)
+            return
+        }
+
+        // Act
+        if (binding.spAct.selectedItemPosition == 0) {
+            showError(R.string.error_selecting_act_mandatory)
+            return
+        }
+
+        // اگر UI معتبر بود → بفرست به ViewModel
         headerOrderViewModel.validateHeader(
             saleCenterId = saleCenterId,
             factor = factor
         )
+    }
+
+    private fun showError(@StringRes resId: Int) {
+        CustomSnackBar.make(
+            requireActivity().findViewById(android.R.id.content),
+            getString(resId),
+            SnackBarType.Error.value
+        )?.show()
     }
 
     private fun loadCustomerData(customerId: Int, customerName: String) {

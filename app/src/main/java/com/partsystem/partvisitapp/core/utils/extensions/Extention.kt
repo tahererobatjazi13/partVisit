@@ -135,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "share viewmodel hilt"
+git commit -m "validate"
 git push -u origin master
 git push
 */

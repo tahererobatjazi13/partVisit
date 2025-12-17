@@ -139,18 +139,18 @@ class HeaderOrderViewModel @Inject constructor(
 
     fun validateHeader(saleCenterId: Int?, factor: FactorHeaderEntity) {
         viewModelScope.launch {
-            val sc = saleCenterId?.let { repository.getSaleCenter(it) }
+   /*         val sc = saleCenterId?.let { repository.getSaleCenter(it) }
             val rateKind = sc?.saleRateKind ?: SaleRateKind.None
 
-            if (/*rateKind == SaleRateKind.Pattern && */factor.patternId == null) {
+            if (*//*rateKind == SaleRateKind.Pattern && *//*factor.patternId == null) {
                 _errorMessageRes.value = R.string.error_selecting_pattern_mandatory
                 return@launch
             }
 
-            if (/*rateKind != SaleRateKind.None &&*/ factor.actId == null) {
+            if (*//*rateKind != SaleRateKind.None &&*//* factor.actId == null) {
                 _errorMessageRes.value = R.string.error_selecting_act_mandatory
                 return@launch
-            }
+            }*/
 
             if (factor.defaultAnbarId == null) {
                 _errorMessageRes.value = R.string.error_there_not_default_warehouse_sales_center
@@ -158,7 +158,6 @@ class HeaderOrderViewModel @Inject constructor(
             }
             _errorMessageRes.value = null
             _validationEvent.value = Event(Unit)
-
         }
     }
 

@@ -154,30 +154,7 @@ class ProductListAdapter(
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
                 override fun afterTextChanged(s: Editable?) {
-
-                    /*  val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
-                      val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
-
-                      val selectedPacking =
-                          product.packings.getOrNull(spProductPacking.selectedItemPosition)
-
-                      val detail = FactorDetailEntity(
-                          factorId = factorId,
-                          sortCode = bindingAdapterPosition,
-                          productId = product.product.id,
-                          actId = 195,
-                          unit1Value = unit1Value,
-                          unit2Value = 0.0,
-                          price = product.finalRate,
-                          packingId = selectedPacking!!.id,
-                          packingValue = packingValue,
-                          vat = 0.0
-                      )
-                      detail.applyProduct(product)
-
-                      onProductChanged(detail)*/
                     notifyChange(product)
-
                 }
             }
 
@@ -193,30 +170,7 @@ class ProductListAdapter(
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
                 override fun afterTextChanged(s: Editable?) {
-
-                    /*  val unit1Value = etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
-                      val packingValue = etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
-
-                      val selectedPacking =
-                          product.packings.getOrNull(spProductPacking.selectedItemPosition)
-
-                      val detail = FactorDetailEntity(
-                          factorId = factorId,
-                          sortCode = bindingAdapterPosition,
-                          productId = product.product.id,
-                          actId = 195,
-                          unit1Value = unit1Value,
-                          unit2Value = 0.0,
-                          price = product.finalRate,
-                          packingId = selectedPacking!!.id,
-                          packingValue = packingValue,
-                          vat = 0.0
-                      )
-                      detail.applyProduct(product)
-
-                      onProductChanged(detail)*/
                     notifyChange(product)
-
                 }
             }
 

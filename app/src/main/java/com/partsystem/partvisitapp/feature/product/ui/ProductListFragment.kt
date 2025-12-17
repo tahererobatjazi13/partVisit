@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
@@ -26,7 +27,6 @@ import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
-@SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
 
@@ -36,7 +36,7 @@ class ProductListFragment : Fragment() {
     private val args: ProductListFragmentArgs by navArgs()
 
     private val productViewModel: ProductViewModel by viewModels()
-    private val factorViewModel: FactorViewModel by navGraphViewModels(R.id.nav_graph)
+    private val factorViewModel: FactorViewModel by hiltNavGraphViewModels(R.id.nav_graph)
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
     private val clearIcon by lazy { requireContext().getDrawable(R.drawable.ic_clear) }
