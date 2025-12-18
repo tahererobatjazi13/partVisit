@@ -4,11 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -22,11 +20,11 @@ import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.databinding.DialogLoadingBinding
 import com.partsystem.partvisitapp.databinding.FragmentHomeBinding
 import com.partsystem.partvisitapp.feature.splash.SplashActivity
 import dagger.hilt.android.AndroidEntryPoint
-import ir.huri.jcal.JalaliCalendar
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -44,7 +42,6 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: HomeViewModel by viewModels()
     private var customDialog: CustomDialog? = null
-
 
     private var loadingCount = 0
     private lateinit var loadingDialog: Dialog
@@ -66,17 +63,15 @@ class HomeFragment : Fragment() {
         init()
         initLoadingDialog()
         initAdapter()
-        rxBinding()
+        setupClicks()
         //setupObserver()
-
     }
 
     @SuppressLint("SetTextI18n")
     private fun init() {
 
         customDialog = CustomDialog.instance
-        val jalaliDate = JalaliCalendar()
-        binding.tvDate.text = "${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}"
+        binding.tvDate.text = getTodayPersianDate()
 
         // جمع‌آوری دیتا از DataStore
         lifecycleScope.launch {
@@ -92,7 +87,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupObserver() {
-
         tasks.clear()
         currentTaskIndex = 0
 
@@ -532,7 +526,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun rxBinding() {
+    private fun setupClicks() {
         binding.ivSync.setOnClickListener {
             setupObserver()
         }
@@ -600,7 +594,7 @@ class HomeFragment : Fragment() {
             db.factorDao().clearFactorDiscount() // جدول تخفیفات فاکتور
             db.factorDao().clearFactorGiftInfo() // جدول جایزه فاکتور
 
-            // هدایت کاربر به صفحه Splash
+            // هدایت به صفحه Splash
             val intent = Intent(requireContext(), SplashActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)

@@ -14,6 +14,9 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import com.partsystem.partvisitapp.R
 import kotlinx.coroutines.Dispatchers
@@ -214,7 +217,6 @@ fun convertNumbersToEnglish(input: String): String {
 fun getGUID(): String {
     return UUID.randomUUID().toString()
 }
-
 
 private var floatFormat: DecimalFormat? = null
 

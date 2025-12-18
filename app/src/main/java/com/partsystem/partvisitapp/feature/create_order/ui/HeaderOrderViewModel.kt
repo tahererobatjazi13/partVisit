@@ -78,7 +78,16 @@ class HeaderOrderViewModel @Inject constructor(
             _pattern.postValue(result)
         }
     }*/
+// در HeaderOrderViewModel
+private val _selectedPattern = MutableLiveData<PatternEntity?>()
+    val selectedPattern: LiveData<PatternEntity?> = _selectedPattern
 
+    fun loadPatternById(id: Int) {
+        viewModelScope.launch {
+            val pattern = repository.getPatternByIdSuspend(id)
+            _selectedPattern.value = pattern
+        }
+    }
 
 
     fun getPatternById(id: Int): LiveData<PatternEntity> =

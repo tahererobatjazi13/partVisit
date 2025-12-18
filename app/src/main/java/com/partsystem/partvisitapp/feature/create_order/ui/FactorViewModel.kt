@@ -1,23 +1,16 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
-import android.util.Log
 import android.util.Log.*
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
-import com.partsystem.partvisitapp.core.database.entity.FinalFactorRequest
-import com.partsystem.partvisitapp.feature.create_order.repository.HeaderOrderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-
 import androidx.lifecycle.viewModelScope
-import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
-import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
@@ -27,20 +20,18 @@ import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
-
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
     private val factorRepository: FactorRepository,
     val productRepository: ProductRepository,
+    ) : ViewModel() {
 
-) : ViewModel() {
     val factorHeader = MutableLiveData(FactorHeaderEntity())
     val factorDetails = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
     val factorGifts = MutableLiveData<MutableList<FactorGiftInfoEntity>>(mutableListOf())
+
 
     private val factorItems = mutableMapOf<Int, FactorDetailEntity>()
     var enteredProductPage = false
@@ -127,7 +118,7 @@ class FactorViewModel @Inject constructor(
         createDate: String? = null,
         dueDate: String? = null,
         deliveryDate: String? = null,
-        ) {
+    ) {
 
         val current = factorHeader.value ?: FactorHeaderEntity()
         factorHeader.value = current.copy(
@@ -473,66 +464,66 @@ class FactorViewModel @Inject constructor(
         return factorRepository.getFactorDetails(factorId).asLiveData()
     }
 
-        fun updateByPacking(
-            detail: FactorDetailEntity,
-            packingValue: Double,
-            product: ProductWithPacking,
-            packing: ProductPackingEntity
-        ) {
-            viewModelScope.launch {
+    fun updateByPacking(
+        detail: FactorDetailEntity,
+        packingValue: Double,
+        product: ProductWithPacking,
+        packing: ProductPackingEntity
+    ) {
+        viewModelScope.launch {
 
-                val calculator = CalculateDiscount(productRepository)
+            val calculator = CalculateDiscount(productRepository)
 
-                val values = calculator.fillProductValues(
-                    anbarId = factorHeader.value?.defaultAnbarId,
-                    product = product.product,
-                    packing = packing,
-                    unit1ValueInput = null,
-                    unit2ValueInput = null,
-                    packingValueInput = packingValue,
-                    isInput = false
-                )
+            val values = calculator.fillProductValues(
+                anbarId = factorHeader.value?.defaultAnbarId,
+                product = product.product,
+                packing = packing,
+                unit1ValueInput = null,
+                unit2ValueInput = null,
+                packingValueInput = packingValue,
+                isInput = false
+            )
 
-                val updated = detail.copy(
-                    unit1Value = values.unit1Value,
-                    unit2Value = values.unit2Value,
-                    packingValue = packingValue,
-                    packingId = packing.packingId,
-                  //  packingName = packing.packingName ?: ""
-                )
+            val updated = detail.copy(
+                unit1Value = values.unit1Value,
+                unit2Value = values.unit2Value,
+                packingValue = packingValue,
+                packingId = packing.packingId,
+                //  packingName = packing.packingName ?: ""
+            )
 
-                factorRepository.insertOrUpdateFactorDetail(updated)
-            }
+            factorRepository.insertOrUpdateFactorDetail(updated)
         }
+    }
 
-        fun updateByUnit(
-            detail: FactorDetailEntity,
-            unit1Value: Double,
-            product: ProductWithPacking,
-            packing: ProductPackingEntity
-        ) {
-            viewModelScope.launch {
+    fun updateByUnit(
+        detail: FactorDetailEntity,
+        unit1Value: Double,
+        product: ProductWithPacking,
+        packing: ProductPackingEntity
+    ) {
+        viewModelScope.launch {
 
-                val calculator = CalculateDiscount(productRepository)
+            val calculator = CalculateDiscount(productRepository)
 
-                val values = calculator.fillProductValues(
-                    anbarId = factorHeader.value?.defaultAnbarId,
-                    product = product.product,
-                    packing = packing,
-                    unit1ValueInput = unit1Value,
-                    unit2ValueInput = null,
-                    packingValueInput = null,
-                    isInput = false
-                )
-                d("factorViewModelvalues", values.toString())
+            val values = calculator.fillProductValues(
+                anbarId = factorHeader.value?.defaultAnbarId,
+                product = product.product,
+                packing = packing,
+                unit1ValueInput = unit1Value,
+                unit2ValueInput = null,
+                packingValueInput = null,
+                isInput = false
+            )
+            d("factorViewModelvalues", values.toString())
 
-                val updated = detail.copy(
-                    unit1Value = unit1Value,
-                    unit2Value = values.unit2Value,
-                    packingValue = values.packingValue
-                )
-                d("factorViewModelupdated", updated.toString())
-                factorRepository.insertOrUpdateFactorDetail(updated)
-            }
+            val updated = detail.copy(
+                unit1Value = unit1Value,
+                unit2Value = values.unit2Value,
+                packingValue = values.packingValue
+            )
+            d("factorViewModelupdated", updated.toString())
+            factorRepository.insertOrUpdateFactorDetail(updated)
+        }
     }
 }

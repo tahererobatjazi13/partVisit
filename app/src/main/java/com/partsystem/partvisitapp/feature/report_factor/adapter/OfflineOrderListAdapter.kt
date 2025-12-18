@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
+import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -41,6 +42,7 @@ class OfflineOrderListAdapter(
                     binding.tvCustomerName.text = item.name
                 }
             }
+
             headerOrderViewModel.getPatternById(item.patternId!!).observeForever { item ->
                 if (item != null) {
                     binding.tvPatternName.text = item.name

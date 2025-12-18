@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.partsystem.partvisitapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 
-
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -17,5 +16,4 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
     }
-
 }

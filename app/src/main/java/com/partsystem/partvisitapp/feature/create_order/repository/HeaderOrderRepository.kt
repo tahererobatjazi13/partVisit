@@ -61,6 +61,7 @@ class HeaderOrderRepository @Inject constructor(
         actDao.getActs()
 
     fun getPatternById(id: Int): LiveData<PatternEntity> = patternDao.getPatternById(id)
+    suspend fun getPatternByIdSuspend(id: Int): PatternEntity = patternDao.getPatternByIdSuspend(id)
 /*
      fun getPatternById(id: Int): PatternEntity? {
         return patternDao.getPatternById(id)

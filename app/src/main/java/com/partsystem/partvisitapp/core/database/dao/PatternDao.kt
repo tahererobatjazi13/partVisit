@@ -141,4 +141,7 @@ interface PatternDao {
     @Query("SELECT * FROM pattern_table WHERE id = :id LIMIT 1")
     fun getPatternById(id: Int): LiveData<PatternEntity>
 
+    @Query("SELECT * FROM pattern_table WHERE id = :id LIMIT 1")
+    suspend fun getPatternByIdSuspend(id: Int): PatternEntity
+
 }

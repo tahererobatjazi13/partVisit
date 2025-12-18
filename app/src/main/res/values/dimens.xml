@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="x_big_size">@dimen/_50sdp</dimen>
+    <dimen name="xx_big_size">@dimen/_50sdp</dimen>
+    <dimen name="x_big_size">@dimen/_40sdp</dimen>
     <dimen name="big_size">@dimen/_34sdp</dimen>
     <dimen name="xxx_large_size">@dimen/_22sdp</dimen>
     <dimen name="xx_large_size">@dimen/_20sdp</dimen>
