@@ -42,7 +42,7 @@ class OrderAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
-
+/*
                CoroutineScope(Dispatchers.Main).launch {
                      val product =
                          loadProduct(item.productId!!, item.actId)
@@ -50,7 +50,7 @@ class OrderAdapter(
                      product?.let {
                          tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
                      }
-                 }
+                 }*/
 
             /*       if (item.packingValue > 0 && item.packingId != null) {
 
@@ -66,7 +66,7 @@ class OrderAdapter(
 
          //   binding.tvName.text = item.productName
           //  binding.tvProductPacking.text = item.packingName
-            etPackingValue.setText(item.getPackingValueFormatted())
+          //  etPackingValue.setText(item.getPackingValueFormatted())
             Log.d("productdetail8", item.getPackingValueFormatted())
 
             //etUnit1Value.setText(item.unit1Value.clean())

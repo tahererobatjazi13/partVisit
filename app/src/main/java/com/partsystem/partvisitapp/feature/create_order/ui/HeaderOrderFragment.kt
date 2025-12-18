@@ -391,7 +391,6 @@ class HeaderOrderFragment : Fragment() {
             }
             if (isEditMode) {
                 Log.d("isEditModepatternId", "ok")
-
                 editingHeader?.patternId?.let { id ->
                     binding.spPattern.setSelectionById(
                         id = id,
@@ -426,14 +425,16 @@ class HeaderOrderFragment : Fragment() {
             //  بدون برنامه ویزیت
             customerViewModel.loadCustomersWithoutSchedule()
         }
-        customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
-            if (isEditMode) return@observe // در حالت ویرایش، این قسمت اجرا نشود
+        if (!args.typeCustomer) {
+            customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
+                if (isEditMode) return@observe // در حالت ویرایش، این قسمت اجرا نشود
 
-            if (customers.isNotEmpty()) {
-                val first = customers.first()
-                factorViewModel.updateHeader(customerId = first.id)
-                binding.tvCustomerName.text = first.name
-                loadCustomerData(first.id, first.name)
+                if (customers.isNotEmpty()) {
+                    val first = customers.first()
+                    factorViewModel.updateHeader(customerId = first.id)
+                    binding.tvCustomerName.text = first.name
+                    loadCustomerData(first.id, first.name)
+                }
             }
         }
 
