@@ -28,6 +28,7 @@ class HeaderOrderViewModel @Inject constructor(
     private val repository: HeaderOrderRepository
 ) : ViewModel() {
 
+
     private val _currentFactor = MutableLiveData<FactorHeaderEntity>()
     val currentFactor: LiveData<FactorHeaderEntity> get() = _currentFactor
 
