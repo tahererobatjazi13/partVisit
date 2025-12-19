@@ -25,7 +25,9 @@ import com.partsystem.partvisitapp.databinding.ItemOrderBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
+/*
 
 class OrderAdapter(
     private val loadProduct: suspend (Int, Int?) -> ProductWithPacking?,
@@ -42,6 +44,7 @@ class OrderAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
+*/
 /*
                CoroutineScope(Dispatchers.Main).launch {
                      val product =
@@ -50,9 +53,11 @@ class OrderAdapter(
                      product?.let {
                          tvName.text = "${bindingAdapterPosition + 1}_ ${product.product.name}"
                      }
-                 }*/
+                 }*//*
 
-            /*       if (item.packingValue > 0 && item.packingId != null) {
+
+            */
+/*       if (item.packingValue > 0 && item.packingId != null) {
 
                        val data = item.getPackingValueFormatted().split(":")
 
@@ -62,15 +67,25 @@ class OrderAdapter(
                        }
                    } else {
                        etUnit1Value.setText(formatFloat(item.unit1Value))
-                   }*/
+                   }*//*
 
-         //   binding.tvName.text = item.productName
-          //  binding.tvProductPacking.text = item.packingName
-          //  etPackingValue.setText(item.getPackingValueFormatted())
-            Log.d("productdetail8", item.getPackingValueFormatted())
 
-            //etUnit1Value.setText(item.unit1Value.clean())
-            //tvProductPacking.text =item.packingValue
+
+            binding.tvName.text = item.productName
+            binding.tvProductPacking.text = item.packingName
+            // فقط نمایش فرمت‌شده — ویرایش نشود!
+            etPackingValue.setText(item.getPackingValueFormatted())
+            etPackingValue.isEnabled = false // مهم: فقط readonly
+            Log.d("factor8", item.getPackingValueFormatted())
+
+// نمایش هوشمند: اگر عدد صحیح بود، بدون اعشار نشان بده
+            val unit1Text = if (item.unit1Value % 1 == 0.0) {
+                item.unit1Value.toInt().toString()
+            } else {
+                item.unit1Value.toString()
+            }
+            etUnit1Value.setText(unit1Text)
+
             if (bindingAdapterPosition % 2 == 0) {
                 clDiscount.show()
                 tvDiscountPrice.show()
@@ -87,11 +102,6 @@ class OrderAdapter(
                 etUnit1Value.removeTextChangedListener(it)
             }
 
-            val quantity = item.unit1Value
-            if (etUnit1Value.text.toString() != quantity.toString()) {
-                etUnit1Value.setText(quantity.clean())
-            }
-
             // ساخت Watcher جدید
             watcher = object : TextWatcher {
                 override fun beforeTextChanged(
@@ -103,8 +113,7 @@ class OrderAdapter(
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                override fun afterTextChanged(s: Editable?)
-                {
+                override fun afterTextChanged(s: Editable?) {
                     val newQty = s.toString().toIntOrNull() ?: 0
                     onQuantityChange(item, newQty)
                 }
@@ -112,21 +121,25 @@ class OrderAdapter(
             etUnit1Value.addTextChangedListener(watcher)
 
             ivMax.setOnClickListener {
-                /*    item.unit1Value += 1
+                */
+/*    item.unit1Value += 1
                     etUnit1Value.setText(item.unit1Value.toString())
                     tvPrice.text =
                         formatter.format(item.price * item.unit1Value) + " ریال"
-                    onQuantityChange(item, item.unit1Value)*/
+                    onQuantityChange(item, item.unit1Value)*//*
+
             }
 
             ivMin.setOnClickListener {
-                /* if (item.unit1Value > 0) {
+                */
+/* if (item.unit1Value > 0) {
                      item.unit1Value -= 1
                      etUnit1Value.setText(item.unit1Value.toString())
                      tvPrice.text =
                          formatter.format(item.price * item.unit1Value) + " ریال"
                  }
-                 onQuantityChange(item, item.unit1Value)*/
+                 onQuantityChange(item, item.unit1Value)*//*
+
             }
 
             binding.ivDelete.setOnClickListener {
@@ -143,7 +156,9 @@ class OrderAdapter(
 
                     // نمایش قیمت جدید (فرضی)
                     val discountedPrice =
-                        item.price /*- (item.price * selectedDiscount.percent / 100)*/
+                        item.price */
+/*- (item.price * selectedDiscount.percent / 100)*//*
+
                     binding.tvDiscountPrice.text = "${discountedPrice!!.toInt()} ریال"
                 }
             }
@@ -211,4 +226,103 @@ class OrderDiffCallback : DiffUtil.ItemCallback<FactorDetailEntity>() {
     ): Boolean {
         return oldItem == newItem
     }
+}
+*/
+class OrderAdapter(
+    private val loadProduct: suspend (Int, Int?) -> ProductWithPacking?,
+    private val onQuantityChange: (FactorDetailEntity, Int) -> Unit,
+    private val onDelete: (FactorDetailEntity) -> Unit/*,
+    private val defaultAnbarId: Int // ⚠️ این را از ViewModel بگیرید*/
+) : ListAdapter<FactorDetailEntity, OrderAdapter.OrderViewHolder>(OrderDiffCallback()) {
+
+    private val formatter = DecimalFormat("#,###,###,###")
+
+    inner class OrderViewHolder(val binding: ItemOrderBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        private var watcher: TextWatcher? = null
+
+        @SuppressLint("SetTextI18n")
+        fun bind(item: FactorDetailEntity) = with(binding) {
+            // 🔥 محاسبه دقیق مثل جاوا
+            CoroutineScope(Dispatchers.IO).launch {
+                // packing را resolve کن
+                item.resolvePacking()
+                var product = item.product
+                if (product == null) {
+                    product = loadProduct(item.productId!!, item.actId)
+                    item.product = product
+                    item.applyProduct(product!!)
+                }
+
+                val packing = item.resolvePacking()
+                if (packing != null) {
+                    var finalUnit1 = item.unit1Value
+                    // اگر packingValue > 0 → از روی آن محاسبه کن
+                    if (item.packingValue > 0) {
+                        finalUnit1 = item.packingValue * packing.unit1Value
+                        // اگر unit1Value هم وارد شده بود → اضافه کن (مثل جاوا)
+                        if (item.unit1Value > 0) {
+                            finalUnit1 += item.unit1Value
+                        }
+                    }
+                    item.unit1Value = finalUnit1
+                }
+
+                withContext(Dispatchers.Main) {
+                    // نمایش نام محصول
+                    tvName.text = item.productName ?: ""
+                    tvProductPacking.text = item.packingName
+
+                    // نمایش unit1Value بدون اعشار اضافه
+                    val unit1Text = if (item.unit1Value % 1 == 0.0) {
+                        item.unit1Value.toInt().toString()
+                    } else {
+                        item.unit1Value.toString()
+                    }
+                    etUnit1Value.setText(unit1Text)
+
+                    // نمایش packing به فرمت "2 : 0"
+                    etPackingValue.setText(item.getPackingValueFormatted())
+                    etPackingValue.isEnabled = false
+
+                    // قیمت
+                    tvPrice.text = formatter.format(item.price) + " ریال"
+
+                    // Watcher برای تغییر دستی unit1 (اختیاری)
+                    watcher?.let { etUnit1Value.removeTextChangedListener(it) }
+                    watcher = object : TextWatcher {
+                        override fun afterTextChanged(s: Editable?) {
+                            val newQty = s.toString().toIntOrNull() ?: 0
+                            onQuantityChange(item, newQty)
+                        }
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    }
+                    etUnit1Value.addTextChangedListener(watcher)
+
+                    // دکمه‌ها
+                    ivDelete.setOnClickListener { onDelete(item) }
+                }
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
+        val binding = ItemOrderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return OrderViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
+        holder.bind(getItem(position))
+        holder.binding.vSeparator.visibility = if (position == itemCount - 1) View.GONE else View.VISIBLE
+    }
+}
+
+class OrderDiffCallback : DiffUtil.ItemCallback<FactorDetailEntity>() {
+    override fun areItemsTheSame(old: FactorDetailEntity, new: FactorDetailEntity) =
+        old.productId == new.productId
+
+    override fun areContentsTheSame(old: FactorDetailEntity, new: FactorDetailEntity) =
+        old == new
 }
