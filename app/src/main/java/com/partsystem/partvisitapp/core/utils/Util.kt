@@ -221,11 +221,9 @@ fun getGUID(): String {
 private var floatFormat: DecimalFormat? = null
 
 fun formatFloat(value: Double): String {
-    if (floatFormat == null) {
-        val locale = Locale("en", "UK")
-        floatFormat = NumberFormat
-            .getNumberInstance(locale) as DecimalFormat
-        floatFormat!!.applyPattern("#0.##")
+    return if (value % 1 == 0.0) {
+        value.toInt().toString()
+    } else {
+        value.toString()
     }
-    return floatFormat!!.format(value)
 }

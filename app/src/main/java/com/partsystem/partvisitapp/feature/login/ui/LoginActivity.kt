@@ -2,8 +2,6 @@ package com.partsystem.partvisitapp.feature.login.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.util.Log.*
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -20,11 +18,12 @@ import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.core.utils.hideKeyboard
 import com.partsystem.partvisitapp.databinding.ActivityLoginBinding
-import com.partsystem.partvisitapp.feature.login.dialog.AddSettingLoginDialog
+import com.partsystem.partvisitapp.feature.login.dialog.ServerAddressDialog
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.feature.login.model.User
 import com.partsystem.partvisitapp.feature.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -57,7 +56,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.bmbSetting.setOnClickBtnOneListener {
-            val dialog = AddSettingLoginDialog { _ ->
+            val dialog = ServerAddressDialog { address ->
                 // materialViewModel.insert(rawMaterial)
             }
             dialog.show(supportFragmentManager, "Setting")
@@ -66,6 +65,13 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun doLogin() {
+        lifecycleScope.launch {
+            val baseUrl = userPreferences.baseUrlFlow.firstOrNull()
+
+            if (baseUrl.isNullOrEmpty()) {
+                showSettingDialog()
+                return@launch
+            }
         var userName = binding.tieUserName.text.toString().trim()
         var passWord = binding.tiePassword.text.toString().trim()
 
@@ -73,9 +79,35 @@ class LoginActivity : AppCompatActivity() {
         userName = convertNumbersToEnglish(fixPersianChars(userName))
         passWord = convertNumbersToEnglish(fixPersianChars(passWord))
 
-        hideKeyboard(this)
-        loginViewModel.loginUser(userName, passWord)
+            hideKeyboard(this@LoginActivity)
+            loginViewModel.loginUser(baseUrl, userName, passWord)
     }
+    }
+
+
+    private fun showSettingDialog() {
+        CustomSnackBar.make(
+            findViewById(android.R.id.content),
+            "ابتدا تنظیمات IP و دامنه را انجام دهید",
+            SnackBarType.Error.value
+        )?.show()
+
+        ServerAddressDialog { }.show(supportFragmentManager, "Setting")
+    }
+/*
+    private fun doLogin() {
+
+
+            var userName = binding.tieUserName.text.toString().trim()
+            var passWord = binding.tiePassword.text.toString().trim()
+
+            userName = convertNumbersToEnglish(fixPersianChars(userName))
+            passWord = convertNumbersToEnglish(fixPersianChars(passWord))
+
+            hideKeyboard(this@LoginActivity)
+            loginViewModel.loginUser(baseUrl, userName, passWord)
+        }
+*/
 
     private fun observeLogin() {
         loginViewModel.loginUser.observe(this) { result ->

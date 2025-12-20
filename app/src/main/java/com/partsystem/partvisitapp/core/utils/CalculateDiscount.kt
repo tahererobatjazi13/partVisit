@@ -1,6 +1,8 @@
 package com.partsystem.partvisitapp.core.utils
 
 import android.util.Log.d
+import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductValuesResult
@@ -103,6 +105,52 @@ class CalculateDiscount(private val repository: ProductRepository) {
 
 
 class CalculateDiscount(private val repository: ProductRepository) {
+
+
+
+/*
+        suspend fun calculateProductDiscount(detail: FactorDetailEntity, factorDiscounts: List<FactorDiscountEntity>) {
+            var totalDiscount = 0.0
+            var totalAddition = 0.0
+
+            // 1. محاسبه تخفیف‌ها و افزودنی‌ها
+            for (fd in factorDiscounts) {
+                if (fd.factorDetailId == detail.productId) { // یا detail.id اگر id داشته باشی
+                    val discount = discountRepository.getDiscount(fd.discountId)
+                    if (discount != null) {
+                        when (discount.kind) {DiscountKind.Discount.ordinal -> {
+                                totalDiscount += fd.price
+                            }DiscountKind.Addition.ordinal -> {
+                                totalAddition += fd.price
+                            }
+                        }
+                    }
+                }
+            }
+
+            detail.totalDiscountPrice = totalDiscount
+            detail.totalAdditionalPrice = totalAddition
+
+            // 2. گرفتن محصول برای درصد مالیات و عوارض
+            val product = detail.product?.product
+                ?: repository.getProduct(detail.productId, detail.actId)
+
+            // 3. محاسبه مالیات و عوارض (اگر فاکتور شامل آن باشد)
+            if (hasVatAndToll(detail)) {
+                val priceAfterDiscount = detail.getPriceAfterDiscount()
+                detail.toll = Math.round(product.tollPercent * priceAfterDiscount).toDouble()
+                detail.vat = Math.round(product.vatPercent * priceAfterDiscount).toDouble()
+            }
+        }
+*/
+
+        private suspend fun hasVatAndToll(detail: FactorDetailEntity): Boolean {
+            // مثلاً از FactorHeader چک کن:
+            // return factorHeaderRepository.get(detail.factorId)?.hasVat == true
+            // برای سادگی فعلاً true فرض می‌کنیم
+            return true
+        }
+
 
     suspend fun fillProductValues(
         anbarId: Int?,

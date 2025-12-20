@@ -12,6 +12,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.floor
+import kotlin.math.roundToInt
+
 /*
 @Entity(
     tableName = "factor_detail_table",
@@ -313,7 +315,7 @@ data class FactorDetailEntity(
 
         // اگر هیچ‌کدام صفر نیستند یا unit1Value > 0 باشد، نمایش بده
         if (fullPacks > 0 || remain > 0 || unit1Value > 0) {
-            return "${fullPacks.toInt()} : ${formatFloat(remain)}"
+            return "${formatFloat(remain)} : ${fullPacks.toInt()}"
         }
 
         return ""
@@ -390,5 +392,23 @@ data class FactorDetailEntity(
         )
         unit1Value = values.unit1Value
         unit2Value = values.unit2Value
+    }
+    @Ignore
+    var totalDiscountPrice: Double = 0.0
+
+    @Ignore
+    var totalAdditionalPrice: Double = 0.0
+
+    @Ignore
+    var toll: Double = 0.0
+
+    @Ignore
+    fun getPriceAfterDiscount(): Double {
+        return Math.round(price + totalAdditionalPrice - totalDiscountPrice).toDouble()
+    }
+
+    @Ignore
+    fun getPriceAfterVat(): Double {
+        return Math.round(getPriceAfterDiscount() + vat + toll).toDouble()
     }
 }

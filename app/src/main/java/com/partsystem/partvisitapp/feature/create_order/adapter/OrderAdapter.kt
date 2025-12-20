@@ -10,10 +10,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.Discount
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
@@ -27,6 +29,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
+/*
+import kotlin.coroutines.jvm.internal.CompletedContinuation.context
+*/
+
 /*
 
 class OrderAdapter(
@@ -269,6 +275,22 @@ class OrderAdapter(
                     item.unit1Value = finalUnit1
                 }
 
+                if (item.isGift == 0) {
+                    binding.root.setBackgroundColor(
+                        ContextCompat.getColor(
+                            binding.root.context,
+                            R.color.yellow_EDDD50
+                        )
+                    )
+                } else {
+                    binding.root.setBackgroundColor(
+                        ContextCompat.getColor(
+                            binding.root.context,
+                            R.color.transparent
+                        )
+                    )
+                }
+
                 withContext(Dispatchers.Main) {
                     // نمایش نام محصول
                     tvName.text = item.productName ?: ""
@@ -287,7 +309,10 @@ class OrderAdapter(
                     etPackingValue.isEnabled = false
 
                     // قیمت
-                    tvPrice.text = formatter.format(item.price) + " ریال"
+                    // tvPrice.text = formatter.format(item.price*unit1Text) + " ریال"
+                    // val pricePerUnit = item.getPriceAfterVat() // قیمت نهایی هر واحد
+                    val total = item.price * item.unit1Value
+                    tvPrice.text = formatter.format(total) + " ریال"
 
                     // Watcher برای تغییر دستی unit1 (اختیاری)
                     watcher?.let { etUnit1Value.removeTextChangedListener(it) }
@@ -296,8 +321,22 @@ class OrderAdapter(
                             val newQty = s.toString().toIntOrNull() ?: 0
                             onQuantityChange(item, newQty)
                         }
-                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+                        override fun beforeTextChanged(
+                            s: CharSequence?,
+                            start: Int,
+                            count: Int,
+                            after: Int
+                        ) {
+                        }
+
+                        override fun onTextChanged(
+                            s: CharSequence?,
+                            start: Int,
+                            before: Int,
+                            count: Int
+                        ) {
+                        }
                     }
                     etUnit1Value.addTextChangedListener(watcher)
 
@@ -315,7 +354,8 @@ class OrderAdapter(
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         holder.bind(getItem(position))
-        holder.binding.vSeparator.visibility = if (position == itemCount - 1) View.GONE else View.VISIBLE
+        holder.binding.vSeparator.visibility =
+            if (position == itemCount - 1) View.GONE else View.VISIBLE
     }
 }
 

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -68,23 +69,18 @@ class OrderFragment : Fragment() {
                 lifecycleScope.launch {
                     //   factorViewModel.saveToLocal()
                 }
-
-                val action =
-                    OrderFragmentDirections.actionOrderFragmentToHomeFragment(
-                    )
-                findNavController().navigate(action)
+                navigateToHomeClearOrder()
             }
 
             btnSendOrder.setOnClickListener {
                 //val json = factorViewModel.buildFinalJson()
                 // api.sendFactor(json.toString())
 
-                val action = OrderFragmentDirections.actionOrderFragmentToHomeFragment()
-                findNavController().navigate(action)
+                navigateToHomeClearOrder()
             }
             btnCreateOrder.setOnClickBtnOneListener {
 
-                if (currentCartItems.isEmpty()) {
+               if (currentCartItems.isEmpty()) {
                     Toast.makeText(
                         requireContext(),
                         R.string.error_no_items_cart,
@@ -94,14 +90,23 @@ class OrderFragment : Fragment() {
                     return@setOnClickBtnOneListener
                 } else {
 
-                    val action =
-                        OrderFragmentDirections.actionOrderFragmentToHomeFragment(
-                        )
-                    findNavController().navigate(action)
+                    navigateToHomeClearOrder()
                 }
             }
         }
     }
+    private fun navigateToHomeClearOrder() {
+        val navController = findNavController()
+        navController.navigate(
+            R.id.homeFragment,
+            null,
+            NavOptions.Builder()
+                .setPopUpTo(navController.graph.startDestinationId, true)
+                .build()
+        )
+    }
+
+
 
     private fun initAdapter() {
 

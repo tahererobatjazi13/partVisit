@@ -96,6 +96,7 @@
     <string name="label_sync_order">ارسال سفارش</string>
     <string name="label_sync_all_order">ارسال همه سفارشات</string>
     <string name="label_please_select">لطفا انتخاب کنید</string>
+    <string name="label_server_setting">تنظیمات سرور</string>
 
 
     <!-- date picker -->
@@ -121,6 +122,7 @@
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
 
     <!-- Errors -->
+    <string name="error_enter_address">آدرس را وارد کنید</string>
     <string name="error_network_json_response">مشکل در دریافت اطلاعات از سرور</string>
     <string name="error_network_internet">اتصال اینترنت برقرار نیست</string>
     <string name="error_not_found">موردی یافت نشد</string>

@@ -57,7 +57,9 @@ class ProductListFragment : Fragment() {
         setupSearch()
         observeCartBadge()
         Log.d("factorHeaderargs", args.factorId.toString())
-
+        if (args.fromFactor) {
+            observeCartData() // کلید موفقیت!
+        }
     }
 
     private fun init() {
@@ -117,14 +119,12 @@ class ProductListFragment : Fragment() {
     }
 
     private fun initAdapter() {
-        val currentQuantities = mutableMapOf<Int, Int>()
 
         productListAdapter = ProductListAdapter(factorViewModel,
             fromFactor = args.fromFactor,factorId = args.factorId,
             onProductChanged = { item ->
                 factorViewModel.addOrUpdateFactorDetail(item)
             },
-            currentQuantities = currentQuantities,
             onClick = { product ->
                 val action = ProductListFragmentDirections
                     .actionProductListFragmentToProductDetailFragment(
@@ -142,7 +142,16 @@ class ProductListFragment : Fragment() {
             adapter = productListAdapter
         }
     }
-
+    //  تابع جدید: observe مقادیر فعلی سبد خرید
+    private fun observeCartData() {
+        factorViewModel.getFactorDetails(args.factorId)
+            .observe(viewLifecycleOwner) { details ->
+                val values = details.associate { detail ->
+                    detail.productId!! to Pair(detail.unit1Value, detail.packingValue)
+                }
+                productListAdapter.updateProductValues(values)
+            }
+    }
     private fun observeData() {
 
         if (args.fromFactor) {

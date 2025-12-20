@@ -144,3 +144,14 @@ enum class CalculateUnit2Type {
     //        [Description("توسط کاربر")]
     Manual
 }
+
+enum class DiscountKind {
+  // [Description("تخفیفات")]
+    Discount,
+
+  // [Description("اضافات")]
+    Addition,
+
+  // [Description("کسورات")]
+    Deduction,  //[Description("اشانتیون")]
+}

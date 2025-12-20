@@ -24,7 +24,8 @@ class UserPreferences @Inject constructor(
         val KEY_PERSONNEL_ID = intPreferencesKey("key_personnelId")
         val KEY_IS_LOGGED = booleanPreferencesKey("key_is_login")
         val KEY_SALE_CENTER_ID = intPreferencesKey("key_sale_center_id")
-        val CONTROL_VISIT_SCHEDULE = booleanPreferencesKey("key_control_visit_schedule")
+        val KEY_CONTROL_VISIT_SCHEDULE = booleanPreferencesKey("key_control_visit_schedule")
+        val KEY_BASE_URL = stringPreferencesKey("base_url")
     }
 
     suspend fun saveUserInfo(
@@ -51,7 +52,13 @@ class UserPreferences @Inject constructor(
 
     suspend fun saveControlVisitSchedule(controlVisitSchedule: Boolean) {
         context.dataStore.edit { prefs ->
-            prefs[CONTROL_VISIT_SCHEDULE] = controlVisitSchedule
+            prefs[KEY_CONTROL_VISIT_SCHEDULE] = controlVisitSchedule
+        }
+    }
+
+    suspend fun saveBaseUrl(baseUrl: String) {
+        context.dataStore.edit {
+            it[KEY_BASE_URL] = baseUrl
         }
     }
 
@@ -75,8 +82,10 @@ class UserPreferences @Inject constructor(
 
 
     val controlVisitSchedule: Flow<Boolean?> = context.dataStore.data
-        .map { it[CONTROL_VISIT_SCHEDULE] }
+        .map { it[KEY_CONTROL_VISIT_SCHEDULE] }
 
+    val baseUrlFlow: Flow<String?> = context.dataStore.data
+        .map { it[KEY_BASE_URL] }
 
     suspend fun clearUserInfo() {
         context.dataStore.edit { it.clear() }

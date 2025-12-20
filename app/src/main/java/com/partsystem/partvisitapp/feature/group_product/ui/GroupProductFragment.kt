@@ -72,7 +72,7 @@ class GroupProductFragment : Fragment() {
             latestCategoryId?.let { categoryId ->
                 val products =
                     groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
-                productListAdapter.setProductData(products, imagesMap)
+             //   productListAdapter.setProductData(products, imagesMap)
             }
         }
     }
@@ -115,7 +115,7 @@ class GroupProductFragment : Fragment() {
             onProductChanged = { item ->
                 factorViewModel.addDetail(item)
             },
-            currentQuantities = currentQuantities,
+          //  currentQuantities = currentQuantities,
             onClick = { product ->
                 val action = GroupProductFragmentDirections
                     .actionGroupProductFragmentToProductDetailFragment(
@@ -250,7 +250,7 @@ class GroupProductFragment : Fragment() {
                             binding.infoProduct.gone()
                             binding.tvTitleProduct.show()
                             binding.rvProduct.show()
-                            productListAdapter.setProductData(products, imagesMap)
+                            //productListAdapter.setProductData(products, imagesMap)
                         }
                     }
                 }

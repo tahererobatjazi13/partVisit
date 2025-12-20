@@ -135,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "header factor edit"
+git commit -m "server address"
 git push -u origin master
 git push
 */
