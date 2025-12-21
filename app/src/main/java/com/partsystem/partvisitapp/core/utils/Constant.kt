@@ -1,10 +1,5 @@
 package com.partsystem.partvisitapp.core.utils
 
-object Constant {
-
-    const val BASE_URL = "http://hf2093f87sf.sn.mynetname.net:52438/api/Android/"
-}
-
 enum class SnackBarType(val value: String) {
     Error("error"),
     Success("success"),
@@ -31,100 +26,68 @@ enum class ActKind(val value: String) {
     // [Description("خدمات")]
     Service("service"),
 
-    //[Description("کالا")]
+    // [Description("کالا")]
     Product("product"),
 
-    //        [Description("خرید خدمات")]
+    // [Description("خرید خدمات")]
     BoughtService("boughtService"),
 
-    //        [Description("خرید کالا")]
+    // [Description("خرید کالا")]
     BoughtProduct("boughtProduct"),
 }
 
 enum class FactorFormKind {
     Unknown,
 
-    //"صورتحساب فروش/خدمات"*/
+    // صورتحساب فروش/خدمات
     Factor,
 
-    /***
-     * "برگشت از فروش/خدمات"
-     */
+    // برگشت از فروش/خدمات
     BackFactor,
 
-    /***
-     * "پیش فاکتور"
-     */
+    //پیش فاکتور
     PishFactor,
 
-    /***
-     * "متمم بدهکار"
-     */
+    //متمم بدهکار
     MotamemBedehkar,
 
-    /***
-     * "متمم بستانکار"
-     */
+    //متمم بستانکار 
     MotamemBestankar,
 
-    /***
-     * "ثبت سفارش"
-     */
+    //ثبت سفارش
     RegisterOrder,
 
-    /***
-     * "اصلاح سفارش"
-     */
-    ModifyOrder,  //فروشگاهی
+    //اصلاح سفارش
+    ModifyOrder,
 
-    /***
-     * "فاکتور فروشگاهی"
-     */
+    //فاکتور فروشگاهی
     ShopFactor,
 
-    /***
-     * "برگشت فاکتور فروشگاهی"
-     */
+    //برگشت فاکتور فروشگاهی
     BackShopFactor,
 
-    /***
-     * "پیش فروش"
-     */
+    //پیش فروش
     PishForoosh,
 
-    /***
-     * "درخواست برگشت از فروش"
-     */
+    //درخواست برگشت از فروش
     RequestBack,  //توزیع
 
-    /***
-     * "فاکتور فروش توزیع"
-     */
+    // فاکتور فروش توزیع
     FactorDistribute,
 
-    /***
-     * "برگشت از فروش توزیع"
-     */
+    //برگشت از فروش توزیع
     BackFactorDistribute,
 
-    /***
-     * "پیش فاکتور توزیع"
-     */
+    //پیش فاکتور توزیع
     PishFactorDistribute,
 
-    /***
-     * "متمم بدهکار توزیع"
-     */
+    //متمم بدهکار توزیع
     MotamemBedehkarDistribute,
 
-    /***
-     * "متمم بستانکار توزیع"
-     */
+    //متمم بستانکار توزیع
     MotamemBestankarDistribute,
 
-    /***
-     * "ثبت سفارش توزیع"
-     */
+    // ثبت سفارش توزیع
     RegisterOrderDistribute
 }
 
@@ -135,23 +98,23 @@ enum class SaleRateKind {
 }
 
 enum class CalculateUnit2Type {
-    //        [Description("میانگین واحد اول بر اساس واحد دوم")]
+    // [Description("میانگین واحد اول بر اساس واحد دوم")]
     AverageUnits,
 
-    //        [Description("فرمول استاندارد")]
+    // [Description("فرمول استاندارد")]
     StandardFormula,
 
-    //        [Description("توسط کاربر")]
+    // [Description("توسط کاربر")]
     Manual
 }
 
 enum class DiscountKind {
-  // [Description("تخفیفات")]
+    // [Description("تخفیفات")]
     Discount,
 
-  // [Description("اضافات")]
+    // [Description("اضافات")]
     Addition,
 
-  // [Description("کسورات")]
+    // [Description("کسورات")]
     Deduction,  //[Description("اشانتیون")]
 }

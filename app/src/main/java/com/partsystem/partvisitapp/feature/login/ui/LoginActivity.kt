@@ -54,14 +54,10 @@ class LoginActivity : AppCompatActivity() {
                 doLogin()
             }
         }
-
         binding.bmbSetting.setOnClickBtnOneListener {
-            val dialog = ServerAddressDialog { address ->
-                // materialViewModel.insert(rawMaterial)
-            }
+            val dialog = ServerAddressDialog()
             dialog.show(supportFragmentManager, "Setting")
         }
-
     }
 
     private fun doLogin() {
@@ -72,42 +68,28 @@ class LoginActivity : AppCompatActivity() {
                 showSettingDialog()
                 return@launch
             }
-        var userName = binding.tieUserName.text.toString().trim()
-        var passWord = binding.tiePassword.text.toString().trim()
+            var userName = binding.tieUserName.text.toString().trim()
+            var passWord = binding.tiePassword.text.toString().trim()
 
-        // نرمال‌سازی و تبدیل اعداد فارسی به لاتین
-        userName = convertNumbersToEnglish(fixPersianChars(userName))
-        passWord = convertNumbersToEnglish(fixPersianChars(passWord))
+            // نرمال‌سازی و تبدیل اعداد فارسی به لاتین
+            userName = convertNumbersToEnglish(fixPersianChars(userName))
+            passWord = convertNumbersToEnglish(fixPersianChars(passWord))
 
             hideKeyboard(this@LoginActivity)
-            loginViewModel.loginUser(baseUrl, userName, passWord)
-    }
+            loginViewModel.loginUser(userName, passWord)
+        }
     }
 
 
     private fun showSettingDialog() {
         CustomSnackBar.make(
             findViewById(android.R.id.content),
-            "ابتدا تنظیمات IP و دامنه را انجام دهید",
+            getString(R.string.error_configure_ip_domain_settings),
             SnackBarType.Error.value
         )?.show()
 
-        ServerAddressDialog { }.show(supportFragmentManager, "Setting")
+        ServerAddressDialog().show(supportFragmentManager, "Setting")
     }
-/*
-    private fun doLogin() {
-
-
-            var userName = binding.tieUserName.text.toString().trim()
-            var passWord = binding.tiePassword.text.toString().trim()
-
-            userName = convertNumbersToEnglish(fixPersianChars(userName))
-            passWord = convertNumbersToEnglish(fixPersianChars(passWord))
-
-            hideKeyboard(this@LoginActivity)
-            loginViewModel.loginUser(baseUrl, userName, passWord)
-        }
-*/
 
     private fun observeLogin() {
         loginViewModel.loginUser.observe(this) { result ->

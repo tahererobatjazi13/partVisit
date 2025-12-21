@@ -7,49 +7,69 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.partsystem.partvisitapp.R
-import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.core.utils.BaseUrlValidator
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.databinding.DialogServerAddressBinding
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import javax.inject.Inject
 
+@AndroidEntryPoint
+class ServerAddressDialog : DialogFragment() {
 
-class ServerAddressDialog(
-    private val onSave: (CustomerEntity) -> Unit
-) : DialogFragment() {
     @Inject
     lateinit var userPreferences: UserPreferences
 
     private lateinit var binding: DialogServerAddressBinding
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = DialogServerAddressBinding.inflate(inflater, container, false)
         dialog?.window?.setBackgroundDrawableResource(R.drawable.background_dialog)
 
+        lifecycleScope.launch {
+            // خواندن مقدار واقعی
+            val savedBaseUrl = userPreferences.baseUrlFlow.firstOrNull()
+
+            if (savedBaseUrl.isNullOrBlank()) {
+                // hint نمایش داده می‌شود
+                binding.tieServerAddress.setText("")
+            } else {
+                val displayAddress = extractHostAndPort(savedBaseUrl)
+                binding.tieServerAddress.setText(displayAddress)
+            }
+        }
+
         binding.btnSave.setOnClickListener {
             val input = binding.tieServerAddress.text.toString().trim()
-
             if (input.isEmpty()) {
-                binding.tilServerAddress.error =
-                    binding.root.context.getString(R.string.error_enter_address)
+                binding.tilServerAddress.error = getString(R.string.error_enter_address_server)
                 return@setOnClickListener
             }
 
-            val baseUrl = "http://$input/api/Android/"
-
             lifecycleScope.launch {
+                binding.btnSave.isEnabled = false
+                binding.tilServerAddress.error = null
+
+                val baseUrl = BaseUrlValidator.buildBaseUrl(input)
+                if (baseUrl == null) {
+                    binding.tilServerAddress.error =
+                        getString(R.string.error_could_not_connect_server)
+                    binding.btnSave.isEnabled = true
+                    return@launch
+                }
+
                 userPreferences.saveBaseUrl(baseUrl)
                 dismiss()
             }
         }
 
-
-        binding.btnCancel.setOnClickListener {
-            dismiss()
-        }
+        binding.btnCancel.setOnClickListener { dismiss() }
 
         return binding.root
     }
@@ -59,5 +79,20 @@ class ServerAddressDialog(
         val width = (resources.displayMetrics.widthPixels * 0.85).toInt()
         dialog?.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
+
+    // استخراج IP و پورت از آدرس کامل
+    private fun extractHostAndPort(fullUrl: String): String {
+        return try {
+            val uri = fullUrl.toHttpUrl()
+            if (uri.port == 80 || uri.port == 443) {
+                uri.host
+            } else {
+                "${uri.host}:${uri.port}"
+            }
+        } catch (e: Exception) {
+            ""
+        }
+    }
 }
+
 

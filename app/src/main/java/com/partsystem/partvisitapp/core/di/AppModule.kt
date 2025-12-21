@@ -1,34 +1,49 @@
 package com.partsystem.partvisitapp.core.di
 
 import com.partsystem.partvisitapp.core.network.ApiService
-import com.partsystem.partvisitapp.core.utils.Constant
+import com.partsystem.partvisitapp.core.network.BaseUrlInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
-
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
     @Provides
-    fun provideCompositeDisposable(): CompositeDisposable = CompositeDisposable()
+    fun provideCompositeDisposable(): CompositeDisposable =
+        CompositeDisposable()
 
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit =
+    fun provideOkHttpClient(
+        baseUrlInterceptor: BaseUrlInterceptor
+    ): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(baseUrlInterceptor)
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient
+    ): Retrofit =
         Retrofit.Builder()
-            .baseUrl(Constant.BASE_URL)
+            .baseUrl("http://localhost/")
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService =
+    fun provideApiService(
+        retrofit: Retrofit
+    ): ApiService =
         retrofit.create(ApiService::class.java)
 }

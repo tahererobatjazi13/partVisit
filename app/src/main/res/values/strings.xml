@@ -122,8 +122,9 @@
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
 
     <!-- Errors -->
-    <string name="error_enter_address">آدرس را وارد کنید</string>
+    <string name="error_enter_address_server">آدرس سرور را وارد کنید</string>
     <string name="error_network_json_response">مشکل در دریافت اطلاعات از سرور</string>
+    <string name="error_could_not_connect_server">ارتباط با سرور برقرار نشد</string>
     <string name="error_network_internet">اتصال اینترنت برقرار نیست</string>
     <string name="error_not_found">موردی یافت نشد</string>
     <string name="error_bad_request">درخواست نادرست بود</string>
@@ -145,6 +146,7 @@
     <string name="error_visitor_not_assigned_account">ویزیتور به این حساب کاربری تخصیص داده نشده است</string>
     <string name="error_there_not_default_warehouse_sales_center">انبار پیش فرض برای این مرکز فروش وجود ندارد</string>
     <string name="error_sales_center_not_assigned_visitor">مرکز فروش به ویزیتور تخصیص داده نشده است</string>
+    <string name="error_configure_ip_domain_settings">ابتدا تنظیمات IP و دامنه را انجام دهید</string>
 
 
 </resources>

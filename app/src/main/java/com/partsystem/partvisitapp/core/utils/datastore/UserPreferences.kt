@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,12 +57,6 @@ class UserPreferences @Inject constructor(
         }
     }
 
-    suspend fun saveBaseUrl(baseUrl: String) {
-        context.dataStore.edit {
-            it[KEY_BASE_URL] = baseUrl
-        }
-    }
-
     val id: Flow<Int?> = context.dataStore.data
         .map { it[KEY_ID] }
 
@@ -84,10 +79,20 @@ class UserPreferences @Inject constructor(
     val controlVisitSchedule: Flow<Boolean?> = context.dataStore.data
         .map { it[KEY_CONTROL_VISIT_SCHEDULE] }
 
-    val baseUrlFlow: Flow<String?> = context.dataStore.data
-        .map { it[KEY_BASE_URL] }
-
     suspend fun clearUserInfo() {
         context.dataStore.edit { it.clear() }
+    }
+
+    val baseUrlFlow: Flow<String?> = context.settingsDataStore.data
+        .map { it[KEY_BASE_URL] }
+
+    suspend fun saveBaseUrl(baseUrl: String) {
+        context.settingsDataStore.edit {
+            it[KEY_BASE_URL] = baseUrl
+        }
+    }
+
+    suspend fun getBaseUrl(): String {
+        return baseUrlFlow.first() ?: "http://default/api/Android/"
     }
 }
