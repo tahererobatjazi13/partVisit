@@ -45,8 +45,10 @@ import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
 import com.partsystem.partvisitapp.feature.create_order.bottomSheet.CustomerListBottomSheet
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -84,6 +86,7 @@ class HeaderOrderFragment : Fragment() {
 
     private val args: HeaderOrderFragmentArgs by navArgs()
     private val persianDate: String = getTodayPersianDate()
+    private var hasLoadedEditData = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -99,19 +102,19 @@ class HeaderOrderFragment : Fragment() {
         setupSpinners()
         observeData()
 
-        if (!factorViewModel.enteredProductPage) {
-            // ورود اولیه
-            factorViewModel.resetHeader()
-        }
-        if (factorViewModel.factorHeader.value?.createDate == null) {
-            factorViewModel.setDefaultDates()
-        }
-
         if (isEditMode) {
             loadEditData()
         } else {
-            createNewHeader()
+            // حالت ایجاد جدید
+            if (!factorViewModel.enteredProductPage) {
+                factorViewModel.resetHeader()
+                if (factorViewModel.factorHeader.value?.createDate == null) {
+                    factorViewModel.setDefaultDates()
+                }
+                createNewHeader()
+            }
         }
+
         setupClicks()
         setWidth()
     }
@@ -225,9 +228,6 @@ class HeaderOrderFragment : Fragment() {
                         val selectedPattern = allPattern[position - 1]
                         factorViewModel.updateHeader(patternId = selectedPattern.id)
 
-                        // val selectedPattern = allPattern.getOrNull(position - 1) ?: return
-                        // factorViewModel.factorHeader.value?.patternId = selectedPattern.id
-
                         // load product ActId
                         headerOrderViewModel.loadProductActId(selectedPattern.id)
 
@@ -237,7 +237,6 @@ class HeaderOrderFragment : Fragment() {
                             actKind = ActKind.Product.ordinal
                         )
                         fillPaymentType(selectedPattern)
-
                     }
 
                     override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -259,8 +258,6 @@ class HeaderOrderFragment : Fragment() {
                                 val act = allAct[position - 1]
                                 factorViewModel.updateHeader(actId = act.id)
                                 Log.d("factorHeaderctId1", act.id!!.toString())
-
-                                // fillPaymentType()
                             }
 
                             position == 0 -> {
@@ -282,7 +279,7 @@ class HeaderOrderFragment : Fragment() {
 
             val current = factorViewModel.factorHeader.value
 
-            // فقط اگر هدر واقعاً جدید است
+            //  اگر هدر  جدید است
             if (current?.uniqueId == null) {
 
                 saleCenterId = userPreferences.saleCenterId.first() ?: 0
@@ -385,7 +382,7 @@ class HeaderOrderFragment : Fragment() {
 
             binding.spPattern.adapter =
                 SpinnerAdapter(requireContext(), items)
-            // مقدار انتخاب‌شده را ست کن
+
             factorViewModel.factorHeader.value?.patternId?.let { id ->
                 binding.spPattern.setSelectionById(id, allPattern) { it.id }
             }
@@ -427,7 +424,7 @@ class HeaderOrderFragment : Fragment() {
         }
         if (!args.typeCustomer) {
             customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
-                if (isEditMode) return@observe // در حالت ویرایش، این قسمت اجرا نشود
+                if (isEditMode) return@observe // در حالت ویرایش،این قسمت اجرا نشود
 
                 if (customers.isNotEmpty()) {
                     val first = customers.first()
@@ -457,8 +454,6 @@ class HeaderOrderFragment : Fragment() {
                 }
                 // در حالت ویرایش
                 if (isEditMode) {
-                    Log.d("isEditModeinvoiceCategoryId", "ok")
-
                     editingHeader?.invoiceCategoryId?.let { id ->
                         binding.spInvoiceCategory.setSelectionById(
                             id = id,
@@ -482,9 +477,6 @@ class HeaderOrderFragment : Fragment() {
         headerOrderViewModel.acts.observe(viewLifecycleOwner) { acts ->
             allAct.clear()
             allAct.addAll(acts)
-
-            Log.d("factorHeaderctId2", acts.toString())
-            Log.d("factorHeaderctId2", acts.toString())
             updateActSpinner()
         }
 
@@ -509,8 +501,6 @@ class HeaderOrderFragment : Fragment() {
                 SpinnerAdapter(requireContext(), items)
         }
 
-        //  fillPaymentType()
-
         binding.spPaymentType.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -527,30 +517,6 @@ class HeaderOrderFragment : Fragment() {
                     factorViewModel.updateHeader(settlementKind = 0)
                 }
             }
-
-        factorViewModel.headerId.observe(viewLifecycleOwner) { id ->
-            if (id == null) return@observe
-            factorViewModel.enteredProductPage = true
-
-            if (pendingNavigation == "catalog") {
-
-                val action =
-                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToProductListFragment(
-                        true, id
-                    )
-                findNavController().navigate(action)
-            } else if (pendingNavigation == "group") {
-                val action =
-                    HeaderOrderFragmentDirections.actionHeaderOrderFragmentToGroupProductFragment(
-                        true, id
-                    )
-                findNavController().navigate(action)
-            }
-
-            // جلوگیری از اجرای مجدد ناوبری
-            factorViewModel.headerId.value = null
-            pendingNavigation = ""
-        }
 
         // دریافت نتیجه اعتبارسنجی
         headerOrderViewModel.validationEvent.observe(viewLifecycleOwner) { event ->
@@ -686,7 +652,20 @@ class HeaderOrderFragment : Fragment() {
 
         binding.btnContinue.setOnClickBtnOneListener {
             factorViewModel.updateHeader(description = binding.etDescription.text.toString())
-            validateHeader()
+            if (factorViewModel.enteredProductPage) {
+                // به محصولات برگرد
+                val currentFactorId =
+                    factorViewModel.currentFactorId.value ?: return@setOnClickBtnOneListener
+                val action = HeaderOrderFragmentDirections
+                    .actionHeaderOrderFragmentToProductListFragment(
+                        fromFactor = true,
+                        factorId = currentFactorId.toInt()
+                    )
+                findNavController().navigate(action)
+            } else {
+                // اولین بار (اعتبارسنجی و نمایش دیالوگ)
+                validateHeader()
+            }
         }
 
         // ------------------------- Listen to Customer Selection -------------------------
@@ -727,14 +706,14 @@ class HeaderOrderFragment : Fragment() {
                             loadCustomerData(header.customerId!!, "")
                         }
                     }
-                // لود invoiceCategory (مشاهده‌گر برای انتخاب اسپینر)
+                // لود invoiceCategory
                 header.invoiceCategoryId?.let { _ ->
                     // لود کردن لیست invoiceCategory برای اسپینر
                     headerOrderViewModel.getInvoiceCategory(userId)
                         .observe(viewLifecycleOwner, object :
                             Observer<List<InvoiceCategoryEntity>> {
                             override fun onChanged(list: List<InvoiceCategoryEntity>) {
-                                // فقط یک‌بار اجرا شود
+
                                 headerOrderViewModel.getInvoiceCategory(userId).removeObserver(this)
 
                                 allInvoiceCategory.clear()
@@ -799,50 +778,7 @@ class HeaderOrderFragment : Fragment() {
         if (position >= 0) setSelection(position + 1)
     }
 
-
-    /*
-        private fun fillPaymentType() {
-            allPaymentType.clear()
-            // ابتدا تمام موارد را اضافه کن
-            allPaymentType.add(KeyValue(0, "نقدی"))
-            allPaymentType.add(KeyValue(1, "نقدی در سررسید"))
-            allPaymentType.add(KeyValue(2, "نقد و اسناد"))
-            allPaymentType.add(KeyValue(3, "اسناد"))
-            allPaymentType.add(KeyValue(4, "اعتباری"))
-
-            val items = allPaymentType.map { it.name }.toMutableList()
-            binding.spPaymentType.adapter =
-                SpinnerAdapter(requireContext(), items)
-
-            if (factorViewModel.factorHeader.value!!.patternId != null) {
-                headerOrderViewModel.getPatternById(factorViewModel.factorHeader.value!!.patternId!!)
-
-            }
-            headerOrderViewModel.pattern.observe(viewLifecycleOwner) { pattern ->
-                if (pattern == null || pattern.hasCash) allPaymentType.add(KeyValue(0, "نقدی"))
-                if (pattern == null || pattern.hasMaturityCash) allPaymentType.add(
-                    KeyValue(
-                        1,
-                        "نقدی در سررسید"
-                    )
-                )
-                if (pattern == null || pattern.hasSanadAndCash) allPaymentType.add(
-                    KeyValue(
-                        2,
-                        "نقد و اسناد"
-                    )
-                )
-                if (pattern == null || pattern.hasSanad) allPaymentType.add(KeyValue(3, "اسناد"))
-                if (pattern == null || pattern.hasCredit) allPaymentType.add(
-                    KeyValue(
-                        4,
-                        "اعتباری"
-                    )
-                )
-            }
-        }
-    */
-// تابع جدید
+    // تابع جدید
     private fun fillPaymentType(pattern: PatternEntity?) {
         allPaymentType.clear()
         if (pattern == null || pattern.hasCash) allPaymentType.add(KeyValue(0, "نقدی"))
@@ -905,22 +841,70 @@ class HeaderOrderFragment : Fragment() {
 
     private fun showChooseDialog() {
         if (isBottomSheetShowing) return
-
         val dialog = BottomSheetChooseDialog.newInstance()
             .setTitle(R.string.label_choose)
             .addOption(R.string.label_product_catalog, R.drawable.ic_home_catalog) {
                 pendingNavigation = "catalog"
-                Log.d("factorHeader", factorViewModel.factorHeader.value!!.toString())
-                factorViewModel.createHeader(factorViewModel.factorHeader.value)
+                lifecycleScope.launch {
+                    val header = factorViewModel.factorHeader.value ?: return@launch
+
+                    var finalFactorId: Long
+
+                    //  اگر id معتبر دارد (یعنی قبلاً ذخیره شده) دوباره ذخیره نکن
+                    if (header.id != null && header.id > 0) {
+                        finalFactorId = header.id.toLong()
+                        // به‌روزرسانی
+                        factorViewModel.currentFactorId.postValue(finalFactorId)
+                    } else {
+                        // اولین بار است → ذخیره کن
+                        finalFactorId = factorViewModel.saveHeaderAndGetId(header)
+                        // به‌روزرسانی هدر در ViewModel با id جدید
+                        factorViewModel.factorHeader.postValue(
+                            header.copy(id = finalFactorId.toInt())
+                        )
+                        factorViewModel.currentFactorId.postValue(finalFactorId)
+                    }
+
+                    factorViewModel.enteredProductPage = true
+
+                    withContext(Dispatchers.Main) {
+                        val action = HeaderOrderFragmentDirections
+                            .actionHeaderOrderFragmentToProductListFragment(
+                                fromFactor = true,
+                                factorId = finalFactorId.toInt()
+                            )
+                        findNavController().navigate(action)
+                    }
+                }
             }
             .addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {
                 pendingNavigation = "group"
-                factorViewModel.createHeader(factorViewModel.factorHeader.value)
-            }
+                lifecycleScope.launch {
+                    val header = factorViewModel.factorHeader.value ?: return@launch
 
+                    var finalFactorId: Long
+
+                    if (header.id != null && header.id > 0) {
+                        finalFactorId = header.id.toLong()
+                        factorViewModel.currentFactorId.postValue(finalFactorId)
+                    } else {
+                        finalFactorId = factorViewModel.saveHeaderAndGetId(header)
+                        factorViewModel.factorHeader.postValue(header.copy(id = finalFactorId.toInt()))
+                        factorViewModel.currentFactorId.postValue(finalFactorId)
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        val action = HeaderOrderFragmentDirections
+                            .actionHeaderOrderFragmentToGroupProductFragment(
+                                fromFactor = true,
+                                factorId = finalFactorId.toInt()
+                            )
+                        findNavController().navigate(action)
+                    }
+                }
+            }
         dialog.show(childFragmentManager, "chooseDialog")
         isBottomSheetShowing = true
-
         dialog.setOnDismissListener {
             isBottomSheetShowing = false
         }
@@ -968,14 +952,20 @@ class HeaderOrderFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        val navController = findNavController()
-        val isGoingToProduct =
-            navController.currentDestination?.id ==
-                    R.id.productListFragment
-
-        if (!isGoingToProduct) {
-            factorViewModel.resetHeader()
-            factorViewModel.enteredProductPage = false
+        if (!isEditMode) {
+            val navController = findNavController()
+            val isGoingToHome = navController.currentDestination?.id == R.id.homeFragment
+            val isGoingToAnyNonOrderScreen = navController.currentDestination?.id !in listOf(
+                R.id.headerOrderFragment,
+                R.id.productListFragment,
+                R.id.groupProductFragment,
+                R.id.orderFragment
+            )
+            if (isGoingToHome || isGoingToAnyNonOrderScreen) {
+                factorViewModel.resetHeader()
+                factorViewModel.enteredProductPage = false
+            }
         }
+        _binding = null
     }
 }

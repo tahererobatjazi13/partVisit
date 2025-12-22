@@ -7,7 +7,9 @@ import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.FinalFactorRequest
 import com.partsystem.partvisitapp.core.network.ApiService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FactorRepository @Inject constructor(
@@ -23,7 +25,6 @@ class FactorRepository @Inject constructor(
 
     suspend fun deleteFactorDetail(productId: Int) =
         factorDao.deleteFactorDetail(productId)
-
 
     /*   suspend fun insertOrUpdateFactorDetail(details: List<FactorDetailEntity>) {
            if (details.id == null) {
@@ -43,11 +44,12 @@ class FactorRepository @Inject constructor(
 
 
     // DB ops
-
-     fun saveFactorHeader(header: FactorHeaderEntity): Long =
-        factorDao.insertFactorHeader(header)
-
-
+    suspend fun saveFactorHeader(header: FactorHeaderEntity): Long {
+        return factorDao.insertFactorHeader(header) // بدون withContext
+    }
+    suspend fun updateFactorHeader(header: FactorHeaderEntity) {
+        factorDao.updateFactorHeader(header)
+    }
     fun getAllHeaders(): LiveData<List<FactorHeaderEntity>> =
         factorDao.getAllHeaders()
 

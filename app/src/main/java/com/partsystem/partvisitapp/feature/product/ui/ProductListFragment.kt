@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +25,7 @@ import com.partsystem.partvisitapp.databinding.FragmentProductListBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
@@ -56,9 +58,9 @@ class ProductListFragment : Fragment() {
         observeData()
         setupSearch()
         observeCartBadge()
-        Log.d("factorHeaderargs", args.factorId.toString())
+
         if (args.fromFactor) {
-            observeCartData() // کلید موفقیت!
+            observeCartData()
         }
     }
 
@@ -66,6 +68,7 @@ class ProductListFragment : Fragment() {
         binding.hfProduct.isShowImgOne = args.fromFactor
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupClicks() {
         binding.apply {
 
@@ -115,21 +118,35 @@ class ProductListFragment : Fragment() {
                 false
             }
         }
-
     }
 
     private fun initAdapter() {
-
-        productListAdapter = ProductListAdapter(factorViewModel,
-            fromFactor = args.fromFactor,factorId = args.factorId,
+        productListAdapter = ProductListAdapter(
+            factorViewModel = factorViewModel,
+            fromFactor = args.fromFactor,
+            factorId = args.factorId,
             onProductChanged = { item ->
-                factorViewModel.addOrUpdateFactorDetail(item)
+                val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+                if (validFactorId <= 0) {
+                    Log.e("ProductList", "Invalid factorId: cannot save detail")
+                    return@ProductListAdapter
+                }
+
+                factorViewModel.updateHeader(hasDetail = true)
+
+                lifecycleScope.launch {
+                    val updatedHeader = factorViewModel.factorHeader.value?.copy(hasDetail = true)
+                    updatedHeader?.let {
+                        factorViewModel.updateFactorHeader(it)
+                    }
+                }
+                val updatedItem = item.copy(factorId = validFactorId.toInt())
+                factorViewModel.addOrUpdateFactorDetail(updatedItem)
             },
+
             onClick = { product ->
                 val action = ProductListFragmentDirections
-                    .actionProductListFragmentToProductDetailFragment(
-                        productId = product.id
-                    )
+                    .actionProductListFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
             }
         )
@@ -142,9 +159,13 @@ class ProductListFragment : Fragment() {
             adapter = productListAdapter
         }
     }
-    //  تابع جدید: observe مقادیر فعلی سبد خرید
+
     private fun observeCartData() {
-        factorViewModel.getFactorDetails(args.factorId)
+        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        if (validFactorId <= 0) return
+
+        Log.d("validFactorId", validFactorId.toString())
+        factorViewModel.getFactorDetails(validFactorId.toInt())
             .observe(viewLifecycleOwner) { details ->
                 val values = details.associate { detail ->
                     detail.productId!! to Pair(detail.unit1Value, detail.packingValue)
@@ -152,8 +173,8 @@ class ProductListFragment : Fragment() {
                 productListAdapter.updateProductValues(values)
             }
     }
-    private fun observeData() {
 
+    private fun observeData() {
         if (args.fromFactor) {
             productViewModel.loadProductsWithAct(
                 groupProductId = null,
@@ -223,16 +244,14 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartBadge() {
-  /*      factorViewModel.totalCount.observe(viewLifecycleOwner) { count ->
-            binding.hfProduct.isShowBadge = count > 0
-            binding.hfProduct.textBadge = count.toString()
-        }*/
-        factorViewModel.getFactorItemCount(args.factorId)
+        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        if (validFactorId <= 0) return
+
+        factorViewModel.getFactorItemCount(validFactorId.toInt())
             .observe(viewLifecycleOwner) { count ->
                 binding.hfProduct.isShowBadge = count > 0
                 binding.hfProduct.textBadge = count.toString()
             }
-
     }
 
     override fun onDestroyView() {

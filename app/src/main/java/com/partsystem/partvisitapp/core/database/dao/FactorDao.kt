@@ -59,12 +59,13 @@ interface FactorDao {
     // Header
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertFactorHeader(header: FactorHeaderEntity): Long
+    suspend fun insertFactorHeader(header: FactorHeaderEntity): Long
 
     @Query("SELECT * FROM factor_header_table WHERE id = :id LIMIT 1")
     fun getHeaderById(id: Int): LiveData<FactorHeaderEntity>
 
-
+    @Update
+    suspend fun updateFactorHeader(header: FactorHeaderEntity)
     @Update
     suspend fun updateHeader(header: FactorHeaderEntity)
 

@@ -20,7 +20,6 @@ import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
@@ -118,6 +117,7 @@ class FactorViewModel @Inject constructor(
         createDate: String? = null,
         dueDate: String? = null,
         deliveryDate: String? = null,
+        hasDetail: Boolean? = null
     ) {
 
         val current = factorHeader.value ?: FactorHeaderEntity()
@@ -134,7 +134,8 @@ class FactorViewModel @Inject constructor(
             description = description ?: current.description,
             createDate = createDate ?: current.createDate,
             dueDate = dueDate ?: current.dueDate,
-            deliveryDate = deliveryDate ?: current.deliveryDate
+            deliveryDate = deliveryDate ?: current.deliveryDate,
+            hasDetail = hasDetail ?: current.hasDetail
         )
 
     }
@@ -166,6 +167,9 @@ class FactorViewModel @Inject constructor(
 
     suspend fun saveFactorHeader(header: FactorHeaderEntity) =
         factorRepository.saveFactorHeader(header)
+
+    suspend fun updateFactorHeader(header: FactorHeaderEntity) =
+        factorRepository.updateFactorHeader(header)
 
     private val _selectedProducts =
         MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
@@ -244,16 +248,11 @@ class FactorViewModel @Inject constructor(
     private val _gifts = MutableLiveData<List<FactorGiftInfoEntity>>(emptyList())
     val gifts: LiveData<List<FactorGiftInfoEntity>> = _gifts
 
-
+    val currentFactorId = MutableLiveData<Long>(0L)
     val headerId = MutableLiveData<Int?>()
 
-    fun createHeader(header: FactorHeaderEntity?) {
-        if (header == null) return
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val id = factorRepository.saveFactorHeader(header).toInt()
-            headerId.postValue(id)
-        }
+    suspend fun saveHeaderAndGetId(header: FactorHeaderEntity): Long {
+        return factorRepository.saveFactorHeader(header)
     }
 
     fun getHeaderById(id: Int): LiveData<FactorHeaderEntity> =
