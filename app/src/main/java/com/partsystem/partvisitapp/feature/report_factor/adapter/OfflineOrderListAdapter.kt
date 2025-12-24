@@ -13,6 +13,7 @@ import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemOrderListBinding
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.create_order.ui.HeaderOrderViewModel
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import java.text.DecimalFormat
@@ -21,6 +22,7 @@ class OfflineOrderListAdapter(
     private val showSyncButton: Boolean = false,
     private val customerViewModel: CustomerViewModel,
     private val headerOrderViewModel: HeaderOrderViewModel,
+    private val factorViewModel: FactorViewModel,
     private val onClick: (FactorHeaderEntity) -> Unit = {},
 ) : ListAdapter<FactorHeaderEntity, OfflineOrderListAdapter.OfflineOrderListViewHolder>(
     OfflineOrderListDiffCallback()
@@ -48,9 +50,12 @@ class OfflineOrderListAdapter(
                     binding.tvPatternName.text = item.name
                 }
             }
-
+            // 🔹 جمع کل قیمت
+            factorViewModel.getTotalPriceForHeader(item.id).observeForever { total ->
+                tvFinalPrice.text = formatter.format(total) + " ریال"
+            }
             tvDateTime.text = item.persianDate + " _ " + item.createTime
-            tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
+          //  tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             root.setOnClickListener { onClick(item) }
             if (showSyncButton && item.hasDetail) {
                 tvSyncOrder.show()

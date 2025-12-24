@@ -1,12 +1,15 @@
 package com.partsystem.partvisitapp.feature.create_order.repository
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.FinalFactorRequest
+import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.network.ApiService
+import com.partsystem.partvisitapp.core.network.modelDto.FactorDetailOfflineModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -50,8 +53,8 @@ class FactorRepository @Inject constructor(
     suspend fun updateFactorHeader(header: FactorHeaderEntity) {
         factorDao.updateFactorHeader(header)
     }
-    fun getAllHeaders(): LiveData<List<FactorHeaderEntity>> =
-        factorDao.getAllHeaders()
+
+    fun getAllHeaders(): Flow<List<FactorHeaderEntity>> = factorDao.getAllHeaders()
 
     suspend fun updateHeader(header: FactorHeaderEntity) = factorDao.updateHeader(header)
 
@@ -100,6 +103,8 @@ class FactorRepository @Inject constructor(
     suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
 
 
+    fun getFactorDetailsOffline(factorId: Int): LiveData<List<FactorDetailOfflineModel>> =
+        factorDao.getFactorDetailUi(factorId).asLiveData()
 
 
 }

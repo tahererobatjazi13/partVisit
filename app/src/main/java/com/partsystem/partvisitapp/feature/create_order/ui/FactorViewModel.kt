@@ -12,20 +12,23 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
+import com.partsystem.partvisitapp.core.network.modelDto.FactorDetailOfflineModel
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.CalculateDiscount
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
     private val factorRepository: FactorRepository,
     val productRepository: ProductRepository,
-    ) : ViewModel() {
+) : ViewModel() {
 
     val factorHeader = MutableLiveData(FactorHeaderEntity())
     val factorDetails = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
@@ -259,12 +262,33 @@ class FactorViewModel @Inject constructor(
         factorRepository.getHeaderById(id)
 
 
-    val allHeaders: LiveData<List<FactorHeaderEntity>>
+    private val _allHeaders = MutableLiveData<List<FactorHeaderEntity>>()
+
+    // لیست فیلترشده
+    private val _filteredHeaders = MutableLiveData<List<FactorHeaderEntity>>()
+    val filteredHeaders: LiveData<List<FactorHeaderEntity>> get() = _filteredHeaders
 
     init {
-        //  val db = AppDatabase.getInstance(application)
-        // repository = FactorHeaderRepository(db.factorHeaderDao())
-        allHeaders = factorRepository.getAllHeaders()
+        // جمع‌آوری لیست محصولات از Room و مقداردهی اولیه
+        viewModelScope.launch {
+            factorRepository.getAllHeaders().collectLatest { list ->
+                _allHeaders.value = list
+                _filteredHeaders.value = list
+            }
+        }
+    }
+    // فیلتر کردن محصولات بر اساس query
+    fun filterHeaders(query: String) {
+        val list = _allHeaders.value ?: emptyList()
+        _filteredHeaders.value = if (query.isEmpty()) {
+            list
+        } else {
+           // list.filter { it.id?.equals(query, ignoreCase = true) == true }
+            list.filter {
+                it.id.toString().contains(query)
+                        //|| it.customerName.contains(query, ignoreCase = true)
+            }
+        }
     }
 
     // current draft uniqueId
@@ -450,6 +474,9 @@ class FactorViewModel @Inject constructor(
         }
     }
 
+    fun getFactorDetailsOffline(factorId: Int): LiveData<List<FactorDetailOfflineModel>> =
+        factorRepository.getFactorDetailsOffline(factorId)
+
     fun clearCart(factorId: Int) {
         viewModelScope.launch {
             factorRepository.clearFactor(factorId)
@@ -524,5 +551,21 @@ class FactorViewModel @Inject constructor(
             d("factorViewModelupdated", updated.toString())
             factorRepository.insertOrUpdateFactorDetail(updated)
         }
+
     }
+
+
+    val productInputCache =
+        mutableMapOf<Int, Pair<Double, Double>>()
+
+
+    fun getTotalPriceForHeader(factorId: Int): LiveData<Double> {
+        val result = MutableLiveData<Double>()
+        getFactorDetailsOffline(factorId).observeForever { details ->
+            val total = details.sumOf { it.unit1Rate * it.unit1Value }
+            result.value = total
+        }
+        return result
+    }
+
 }

@@ -47,7 +47,7 @@
         android:label="OfflineOrderDetailFragment"
         tools:layout="@layout/fragment_order_detail">
         <argument
-            android:name="id"
+            android:name="factorId"
             app:argType="integer" />
 
     </fragment>

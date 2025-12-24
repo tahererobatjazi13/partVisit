@@ -13,16 +13,12 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
-import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemProductBinding
 import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 import java.text.DecimalFormat
 
@@ -584,13 +580,13 @@ class ProductListAdapter(
     private var productWithAct: List<ProductWithPacking> = emptyList()
     private var imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()
     private var useModel = false
-    private var productValues: Map<Int, Pair<Double, Double>> = emptyMap() // productId → (unit1, packing)
-    // متد جدید برای به‌روزرسانی مقادیر
+    private var productValues: Map<Int, Pair<Double, Double>> =
+        emptyMap() // productId → (unit1, packing)
+
     fun updateProductValues(values: Map<Int, Pair<Double, Double>>) {
         this.productValues = values
-        // ❌ هیچ notify اینجا نزن
+        notifyDataSetChanged()
     }
-
 
     fun setProductData(
         list: List<ProductEntity>,
@@ -641,15 +637,25 @@ class ProductListAdapter(
         private var watcherPacking: TextWatcher? = null
 
         fun bind(product: ProductEntity, images: List<ProductImageEntity>) = with(binding) {
-            // حالت بدون packing
             tvNameProduct.text = "${bindingAdapterPosition + 1}_  ${product.name ?: ""}"
             tvUnitName.text = product.unitName ?: ""
-            // ... تصاویر و سایر تنظیمات
             llPrice.gone()
             cvProductPacking.gone()
             clAmount.gone()
+
+            if (!images.isNullOrEmpty()) {
+                val localPath = images.first().localPath
+                Glide.with(ivProduct.context)
+                    .load(File(localPath))
+                    .placeholder(R.drawable.ic_placeholder)
+                    .error(R.drawable.ic_placeholder)
+                    .into(ivProduct)
+            } else {
+                ivProduct.setImageResource(R.drawable.ic_placeholder)
+            }
             root.setOnClickListener { onClick(product) }
         }
+
 
         fun bind(product: ProductWithPacking, images: List<ProductImageEntity>) = with(binding) {
             currentProduct = product
@@ -663,7 +669,6 @@ class ProductListAdapter(
             tvNameProduct.text = "${bindingAdapterPosition + 1}_  ${product.product.name ?: ""}"
             tvPrice.text = "قیمت: ${formatter.format(product.finalRate)} ریال"
 
-            // تصاویر
             if (images.isNotEmpty()) {
                 Glide.with(ivProduct.context)
                     .load(File(images.first().localPath))
@@ -679,50 +684,64 @@ class ProductListAdapter(
             setupSpinner(product)
         }
 
+
         private fun setupInputs(product: ProductWithPacking) {
 
             watcherUnit1?.let { binding.etUnit1Value.removeTextChangedListener(it) }
             watcherPacking?.let { binding.etPackingValue.removeTextChangedListener(it) }
+            val savedValues = this@ProductListAdapter.productValues[product.product.id]
 
-            val wasSaved = productValues.containsKey(product.product.id)
-            val savedValues = productValues[product.product.id]
-
-            // === unit1 === همیشه مقدار دارد
             val unit1 = savedValues?.first ?: 0.0
             binding.etUnit1Value.setText(
                 if (unit1 % 1 == 0.0) unit1.toInt().toString() else unit1.toString()
             )
 
-            // === packing === فقط اگر قبلاً ذخیره شده مقدار بده
-            if (wasSaved && savedValues != null && savedValues.second > 0.0) {
-                val packing = savedValues.second
+            val packing = savedValues?.second ?: 0.0
+            if (packing > 0) {
                 binding.etPackingValue.setText(
                     if (packing % 1 == 0.0) packing.toInt().toString() else packing.toString()
                 )
             } else {
-                binding.etPackingValue.text = null // 👈 خالی بماند
+                binding.etPackingValue.text = null
             }
 
             watcherUnit1 = object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) { notifyChange() }
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun afterTextChanged(s: Editable?) {
+                    notifyChange()
+                }
+
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             }
 
             watcherPacking = object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) { notifyChange() }
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun afterTextChanged(s: Editable?) {
+                    notifyChange()
+                }
+
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             }
 
             binding.etUnit1Value.addTextChangedListener(watcherUnit1)
             binding.etPackingValue.addTextChangedListener(watcherPacking)
         }
+
         private fun setupButtons() {
-       /*     binding.ivMax.setOnClickListener {
-                val current = binding.etUnit1Value.text.toString().toIntOrNull() ?: 0
-                binding.etUnit1Value.setText((current + 1).toString())
-            }*/
 
             binding.ivMax.setOnClickListener {
                 val current = binding.etUnit1Value.text.toString().toIntOrNull() ?: 0
@@ -765,31 +784,45 @@ class ProductListAdapter(
         private fun notifyChange() {
             val product = currentProduct ?: return
             val packing =
-                product.packings.getOrNull(binding.spProductPacking.selectedItemPosition) ?: return
+                product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
 
-            val unit1Value = binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
+            val inputUnit1 =
+                binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
 
-            val packingText = binding.etPackingValue.text.toString()
-            val packingValue =
-                if (packingText.isBlank()) 0.0 else packingText.toDoubleOrNull() ?: 0.0
+            val inputPacking =
+                binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+
+            //  محاسبه نهایی
+            var finalUnit1 = inputUnit1
+            if (packing != null && inputPacking > 0) {
+                finalUnit1 += inputPacking * packing.unit1Value
+            }
 
             val detail = FactorDetailEntity(
                 factorId = factorId,
                 sortCode = bindingAdapterPosition,
                 productId = product.product.id,
-                anbarId = factorViewModel.factorHeader.value?.defaultAnbarId!!,
-                actId = factorViewModel.factorHeader.value?.actId!!,
-                unit1Value = unit1Value,     // همیشه دارد (۰ یا بیشتر)
+                anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
+                actId = factorViewModel.factorHeader.value?.actId,
+
+                // مقدار نهایی
+                unit1Value = finalUnit1,
+
+                //  packing فقط جهت نمایش
+                packingValue = inputPacking,
+
                 unit2Value = 0.0,
                 price = product.finalRate,
-                packingId = packing.packingId,
-                packingValue = packingValue, // اگر خالی بود → صفر
-                vat = 0.0
+                packingId = packing?.packingId,
+                vat = 0.0,
+                unit1Rate = product.finalRate
             )
+            Log.d("finalRate", product.finalRate.toString())
+            factorViewModel.productInputCache[product.product.id] =
+                Pair(inputUnit1, inputPacking)
 
             detail.applyProduct(product)
             detail.applyPacking(packing)
-            detail.repository = factorViewModel.productRepository
 
             onProductChanged(detail)
         }

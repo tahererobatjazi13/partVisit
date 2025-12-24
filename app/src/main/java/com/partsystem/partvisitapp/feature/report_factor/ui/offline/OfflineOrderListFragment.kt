@@ -1,16 +1,17 @@
 package com.partsystem.partvisitapp.feature.report_factor.ui.offline
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.R
@@ -24,6 +25,7 @@ import com.partsystem.partvisitapp.feature.create_order.ui.HeaderOrderViewModel
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import com.partsystem.partvisitapp.feature.report_factor.adapter.OfflineOrderListAdapter
 
+@SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
 class OfflineOrderListFragment : Fragment() {
 
@@ -34,6 +36,9 @@ class OfflineOrderListFragment : Fragment() {
     private val factorViewModel: FactorViewModel by viewModels()
     private val customerViewModel: CustomerViewModel by viewModels()
     private val headerOrderViewModel: HeaderOrderViewModel by viewModels()
+
+    private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
+    private val clearIcon by lazy { requireContext().getDrawable(R.drawable.ic_clear) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,6 +53,7 @@ class OfflineOrderListFragment : Fragment() {
         setupClicks()
         initAdapter()
         observeData()
+        setupSearch()
         customDialog = CustomDialog.instance
     }
 
@@ -58,7 +64,7 @@ class OfflineOrderListFragment : Fragment() {
 
             offlineOrderListAdapter = OfflineOrderListAdapter(
                 showSyncButton = true, customerViewModel,
-                headerOrderViewModel
+                headerOrderViewModel, factorViewModel
             ) { factors ->
                 if (factors.hasDetail) {
                     val action =
@@ -83,7 +89,7 @@ class OfflineOrderListFragment : Fragment() {
     }
 
     private fun observeData() {
-        factorViewModel.allHeaders.observe(viewLifecycleOwner) { headers ->
+        factorViewModel.filteredHeaders.observe(viewLifecycleOwner) { headers ->
             if (headers.isNullOrEmpty()) {
                 binding.info.show()
                 binding.info.message(getString(R.string.msg_no_data))
@@ -94,27 +100,73 @@ class OfflineOrderListFragment : Fragment() {
                 binding.rvOrderList.show()
                 offlineOrderListAdapter.setData(headers)
 
-                if (headers.size > 2) {
-                    binding.btnSyncAllOrder.show()
-                } else {
-                    binding.btnSyncAllOrder.gone()
-                }
+                binding.btnSyncAllOrder.visibility =
+                    if (headers.size > 2) View.VISIBLE else View.GONE
             }
         }
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupClicks() {
-        binding.btnSyncAllOrder.setOnClickBtnOneListener {
-            customDialog?.showDialog(
-                activity,
-                getString(R.string.msg_sure_send_orders),
-                true,
-                getString(R.string.label_no),
-                getString(R.string.label_ok),
-                true,
-                true
-            )
+        binding.apply {
+
+            btnSyncAllOrder.setOnClickBtnOneListener {
+                customDialog?.showDialog(
+                    activity,
+                    getString(R.string.msg_sure_send_orders),
+                    true,
+                    getString(R.string.label_no),
+                    getString(R.string.label_ok),
+                    true,
+                    true
+                )
+            }
+
+
+            etSearch.addTextChangedListener { editable ->
+                val query = editable.toString()
+                if (query.isNotEmpty()) {
+                    // نمایش ضربدر و جستجو
+                    binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        null,
+                        null,
+                        clearIcon,
+                        null
+                    )
+                } else {
+                    // فقط جستجو، بدون ضربدر
+                    binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        null,
+                        null,
+                        searchIcon,
+                        null
+                    )
+                }
+            }
+
+            // پاک کردن جستجو با لمس آیکون ضربدر
+            etSearch.setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    val drawableEnd = binding.etSearch.compoundDrawablesRelative[2] // drawableEnd
+                    drawableEnd?.let {
+                        val touchAreaStart =
+                            binding.etSearch.width - binding.etSearch.paddingEnd - it.intrinsicWidth
+                        if (event.rawX >= touchAreaStart) {
+                            binding.etSearch.text?.clear()
+                            return@setOnTouchListener true
+                        }
+                    }
+                }
+                false
+            }
+        }
+    }
+
+    private fun setupSearch() {
+        binding.etSearch.addTextChangedListener { editable ->
+            val query = editable.toString()
+            factorViewModel.filterHeaders(query)
         }
     }
 

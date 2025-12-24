@@ -17,13 +17,13 @@ import com.partsystem.partvisitapp.core.utils.getColorFromAttr
 import com.partsystem.partvisitapp.databinding.ItemOrderDetailBinding
 import java.text.DecimalFormat
 
-class OrderDetailAdapter :
-    ListAdapter<ReportFactorDto, OrderDetailAdapter.OrderDetailViewHolder>(
-        OrderDetailDiffCallback()
+class OnlineOrderDetailAdapter :
+    ListAdapter<ReportFactorDto, OnlineOrderDetailAdapter.OnlineOrderDetailViewHolder>(
+        OnlineOrderDetailDiffCallback()
     ) {
     private val formatter = DecimalFormat("#,###,###,###")
 
-    inner class OrderDetailViewHolder(val binding: ItemOrderDetailBinding) :
+    inner class OnlineOrderDetailViewHolder(val binding: ItemOrderDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         @SuppressLint("SetTextI18n")
@@ -90,17 +90,17 @@ class OrderDetailAdapter :
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): OrderDetailViewHolder {
+    ): OnlineOrderDetailViewHolder {
         val binding =
             ItemOrderDetailBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
             )
-        return OrderDetailViewHolder(binding)
+        return OnlineOrderDetailViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: OrderDetailViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: OnlineOrderDetailViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
@@ -109,7 +109,7 @@ class OrderDetailAdapter :
     }
 }
 
-class OrderDetailDiffCallback : DiffUtil.ItemCallback<ReportFactorDto>() {
+class OnlineOrderDetailDiffCallback : DiffUtil.ItemCallback<ReportFactorDto>() {
     override fun areItemsTheSame(oldItem: ReportFactorDto, newItem: ReportFactorDto): Boolean {
         return oldItem.id == newItem.id
     }

@@ -12,17 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.R
-import com.partsystem.partvisitapp.core.database.entity.Discount
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
-import com.partsystem.partvisitapp.core.utils.extensions.clean
-import com.partsystem.partvisitapp.core.utils.extensions.gone
-import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.databinding.DialogSelectDiscountBinding
 import com.partsystem.partvisitapp.databinding.ItemOrderBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -250,7 +244,7 @@ class OrderAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
-            // 🔥 محاسبه دقیق مثل جاوا
+            // محاسبه دقیق مثل جاوا
             CoroutineScope(Dispatchers.IO).launch {
                 // packing را resolve کن
                 item.resolvePacking()
@@ -261,7 +255,9 @@ class OrderAdapter(
                     item.applyProduct(product!!)
                 }
 
-                val packing = item.resolvePacking()
+
+
+              /*  val packing = item.resolvePacking()
                 if (packing != null) {
                     var finalUnit1 = item.unit1Value
                     // اگر packingValue > 0 → از روی آن محاسبه کن
@@ -273,9 +269,9 @@ class OrderAdapter(
                         }
                     }
                     item.unit1Value = finalUnit1
-                }
+                }*/
 
-                if (item.isGift == 0) {
+          /*      if (item.isGift == 0) {
                     binding.root.setBackgroundColor(
                         ContextCompat.getColor(
                             binding.root.context,
@@ -289,15 +285,19 @@ class OrderAdapter(
                             R.color.transparent
                         )
                     )
-                }
+                }*/
 
                 withContext(Dispatchers.Main) {
                     // نمایش نام محصول
                     tvName.text = item.productName ?: ""
                     tvProductPacking.text = item.packingName
 
+
+                     // مقدار نهایی که ذخیره شده
+                    val displayUnit1 = item.unit1Value
+
                     // نمایش unit1Value بدون اعشار اضافه
-                    val unit1Text = if (item.unit1Value % 1 == 0.0) {
+                    val unit1Text = if (displayUnit1 % 1 == 0.0) {
                         item.unit1Value.toInt().toString()
                     } else {
                         item.unit1Value.toString()

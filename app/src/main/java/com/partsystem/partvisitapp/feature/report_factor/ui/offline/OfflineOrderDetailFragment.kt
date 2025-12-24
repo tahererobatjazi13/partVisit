@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -13,24 +14,29 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.databinding.FragmentOrderDetailBinding
-import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderDetailAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.network.modelDto.FactorDetailOfflineModel
 import com.partsystem.partvisitapp.core.utils.OrderType
+import com.partsystem.partvisitapp.core.utils.extensions.gregorianToPersian
+import com.partsystem.partvisitapp.core.utils.extensions.hide
+import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
+import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
+import com.partsystem.partvisitapp.feature.report_factor.adapter.OfflineOrderDetailAdapter
 
 @AndroidEntryPoint
 class OfflineOrderDetailFragment : Fragment() {
 
     private var _binding: FragmentOrderDetailBinding? = null
     private val binding get() = _binding!!
-    private lateinit var orderDetailAdapter: OrderDetailAdapter
+    private lateinit var offlineOrderDetailAdapter: OfflineOrderDetailAdapter
     private val formatter = DecimalFormat("#,###,###,###")
     private val args: OfflineOrderDetailFragmentArgs by navArgs()
-
-    // private val viewModel: OrderListViewModel by viewModels()
-    private val fakeOrders = mutableListOf<ReportFactorDto>()
-
+    private val factorViewModel: FactorViewModel by viewModels()
+    private val customerViewModel: CustomerViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,73 +50,8 @@ class OfflineOrderDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
         rxBinding()
-        // setupObserver()
-        initAdapterFake()
+        setupObserver()
     }
-
-    private fun initAdapterFake() {
-        fakeOrders.clear()
-
-        // داده‌های فیک
-        fakeOrders.add(
-            ReportFactorDto(
-                1,
-                2,
-                3,
-                "13/08/1404",
-                "07:25",
-                1,
-                "", 1,
-                "زهرا احمدی", 2, "طرح فروش",
-                12000.0,
-                120.0,
-                123.0,
-                152000.0,
-                1,
-                "", 1,
-                "ماست خامه ای", 2, "سطل",
-                2.0, 1.0,
-                2.0, 2, "بسته", 200.0, 1400.2,
-                200.0, 100.0,
-                2000.0, 2000.0
-            )
-        )
-        fakeOrders.add(
-            ReportFactorDto(
-                2,
-                2,
-                3,
-                "13/08/1404",
-                "07:25",
-                1,
-                "", 1,
-                "احمد رسولی", 2, "طرح فروش",
-                12000.0,
-                120.0,
-                123.0,
-                412000.0,
-                1,
-                "", 1,
-                "شیر لبنی", 2, "بسته",
-                2.0, 1.0,
-                200.0, 2, "کارتن", 200.0, 1400.2,
-                200.0, 100.0,
-                2000.0, 200.0
-            )
-        )
-
-
-        binding.rvOrderDetail.apply {
-            layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-
-            orderDetailAdapter = OrderDetailAdapter()
-            adapter = orderDetailAdapter
-            orderDetailAdapter.submitList(fakeOrders)
-
-        }
-    }
-
 
     private fun rxBinding() {
         binding.apply {
@@ -125,7 +66,8 @@ class OfflineOrderDetailFragment : Fragment() {
                     "typeCustomer" to true,
                     "typeOrder" to OrderType.Edit.value,
                     "customerId" to 0,
-                    "customerName" to ""
+                    "customerName" to "",
+                    "factorId" to args.factorId
                 )
 
                 val navController = requireActivity().findNavController(R.id.mainNavHost)
@@ -134,19 +76,61 @@ class OfflineOrderDetailFragment : Fragment() {
         }
     }
 
-
     private fun initAdapter() {
-        orderDetailAdapter = OrderDetailAdapter()
         binding.rvOrderDetail.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = orderDetailAdapter
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            offlineOrderDetailAdapter = OfflineOrderDetailAdapter()
+            adapter = offlineOrderDetailAdapter
         }
-        orderDetailAdapter.submitList(fakeOrders)
     }
 
+    private fun setupObserver() {
+        factorViewModel.getHeaderById(args.factorId)
+            .observe(viewLifecycleOwner) { header ->
+                binding.tvOrderNumber.text = args.factorId.toString()
+                // دریافت نام مشتری بر اساس ID
+                customerViewModel.getCustomerById(header.customerId!!)
+                    .observe(viewLifecycleOwner) { customer ->
+                        binding.tvCustomerName.text = customer.name
+                    }
+                binding.tvDateTime.text = gregorianToPersian(header.createDate.toString())
+            }
+
+        factorViewModel.getFactorDetailsOffline(factorId = args.factorId)
+            .observe(viewLifecycleOwner) { details ->
+
+                if (details.isNullOrEmpty()) {
+                    binding.info.show()
+                    binding.info.message(requireContext().getString(R.string.msg_no_data))
+                    binding.svMain.hide()
+                } else {
+                    binding.info.gone()
+                    binding.svMain.show()
+                }
+                offlineOrderDetailAdapter.submitList(details)
+
+                calculateTotalPrices(details)
+            }
+    }
+
+    private fun calculateTotalPrices(items: List<FactorDetailOfflineModel>?) {
+        items ?: return
+        val total = items.sumOf {
+            it.unit1Rate * it.unit1Value
+        }
+
+        with(binding) {
+            tvSumPrice.text = "${formatter.format(total)} ریال"
+            //  tvDiscountOrder.text = formatter.format(0) // جایگزین با مقدار واقعی
+            //  tvTotalDiscount.text = formatter.format(0) // جایگزین با مقدار واقعی
+            //  tvTotalPrice.text = formatter.format(total) + " ریال"
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
+

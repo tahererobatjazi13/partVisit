@@ -22,7 +22,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderListBinding
-import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderListAdapter
+import com.partsystem.partvisitapp.feature.report_factor.adapter.OnlineOrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -37,7 +37,7 @@ class OnlineOrderListFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: OnlineOrderListViewModel by viewModels()
 
-    private lateinit var orderListAdapter: OrderListAdapter
+    private lateinit var onlineOrderListAdapter: OnlineOrderListAdapter
     private val args: OnlineOrderListFragmentArgs by navArgs()
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
@@ -104,7 +104,7 @@ class OnlineOrderListFragment : Fragment() {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
-            orderListAdapter = OrderListAdapter(showSyncButton = false) { factors ->
+            onlineOrderListAdapter = OnlineOrderListAdapter(showSyncButton = false) { factors ->
           /*      binding.rvOrderList.isEnabled = false
                 binding.rvOrderList.isClickable = false
                 binding.rvOrderList.suppressLayout(true)
@@ -123,7 +123,7 @@ class OnlineOrderListFragment : Fragment() {
                     )?.show()
                 }
             }
-            adapter = orderListAdapter
+            adapter = onlineOrderListAdapter
         }
     }
 
@@ -153,7 +153,7 @@ class OnlineOrderListFragment : Fragment() {
                         } else {
                             info.gone()
                             rvOrderList.show()
-                            orderListAdapter.submitList(orderList)
+                            onlineOrderListAdapter.submitList(orderList)
                         }
                     }
 

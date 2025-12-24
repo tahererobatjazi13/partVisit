@@ -14,17 +14,17 @@ import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemOrderListBinding
 import java.text.DecimalFormat
 
-class OrderListAdapter(
+class OnlineOrderListAdapter(
     private val showSyncButton: Boolean = false,
     private val onClick: (ReportFactorDto) -> Unit = {},
-) : ListAdapter<ReportFactorDto, OrderListAdapter.OrderListViewHolder>(
-    OrderListDiffCallback()
+) : ListAdapter<ReportFactorDto, OnlineOrderListAdapter.OnlineOrderListViewHolder>(
+    OnlineOrderListDiffCallback()
 ) {
 
     private val formatter = DecimalFormat("#,###")
     private var customDialog: CustomDialog? = null
 
-    inner class OrderListViewHolder(private val binding: ItemOrderListBinding) :
+    inner class OnlineOrderListViewHolder(private val binding: ItemOrderListBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         @SuppressLint("SetTextI18n")
@@ -46,10 +46,10 @@ class OrderListAdapter(
             tvSyncOrder.setOnClickListener {
                 customDialog!!.showDialog(
                     context,
-                  context.getString(R.string.msg_sure_send_order),
+                    context.getString(R.string.msg_sure_send_order),
                     true,
-                   context.getString(R.string.label_no),
-                  context.getString(R.string.label_ok),
+                    context.getString(R.string.label_no),
+                    context.getString(R.string.label_ok),
                     true,
                     true
                 )
@@ -57,13 +57,13 @@ class OrderListAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderListViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OnlineOrderListViewHolder {
         val binding =
             ItemOrderListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return OrderListViewHolder(binding)
+        return OnlineOrderListViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: OrderListViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: OnlineOrderListViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
@@ -72,7 +72,7 @@ class OrderListAdapter(
     }
 }
 
-class OrderListDiffCallback : DiffUtil.ItemCallback<ReportFactorDto>() {
+class OnlineOrderListDiffCallback : DiffUtil.ItemCallback<ReportFactorDto>() {
     override fun areItemsTheSame(oldItem: ReportFactorDto, newItem: ReportFactorDto) =
         oldItem.id == newItem.id
 

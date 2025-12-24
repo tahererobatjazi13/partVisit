@@ -16,7 +16,7 @@ import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderDetailBinding
-import com.partsystem.partvisitapp.feature.report_factor.adapter.OrderDetailAdapter
+import com.partsystem.partvisitapp.feature.report_factor.adapter.OnlineOrderDetailAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import javax.inject.Inject
@@ -29,7 +29,7 @@ class OnlineOrderDetailFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: OnlineOrderListViewModel by viewModels()
 
-    private lateinit var orderDetailAdapter: OrderDetailAdapter
+    private lateinit var onlineOrderDetailAdapter: OnlineOrderDetailAdapter
     private val args: OnlineOrderDetailFragmentArgs by navArgs()
 
     private val formatter = DecimalFormat("#,###,###,###")
@@ -59,8 +59,8 @@ class OnlineOrderDetailFragment : Fragment() {
         binding.rvOrderDetail.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            orderDetailAdapter = OrderDetailAdapter()
-            adapter = orderDetailAdapter
+            onlineOrderDetailAdapter = OnlineOrderDetailAdapter()
+            adapter = onlineOrderDetailAdapter
         }
     }
 
@@ -103,7 +103,7 @@ class OnlineOrderDetailFragment : Fragment() {
                         } else {
                             info.gone()
                             svMain.show()
-                            orderDetailAdapter.submitList(orderDetailList)
+                            onlineOrderDetailAdapter.submitList(orderDetailList)
 
                             tvOrderNumber.text = orderDetailList[0].id.toString()
                             tvCustomerName.text = orderDetailList[0].customerName

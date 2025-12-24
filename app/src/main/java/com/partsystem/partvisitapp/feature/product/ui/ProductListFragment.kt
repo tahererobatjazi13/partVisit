@@ -26,6 +26,7 @@ import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlin.math.floor
 
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
@@ -161,18 +162,33 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartData() {
-        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        val validFactorId =
+            factorViewModel.currentFactorId.value ?: args.factorId.toLong()
         if (validFactorId <= 0) return
 
-        Log.d("validFactorId", validFactorId.toString())
         factorViewModel.getFactorDetails(validFactorId.toInt())
             .observe(viewLifecycleOwner) { details ->
-                val values = details.associate { detail ->
-                    detail.productId!! to Pair(detail.unit1Value, detail.packingValue)
+                val values = mutableMapOf<Int, Pair<Double, Double>>()
+
+                details.forEach { detail ->
+                    val cached = factorViewModel.productInputCache[detail.productId]
+                    if (cached != null) {
+                        values[detail.productId] = cached
+                    } else {
+                        val packingSize = detail.packing?.unit1Value ?: 0.0
+                        if (packingSize > 0) {
+                            val pack = floor(detail.unit1Value / packingSize)
+                            val unit = detail.unit1Value % packingSize
+                            values[detail.productId] = Pair(unit, pack)
+                        } else {
+                            values[detail.productId] = Pair(detail.unit1Value, 0.0)
+                        }
+                    }
                 }
                 productListAdapter.updateProductValues(values)
             }
     }
+
 
     private fun observeData() {
         if (args.fromFactor) {

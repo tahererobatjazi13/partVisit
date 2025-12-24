@@ -2,12 +2,12 @@ package com.partsystem.partvisitapp.core.database.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
-import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductEntity
+import com.partsystem.partvisitapp.core.network.modelDto.FactorDetailOfflineModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -66,6 +66,7 @@ interface FactorDao {
 
     @Update
     suspend fun updateFactorHeader(header: FactorHeaderEntity)
+
     @Update
     suspend fun updateHeader(header: FactorHeaderEntity)
 
@@ -76,8 +77,8 @@ interface FactorDao {
 
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity?
 
-    @Query("SELECT * FROM factor_header_table ORDER BY id DESC")
-    fun getAllHeaders(): LiveData<List<FactorHeaderEntity>>
+    @Query("SELECT * FROM factor_header_table ORDER BY id DESC ")
+    fun getAllHeaders(): Flow<List<FactorHeaderEntity>>
 
     @Query("DELETE FROM factor_header_table WHERE uniqueId = :uniqueId")
     suspend fun deleteHeaderByUniqueId(uniqueId: String)
@@ -130,6 +131,29 @@ interface FactorDao {
     """
     )
     suspend fun clearFactor(factorId: Int)
+
+
+    @Query(
+        """
+        SELECT 
+            fd.factorId,
+            fd.productId,
+            p.name AS productName,
+            p.unitName AS unit1Name,
+            pp.packingName AS packingName,
+            fd.unit1Value,
+            fd.unit2Value,
+            fd.packingValue,
+            fd.unit1Rate,
+            fd.vat
+        FROM factor_detail_table fd
+        LEFT JOIN product_table p ON fd.productId = p.id
+        LEFT JOIN product_packing_table pp ON fd.packingId = pp.id
+        WHERE fd.factorId = :factorId
+        ORDER BY fd.sortCode
+    """
+    )
+    fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailOfflineModel>>
 
     // Discounts
     @Insert(onConflict = OnConflictStrategy.REPLACE)
