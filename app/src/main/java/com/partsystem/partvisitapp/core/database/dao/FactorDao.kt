@@ -64,6 +64,10 @@ interface FactorDao {
     @Query("SELECT * FROM factor_header_table WHERE id = :id LIMIT 1")
     fun getHeaderById(id: Int): LiveData<FactorHeaderEntity>
 
+    @Query("SELECT * FROM factor_header_table WHERE id = :localId LIMIT 1")
+    suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity?
+
+
     @Update
     suspend fun updateFactorHeader(header: FactorHeaderEntity)
 
@@ -73,9 +77,6 @@ interface FactorDao {
     @Query("SELECT * FROM factor_header_table WHERE uniqueId = :uniqueId LIMIT 1")
     suspend fun getHeaderByUniqueId(uniqueId: String): FactorHeaderEntity?
 
-    @Query("SELECT * FROM factor_header_table WHERE id = :localId LIMIT 1")
-
-    suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity?
 
     @Query("SELECT * FROM factor_header_table ORDER BY id DESC ")
     fun getAllHeaders(): Flow<List<FactorHeaderEntity>>

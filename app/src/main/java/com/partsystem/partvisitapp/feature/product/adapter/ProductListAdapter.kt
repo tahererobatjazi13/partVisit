@@ -815,7 +815,7 @@ class ProductListAdapter(
                 price = product.finalRate,
                 packingId = packing?.packingId,
                 vat = 0.0,
-                unit1Rate = product.finalRate
+                unit1Rate = product.finalRate,
             )
             Log.d("finalRate", product.finalRate.toString())
             factorViewModel.productInputCache[product.product.id] =

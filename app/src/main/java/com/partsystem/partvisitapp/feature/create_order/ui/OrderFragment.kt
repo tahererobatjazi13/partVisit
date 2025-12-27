@@ -71,15 +71,18 @@ class OrderFragment : Fragment() {
                 }
                 navigateToHomeClearOrder()
             }
-
             btnSendOrder.setOnClickListener {
-                //val json = factorViewModel.buildFinalJson()
-                // api.sendFactor(json.toString())
-
-                navigateToHomeClearOrder()
+                factorViewModel.sendFactor { success ->
+                    if (success) {
+                        Toast.makeText(requireContext(), "سفارش با موفقیت ارسال شد", Toast.LENGTH_SHORT).show()
+                        navigateToHomeClearOrder()
+                    } else {
+                        Toast.makeText(requireContext(), "خطا در ارسال سفارش", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
-            btnCreateOrder.setOnClickBtnOneListener {
 
+            btnCreateOrder.setOnClickBtnOneListener {
                if (currentCartItems.isEmpty()) {
                     Toast.makeText(
                         requireContext(),

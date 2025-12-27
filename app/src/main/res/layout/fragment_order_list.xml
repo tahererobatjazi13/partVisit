@@ -48,6 +48,7 @@
     <com.partsystem.partvisitapp.core.utils.componenet.BottomMain
         android:id="@+id/btnSyncAllOrder"
         android:layout_width="wrap_content"
+        android:visibility="gone"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/medium_size"
         app:backColorBtnOne="@color/blue_283167"

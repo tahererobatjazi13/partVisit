@@ -1,4 +1,4 @@
-package com.partsystem.partvisitapp.feature.report_factor.repository
+package com.partsystem.partvisitapp.feature.report_factor.online.repository
 
 import android.content.Context
 import com.partsystem.partvisitapp.core.network.ApiService
@@ -10,7 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 
-class OrderListRepository @Inject constructor(
+class OnlineOrderListRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: ApiService
 ) {

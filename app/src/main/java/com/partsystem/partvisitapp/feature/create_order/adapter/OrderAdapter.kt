@@ -283,7 +283,7 @@ class OrderAdapter(
 
                 withContext(Dispatchers.Main) {
                     // نمایش نام محصول
-                    tvName.text = item.productName ?: ""
+                    tvName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
                     tvProductPacking.text = item.packingName
 
 

@@ -7,14 +7,14 @@ import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.feature.report_factor.online.model.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.extensions.toEnglishDigits
-import com.partsystem.partvisitapp.feature.report_factor.repository.OrderListRepository
+import com.partsystem.partvisitapp.feature.report_factor.online.repository.OnlineOrderListRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class OnlineOrderListViewModel @Inject constructor(
-    private val orderListRepository: OrderListRepository
+    private val onlineOrderListRepository: OnlineOrderListRepository
 ) : ViewModel() {
 
     private val _visitorList = MutableLiveData<NetworkResult<List<ReportFactorDto>>>()
@@ -28,7 +28,7 @@ class OnlineOrderListViewModel @Inject constructor(
 
     fun fetchReportFactorVisitorList(type: Int, visitorId: Int) = viewModelScope.launch {
         _visitorList.value = NetworkResult.Loading
-        when (val result = orderListRepository.getReportFactorVisitor(type, visitorId)) {
+        when (val result = onlineOrderListRepository.getReportFactorVisitor(type, visitorId)) {
             is NetworkResult.Success -> {
                 originalVisitor = result.data
                 _visitorList.value = result
@@ -40,7 +40,7 @@ class OnlineOrderListViewModel @Inject constructor(
 
     fun fetchReportFactorCustomerList(type: Int, customerId: Int) = viewModelScope.launch {
         _customerList.value = NetworkResult.Loading
-        when (val result = orderListRepository.getReportFactorCustomer(type, customerId)) {
+        when (val result = onlineOrderListRepository.getReportFactorCustomer(type, customerId)) {
             is NetworkResult.Success -> {
                 originalCustomer = result.data
                 _customerList.value = result
@@ -79,7 +79,7 @@ class OnlineOrderListViewModel @Inject constructor(
 
     fun fetchReportFactorDetail(type: Int, factorId: Int) = viewModelScope.launch {
         _reportFactorDetail.value = NetworkResult.Loading
-        _reportFactorDetail.value = orderListRepository.getReportFactorDetail(type, factorId)
+        _reportFactorDetail.value = onlineOrderListRepository.getReportFactorDetail(type, factorId)
     }
 
     // یک تابع اکستنشن برای فیلتر تمیز

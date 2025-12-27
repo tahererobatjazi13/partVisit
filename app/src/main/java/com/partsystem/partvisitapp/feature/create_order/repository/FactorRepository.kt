@@ -6,8 +6,8 @@ import com.partsystem.partvisitapp.core.database.dao.FactorDao
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
-import com.partsystem.partvisitapp.core.database.entity.FinalFactorRequest
 import com.partsystem.partvisitapp.core.network.ApiService
+import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequest
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import kotlinx.coroutines.flow.Flow
@@ -71,6 +71,7 @@ class FactorRepository @Inject constructor(
     suspend fun getFactorGifts(factorId: Int) = factorDao.getFactorGifts(factorId)
 
     suspend fun deleteHeader(headerId: Long) = factorDao.deleteHeader(headerId)
+
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity? =
         factorDao.getHeaderByLocalId(localId)
 
@@ -97,9 +98,13 @@ class FactorRepository @Inject constructor(
     suspend fun clearFactor(factorId: Int) {
         factorDao.clearFactor(factorId)
     }
+/*
     // Network
     suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
+*/
 
+    suspend fun sendFactorToServer(request: FinalFactorRequest) =
+        api.sendFactor(listOf(request))
 
     fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
         factorDao.getFactorDetailUi(factorId).asLiveData()

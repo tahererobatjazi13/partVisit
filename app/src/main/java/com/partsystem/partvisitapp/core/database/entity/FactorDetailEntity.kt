@@ -254,6 +254,7 @@ data class FactorDetailEntity(
 )
 data class FactorDetailEntity(
     val factorId: Int,
+    val id: Int= 0,
     var productId: Int,
     var sortCode: Int? = null,
     var anbarId: Int? = null,
@@ -270,8 +271,11 @@ data class FactorDetailEntity(
     var returnCauseId: Int = 0,
     var isCanceled: Int = 0,
     var isModified: Int = 0,
-    var unit1Rate: Double = 0.0
+    var unit1Rate: Double = 0.0,
 ) {
+    @Ignore
+    var factorDiscounts: List<FactorDiscountEntity> = emptyList()
+
     @Transient
     var packing: ProductPackingEntity? = null
 
