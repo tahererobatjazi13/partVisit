@@ -10,7 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
+import com.partsystem.partvisitapp.feature.login.model.VisitorDto
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish

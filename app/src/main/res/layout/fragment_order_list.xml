@@ -10,9 +10,9 @@
         android:id="@+id/hfOrderList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:drawableImgTwoHeader="@drawable/ic_back"
         app:isShowImgTwoHeader="true"
-        android:visibility="gone"
         app:isShowSeparatorHeader="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,13 +22,13 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSearch"
         android:layout_width="0dp"
-        android:visibility="visible"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/medium_size"
         android:background="@drawable/selector_search_input"
+        android:visibility="visible"
         app:boxBackgroundMode="none"
         app:hintEnabled="false"
-        app:layout_constraintBottom_toTopOf="@+id/rvOrderList"
+        app:layout_constraintBottom_toTopOf="@id/rvOrderList"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnSyncAllOrder"
         app:layout_constraintTop_toBottomOf="@+id/hfOrderList">
@@ -50,12 +50,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/medium_size"
-        android:visibility="gone"
         app:backColorBtnOne="@color/blue_283167"
         app:badgeTextColorBtnOne="?attr/colorOnPrimary"
-        app:layout_constraintBottom_toBottomOf="@+id/tilSearch"
+        app:layout_constraintBottom_toBottomOf="@id/tilSearch"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tilSearch"
+        app:layout_constraintTop_toTopOf="@id/tilSearch"
         app:textBtnOne="@string/label_sync_all_order" />
 
     <!-- line list -->

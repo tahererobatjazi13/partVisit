@@ -8,7 +8,9 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.BaseUrlValidator
+import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.databinding.DialogServerAddressBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.firstOrNull
@@ -33,11 +35,10 @@ class ServerAddressDialog : DialogFragment() {
         dialog?.window?.setBackgroundDrawableResource(R.drawable.background_dialog)
 
         lifecycleScope.launch {
-            // خواندن مقدار واقعی
+            //  مقدار واقعی
             val savedBaseUrl = userPreferences.baseUrlFlow.firstOrNull()
 
             if (savedBaseUrl.isNullOrBlank()) {
-                // hint نمایش داده می‌شود
                 binding.tieServerAddress.setText("")
             } else {
                 val displayAddress = extractHostAndPort(savedBaseUrl)
@@ -46,8 +47,11 @@ class ServerAddressDialog : DialogFragment() {
         }
 
         binding.btnSave.setOnClickListener {
-            val input = binding.tieServerAddress.text.toString().trim()
-            if (input.isEmpty()) {
+
+            var serverAddress = binding.tieServerAddress.text.toString().trim()
+            serverAddress = convertNumbersToEnglish(fixPersianChars(serverAddress))
+
+            if (serverAddress.isEmpty()) {
                 binding.tilServerAddress.error = getString(R.string.error_enter_address_server)
                 return@setOnClickListener
             }
@@ -56,7 +60,7 @@ class ServerAddressDialog : DialogFragment() {
                 binding.btnSave.isEnabled = false
                 binding.tilServerAddress.error = null
 
-                val baseUrl = BaseUrlValidator.buildBaseUrl(input)
+                val baseUrl = BaseUrlValidator.buildBaseUrl(serverAddress)
                 if (baseUrl == null) {
                     binding.tilServerAddress.error =
                         getString(R.string.error_could_not_connect_server)

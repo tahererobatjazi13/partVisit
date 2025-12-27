@@ -1,41 +1,89 @@
 package com.partsystem.partvisitapp.feature.report_factor.repository
 
+import android.content.Context
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.network.modelDto.ReportFactorDto
-import retrofit2.Response
+import com.partsystem.partvisitapp.feature.report_factor.online.model.ReportFactorDto
+import com.partsystem.partvisitapp.core.utils.ErrorHandler
+import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 
 class OrderListRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val api: ApiService
 ) {
-    /**
-     * دریافت لیست از API
-     */
-    suspend fun getReportFactorVisitor(type: Int, visitorId: Int) =
-        safeCall { api.getReportFactorVisitor(type, visitorId) }
 
-    suspend fun getReportFactorDetail(type: Int, factorId: Int) =
-        safeCall { api.getReportFactorDetail(type, factorId) }
-
-    suspend fun getReportFactorCustomer(type: Int, customerId: Int) =
-        safeCall { api.getReportFactorCustomer(type, customerId) }
-
-    private suspend fun safeCall(block: suspend () -> Response<List<ReportFactorDto>>)
-            : NetworkResult<List<ReportFactorDto>> {
-
+    suspend fun getReportFactorVisitor(
+        type: Int,
+        visitorId: Int
+    ): NetworkResult<List<ReportFactorDto>> {
         return try {
-            val response = block()
+            val response = api.getReportFactorVisitor(type, visitorId)
             val body = response.body()
 
-            if (response.isSuccessful && body != null)
+            if (response.isSuccessful && body != null) {
                 NetworkResult.Success(body)
-            else
-                NetworkResult.Error("Server Error: ${response.code()}")
+            } else {
+                val errorMessage = ErrorHandler.getHttpErrorMessage(
+                    context,
+                    response.code(),
+                    response.message()
+                )
+                NetworkResult.Error(errorMessage)
+            }
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
+        }
+    }
 
-        } catch (e: Exception) {
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+    suspend fun getReportFactorCustomer(
+        type: Int,
+        customerId: Int
+    ): NetworkResult<List<ReportFactorDto>> {
+        return try {
+            val response = api.getReportFactorCustomer(type, customerId)
+            val body = response.body()
+
+            if (response.isSuccessful && body != null) {
+                NetworkResult.Success(body)
+            } else {
+                val errorMessage = ErrorHandler.getHttpErrorMessage(
+                    context,
+                    response.code(),
+                    response.message()
+                )
+                NetworkResult.Error(errorMessage)
+            }
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
+        }
+    }
+
+    suspend fun getReportFactorDetail(
+        type: Int,
+        factorId: Int
+    ): NetworkResult<List<ReportFactorDto>> {
+        return try {
+            val response = api.getReportFactorDetail(type, factorId)
+            val body = response.body()
+
+            if (response.isSuccessful && body != null) {
+                NetworkResult.Success(body)
+            } else {
+                val errorMessage = ErrorHandler.getHttpErrorMessage(
+                    context,
+                    response.code(),
+                    response.message()
+                )
+                NetworkResult.Error(errorMessage)
+            }
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 }

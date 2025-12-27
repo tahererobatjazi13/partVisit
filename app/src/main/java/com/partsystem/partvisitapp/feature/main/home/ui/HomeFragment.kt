@@ -4,10 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -18,7 +21,9 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.OrderType
+import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
+import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.databinding.DialogLoadingBinding
@@ -49,6 +54,7 @@ class HomeFragment : Fragment() {
 
     private val tasks = mutableListOf<() -> Unit>()
     private var currentTaskIndex = 0
+    private var doubleBackToExit = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -64,6 +70,7 @@ class HomeFragment : Fragment() {
         initLoadingDialog()
         initAdapter()
         setupClicks()
+        handleBackToExit()
         //setupObserver()
     }
 
@@ -496,6 +503,9 @@ class HomeFragment : Fragment() {
                     }
 
                     5 -> { /* باز کردن صفحه گزارشات */
+                        val action =
+                            HomeFragmentDirections.actionHomeFragmentToReportFragment()
+                        findNavController().navigate(action)
                     }
 
                     6 -> { /* باز کردن صفحه سفارش‌ها */
@@ -566,6 +576,26 @@ class HomeFragment : Fragment() {
                 loadingDialog.dismiss()
             }
         }
+    }
+
+    private fun handleBackToExit() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            if (doubleBackToExit) {
+                requireActivity().finish()
+            } else {
+                doubleBackToExit = true
+                CustomSnackBar.make(
+                    requireView(),
+                    getString(R.string.msg_press_back_button_again_exit),
+                    SnackBarType.Warning.value
+                )?.show()
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    doubleBackToExit = false
+                }, 2000)
+            }
+        }
+
     }
 
     private fun logout() {

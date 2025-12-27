@@ -1,8 +1,6 @@
 package com.partsystem.partvisitapp.core.database.mapper
 
 import android.content.Context
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.partsystem.partvisitapp.core.database.entity.ActDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
@@ -27,27 +25,27 @@ import com.partsystem.partvisitapp.core.database.entity.VisitScheduleDetailEntit
 import com.partsystem.partvisitapp.core.database.entity.VisitScheduleEntity
 import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.utils.saveBase64ImageToFile
-import com.partsystem.partvisitapp.core.network.modelDto.ActDetailDto
-import com.partsystem.partvisitapp.core.network.modelDto.ActDto
-import com.partsystem.partvisitapp.core.network.modelDto.ApplicationSettingDto
-import com.partsystem.partvisitapp.core.network.modelDto.AssignDirectionCustomerDto
-import com.partsystem.partvisitapp.core.network.modelDto.CustomerDirectionDto
-import com.partsystem.partvisitapp.core.network.modelDto.CustomerDto
-import com.partsystem.partvisitapp.core.network.modelDto.DiscountDto
-import com.partsystem.partvisitapp.core.network.modelDto.GroupProductDto
-import com.partsystem.partvisitapp.core.network.modelDto.InvoiceCategoryDto
-import com.partsystem.partvisitapp.core.network.modelDto.MojoodiDto
-import com.partsystem.partvisitapp.core.network.modelDto.PatternDetailDto
-import com.partsystem.partvisitapp.core.network.modelDto.PatternDto
-import com.partsystem.partvisitapp.core.network.modelDto.ProductDto
-import com.partsystem.partvisitapp.core.network.modelDto.ProductImageDto
-import com.partsystem.partvisitapp.core.network.modelDto.ProductPackingDto
-import com.partsystem.partvisitapp.core.network.modelDto.SaleCenterDto
-import com.partsystem.partvisitapp.core.network.modelDto.VatDetailDto
-import com.partsystem.partvisitapp.core.network.modelDto.VatDto
-import com.partsystem.partvisitapp.core.network.modelDto.VisitScheduleDetailDto
-import com.partsystem.partvisitapp.core.network.modelDto.VisitScheduleDto
-import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
+import com.partsystem.partvisitapp.feature.main.home.model.ActDetailDto
+import com.partsystem.partvisitapp.feature.main.home.model.ActDto
+import com.partsystem.partvisitapp.feature.main.home.model.ApplicationSettingDto
+import com.partsystem.partvisitapp.feature.main.home.model.AssignDirectionCustomerDto
+import com.partsystem.partvisitapp.feature.main.home.model.CustomerDirectionDto
+import com.partsystem.partvisitapp.feature.main.home.model.CustomerDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountDto
+import com.partsystem.partvisitapp.feature.main.home.model.GroupProductDto
+import com.partsystem.partvisitapp.feature.main.home.model.InvoiceCategoryDto
+import com.partsystem.partvisitapp.feature.create_order.model.MojoodiDto
+import com.partsystem.partvisitapp.feature.main.home.model.PatternDetailDto
+import com.partsystem.partvisitapp.feature.main.home.model.PatternDto
+import com.partsystem.partvisitapp.feature.main.home.model.ProductDto
+import com.partsystem.partvisitapp.feature.main.home.model.ProductImageDto
+import com.partsystem.partvisitapp.feature.main.home.model.ProductPackingDto
+import com.partsystem.partvisitapp.feature.main.home.model.SaleCenterDto
+import com.partsystem.partvisitapp.feature.main.home.model.VatDetailDto
+import com.partsystem.partvisitapp.feature.main.home.model.VatDto
+import com.partsystem.partvisitapp.feature.main.home.model.VisitScheduleDetailDto
+import com.partsystem.partvisitapp.feature.main.home.model.VisitScheduleDto
+import com.partsystem.partvisitapp.feature.login.model.VisitorDto
 
 fun ApplicationSettingDto.toEntity() = ApplicationSettingEntity(
     id = id,

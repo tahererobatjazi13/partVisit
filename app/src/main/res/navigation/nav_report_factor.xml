@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/offlineOrderListFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.offline.OfflineOrderListFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.offline.OfflineOrderListFragment"
         android:label="OfflineOrderListFragment"
         tools:layout="@layout/fragment_order_list">
         <action
@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/onlineOrderListFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderListFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.online.ui.OnlineOrderListFragment"
         android:label="OnlineOrderListFragment"
         tools:layout="@layout/fragment_order_list">
         <argument
@@ -34,7 +34,7 @@
 
     <fragment
         android:id="@+id/onlineOrderDetailFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderDetailFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.online.ui.OnlineOrderDetailFragment"
         android:label="OnlineOrderDetailFragment"
         tools:layout="@layout/fragment_order_detail">
         <argument
@@ -43,7 +43,7 @@
     </fragment>
     <fragment
         android:id="@+id/offlineOrderDetailFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.offline.OfflineOrderDetailFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.offline.OfflineOrderDetailFragment"
         android:label="OfflineOrderDetailFragment"
         tools:layout="@layout/fragment_order_detail">
         <argument

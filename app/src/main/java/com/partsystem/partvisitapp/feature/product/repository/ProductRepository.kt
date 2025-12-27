@@ -12,7 +12,7 @@ import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.database.mapper.toEntity
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

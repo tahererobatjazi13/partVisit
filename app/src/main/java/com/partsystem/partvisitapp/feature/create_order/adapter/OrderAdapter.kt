@@ -1,22 +1,16 @@
 package com.partsystem.partvisitapp.feature.create_order.adapter
 
 import android.annotation.SuppressLint
-import android.app.Dialog
-import android.content.Context
-import android.graphics.Paint
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
-import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.databinding.ItemOrderBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

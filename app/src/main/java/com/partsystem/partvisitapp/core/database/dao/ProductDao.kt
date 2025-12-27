@@ -7,9 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
-import com.partsystem.partvisitapp.core.network.modelDto.ProductFullData
-import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
-import com.partsystem.partvisitapp.core.network.modelDto.ProductWithRate
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import kotlinx.coroutines.flow.Flow
 
 @Dao

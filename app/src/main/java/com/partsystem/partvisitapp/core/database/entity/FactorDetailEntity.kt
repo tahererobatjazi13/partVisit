@@ -1,18 +1,13 @@
 package com.partsystem.partvisitapp.core.database.entity
 
-import android.util.Log
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
-import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.CalculateDiscount
 import com.partsystem.partvisitapp.core.utils.formatFloat
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.math.floor
-import kotlin.math.roundToInt
 
 /*
 @Entity(

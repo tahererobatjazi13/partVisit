@@ -1,11 +1,9 @@
 package com.partsystem.partvisitapp.core.utils
 
-import android.util.Log.d
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
-import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
-import com.partsystem.partvisitapp.core.network.modelDto.ProductValuesResult
+import com.partsystem.partvisitapp.feature.create_order.model.ProductValuesResult
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 
 /*

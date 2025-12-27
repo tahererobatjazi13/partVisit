@@ -29,10 +29,13 @@
         <action
             android:id="@+id/action_homeFragment_to_reportFactorFragment"
             app:destination="@id/reportFactorFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_reportFragment"
+            app:destination="@id/reportFragment" />
     </fragment>
     <fragment
         android:id="@+id/onlineOrderListFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderListFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.online.ui.OnlineOrderListFragment"
         android:label="OnlineOrderListFragment"
         tools:layout="@layout/fragment_order_list">
         <argument
@@ -47,7 +50,7 @@
     </fragment>
     <fragment
         android:id="@+id/onlineOrderDetailFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.online.OnlineOrderDetailFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.online.ui.OnlineOrderDetailFragment"
         android:label="OnlineOrderDetailFragment"
         tools:layout="@layout/fragment_order_detail">
         <argument
@@ -179,11 +182,16 @@
     </fragment>
     <fragment
         android:id="@+id/reportFactorFragment"
-        android:name="com.partsystem.partvisitapp.feature.report_factor.ui.ReportFactorFragment"
+        android:name="com.partsystem.partvisitapp.feature.report_factor.ReportFactorFragment"
         android:label="ReportFactorFragment"
         tools:layout="@layout/fragment_report_factor" />
     <action
         android:id="@+id/action_global_to_headerOrderFragment"
         app:destination="@id/headerOrderFragment" />
+    <fragment
+        android:id="@+id/reportFragment"
+        android:name="com.partsystem.partvisitapp.feature.report.ReportFragment"
+        android:label="ReportFragment"
+        tools:layout="@layout/fragment_report"/>
 
 </navigation>

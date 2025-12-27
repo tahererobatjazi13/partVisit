@@ -4,7 +4,7 @@ import androidx.lifecycle.*
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.feature.login.repository.LoginRepository
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
+import com.partsystem.partvisitapp.feature.login.model.VisitorDto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

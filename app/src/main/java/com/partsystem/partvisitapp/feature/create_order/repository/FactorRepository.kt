@@ -7,12 +7,10 @@ import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.FinalFactorRequest
-import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.network.ApiService
-import com.partsystem.partvisitapp.core.network.modelDto.FactorDetailOfflineModel
-import kotlinx.coroutines.Dispatchers
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FactorRepository @Inject constructor(
@@ -103,8 +101,10 @@ class FactorRepository @Inject constructor(
     suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
 
 
-    fun getFactorDetailsOffline(factorId: Int): LiveData<List<FactorDetailOfflineModel>> =
+    fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
         factorDao.getFactorDetailUi(factorId).asLiveData()
 
+    fun getAllHeaderUi(): Flow<List<FactorHeaderUiModel>> =
+        factorDao.getFactorHeaderUiList()
 
 }

@@ -5,7 +5,7 @@ import com.partsystem.partvisitapp.core.database.dao.VisitorDao
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.network.modelDto.VisitorDto
+import com.partsystem.partvisitapp.feature.login.model.VisitorDto
 import com.partsystem.partvisitapp.core.utils.ErrorHandler
 import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
 import dagger.hilt.android.qualifiers.ApplicationContext

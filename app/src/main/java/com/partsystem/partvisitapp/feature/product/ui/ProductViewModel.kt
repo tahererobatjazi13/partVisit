@@ -9,7 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.*
 import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
-import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.ImageProductType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

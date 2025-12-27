@@ -47,10 +47,12 @@ class Header @JvmOverloads constructor(
         }
     var isShowImgOne = false
         set(value) {
-            if (value)
+            if (value) {
                 binding.imgOneHeader.show()
-            else {
+                binding.clBadge.show()
+            } else {
                 binding.imgOneHeader.gone()
+                binding.clBadge.gone()
             }
             field = value
         }

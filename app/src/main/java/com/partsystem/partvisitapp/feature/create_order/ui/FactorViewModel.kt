@@ -12,15 +12,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
-import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
-import com.partsystem.partvisitapp.core.network.modelDto.FactorDetailOfflineModel
-import com.partsystem.partvisitapp.core.network.modelDto.ProductWithPacking
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.CalculateDiscount
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.toEnglishDigits
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -262,34 +263,38 @@ class FactorViewModel @Inject constructor(
         factorRepository.getHeaderById(id)
 
 
-    private val _allHeaders = MutableLiveData<List<FactorHeaderEntity>>()
-
-    // لیست فیلترشده
-    private val _filteredHeaders = MutableLiveData<List<FactorHeaderEntity>>()
-    val filteredHeaders: LiveData<List<FactorHeaderEntity>> get() = _filteredHeaders
+    private val _allHeaders = MutableLiveData<List<FactorHeaderUiModel>>()
+    private val _filteredHeaders = MutableLiveData<List<FactorHeaderUiModel>>()
+    val filteredHeaders: LiveData<List<FactorHeaderUiModel>> = _filteredHeaders
 
     init {
-        // جمع‌آوری لیست محصولات از Room و مقداردهی اولیه
         viewModelScope.launch {
-            factorRepository.getAllHeaders().collectLatest { list ->
+            factorRepository.getAllHeaderUi().collectLatest { list ->
                 _allHeaders.value = list
                 _filteredHeaders.value = list
             }
         }
     }
-    // فیلتر کردن محصولات بر اساس query
+
     fun filterHeaders(query: String) {
+        val q = query
+            .trim()
+            .toEnglishDigits()
+
         val list = _allHeaders.value ?: emptyList()
-        _filteredHeaders.value = if (query.isEmpty()) {
-            list
-        } else {
-           // list.filter { it.id?.equals(query, ignoreCase = true) == true }
-            list.filter {
-                it.id.toString().contains(query)
-                        //|| it.customerName.contains(query, ignoreCase = true)
+
+        _filteredHeaders.value =
+            if (q.isEmpty()) {
+                list
+            } else {
+                list.filter { item ->
+                    item.factorId.toString().contains(q) ||
+                            item.customerName?.contains(q, ignoreCase = true) == true ||
+                            item.patternName?.contains(q, ignoreCase = true) == true
+                }
             }
-        }
     }
+
 
     // current draft uniqueId
     var currentUniqueId: String? = null
@@ -474,8 +479,8 @@ class FactorViewModel @Inject constructor(
         }
     }
 
-    fun getFactorDetailsOffline(factorId: Int): LiveData<List<FactorDetailOfflineModel>> =
-        factorRepository.getFactorDetailsOffline(factorId)
+    fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
+        factorRepository.getFactorDetailUi(factorId)
 
     fun clearCart(factorId: Int) {
         viewModelScope.launch {
@@ -561,7 +566,7 @@ class FactorViewModel @Inject constructor(
 
     fun getTotalPriceForHeader(factorId: Int): LiveData<Double> {
         val result = MutableLiveData<Double>()
-        getFactorDetailsOffline(factorId).observeForever { details ->
+        getFactorDetailUi(factorId).observeForever { details ->
             val total = details.sumOf { it.unit1Rate * it.unit1Value }
             result.value = total
         }
