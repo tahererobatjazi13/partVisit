@@ -36,7 +36,7 @@ class OfflineOrderListAdapter(
             tvPatternName.text = item.patternName ?: "-"
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
-
+            ivDelete.show()
             root.setOnClickListener { onClick(item) }
             if (showSyncButton && item.hasDetail) {
                 tvSyncOrder.show()

@@ -261,6 +261,8 @@ class ProductListFragment : Fragment() {
 
 
     private fun observeCartBadge() {
+        if (args.fromFactor) {
+
         val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
         if (validFactorId <= 0) return
 
@@ -269,6 +271,7 @@ class ProductListFragment : Fragment() {
                 binding.hfProduct.isShowBadge = count > 0
                 binding.hfProduct.textBadge = count.toString()
             }
+    }
     }
 
     override fun onDestroyView() {

@@ -224,6 +224,7 @@
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/ivDelete"
+                android:visibility="gone"
                 android:layout_width="@dimen/_20sdp"
                 android:layout_height="@dimen/_20sdp"
                 android:scaleType="fitCenter"

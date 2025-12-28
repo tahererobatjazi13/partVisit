@@ -21,6 +21,7 @@ import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import java.io.File
 import java.text.DecimalFormat
+import kotlin.math.floor
 
 /*
 
@@ -792,10 +793,25 @@ class ProductListAdapter(
             val inputPacking =
                 binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
 
-            //  محاسبه نهایی
+          /*  //  محاسبه نهایی
             var finalUnit1 = inputUnit1
             if (packing != null && inputPacking > 0) {
                 finalUnit1 += inputPacking * packing.unit1Value
+            }*/
+
+
+            var finalUnit1 = inputUnit1
+            var finalPackingValue = inputPacking
+
+            if (packing != null) {
+                val unitPerPack = packing.unit1Value
+
+                if (inputPacking > 0) {
+                    finalUnit1 += inputPacking * unitPerPack
+                } else if (inputUnit1 > 0 && unitPerPack > 0) {
+                    // محاسبه تعداد بسته از روی unit1
+                    finalPackingValue = floor(inputUnit1 / unitPerPack)
+                }
             }
 
             val detail = FactorDetailEntity(
@@ -809,7 +825,7 @@ class ProductListAdapter(
                 unit1Value = finalUnit1,
 
                 //  packing فقط جهت نمایش
-                packingValue = inputPacking,
+                packingValue = finalPackingValue,
 
                 unit2Value = 0.0,
                 price = product.finalRate,

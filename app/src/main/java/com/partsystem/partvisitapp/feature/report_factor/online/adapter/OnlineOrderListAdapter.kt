@@ -34,6 +34,8 @@ class OnlineOrderListAdapter(
             tvDateTime.text = item.persianDate + " _ " + item.createTime
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             root.setOnClickListener { onClick(item) }
+            ivDelete.gone()
+
             if (showSyncButton) {
                 tvSyncOrder.show()
             } else {
