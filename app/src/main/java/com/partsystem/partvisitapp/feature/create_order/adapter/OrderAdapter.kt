@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.databinding.ItemOrderBinding
 import kotlinx.coroutines.CoroutineScope
@@ -250,7 +251,8 @@ class OrderAdapter(
                 }
 
 
-
+                tvDiscountPrice.gone()
+                clDiscount.gone()
               /*  val packing = item.resolvePacking()
                 if (packing != null) {
                     var finalUnit1 = item.unit1Value

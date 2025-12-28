@@ -154,12 +154,12 @@
                     android:id="@+id/cbSabt"
                     style="@style/SmallBoldTextStyle"
                     android:layout_width="wrap_content"
-                    android:textColor="@color/colorPrimary"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end|center_vertical"
                     android:gravity="end|center_vertical"
                     android:layoutDirection="rtl"
-                    android:text="@string/label_register" />
+                    android:text="@string/label_register"
+                    android:textColor="@color/colorPrimary" />
 
                 <com.google.android.material.textview.MaterialTextView
                     style="@style/MediumBoldTextStyle"
@@ -172,8 +172,7 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/clTotalOrder"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
+                    android:layout_height="wrap_content">
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvTitleTotalOrder"
@@ -205,42 +204,10 @@
                     android:id="@+id/clTotalDiscount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/small_size"
-                    android:visibility="gone">
+                    android:layout_marginTop="@dimen/x_small_size">
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvTitleTotalDiscount"
-                        style="@style/MediumTextStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_total_discount"
-                        android:textColor="@color/gray_474747"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTotalDiscount"
-                        style="@style/MediumBoldTextStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:text="10000 ریال"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvTitleTotalDiscount"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/clDiscountOrder"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/small_size">
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTitleDiscountOrder"
                         style="@style/MediumTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -251,15 +218,15 @@
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvDiscountOrder"
+                        android:id="@+id/tvTotalDiscount"
                         style="@style/MediumBoldTextStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:text="10000 ریال"
+                        android:text="@string/app_price_item"
                         android:textColor="@color/red_E92228"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvTitleDiscountOrder"
+                        app:layout_constraintEnd_toStartOf="@+id/tvTitleTotalDiscount"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -269,7 +236,7 @@
                     android:id="@+id/clTotalPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/small_size">
+                    android:layout_marginTop="@dimen/x_small_size">
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvTitleTotalPrice"
@@ -344,10 +311,10 @@
             android:id="@+id/btnCreateOrder"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:backColorBtnOne="@color/colorPrimary"
-            app:badgeTextColorBtnOne="?attr/colorOnPrimary"
             android:layout_margin="@dimen/big_size"
             android:visibility="gone"
+            app:backColorBtnOne="@color/colorPrimary"
+            app:badgeTextColorBtnOne="?attr/colorOnPrimary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

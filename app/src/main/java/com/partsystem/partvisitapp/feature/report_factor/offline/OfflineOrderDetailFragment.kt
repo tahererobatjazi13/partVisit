@@ -120,9 +120,9 @@ class OfflineOrderDetailFragment : Fragment() {
 
         with(binding) {
             tvSumPrice.text = "${formatter.format(total)} ریال"
-            //  tvDiscountOrder.text = formatter.format(0) // جایگزین با مقدار واقعی
-            //  tvTotalDiscount.text = formatter.format(0) // جایگزین با مقدار واقعی
-            //  tvTotalPrice.text = formatter.format(total) + " ریال"
+            tvFinalPrice.text = "${formatter.format(total)} ریال"
+            tvSumDiscountPrice.text = "0 ریال"
+            tvSumVat.text = "0 ریال"
         }
     }
 

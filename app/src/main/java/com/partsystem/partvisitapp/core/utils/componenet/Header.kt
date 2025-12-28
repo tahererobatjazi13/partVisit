@@ -49,7 +49,7 @@ class Header @JvmOverloads constructor(
         set(value) {
             if (value) {
                 binding.imgOneHeader.show()
-                binding.clBadge.show()
+                binding.clBadge.gone()
             } else {
                 binding.imgOneHeader.gone()
                 binding.clBadge.gone()

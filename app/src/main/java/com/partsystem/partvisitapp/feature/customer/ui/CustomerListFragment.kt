@@ -37,7 +37,9 @@ class CustomerListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var customerListAdapter: CustomerListAdapter
-    private val customDialog by lazy { CustomDialog.instance }
+
+    private var customDialog: CustomDialog? = null
+
     private val customerViewModel: CustomerViewModel by viewModels()
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
@@ -58,6 +60,8 @@ class CustomerListFragment : Fragment() {
         initRecyclerViews()
         observeData()
         setupSearch()
+        customDialog = CustomDialog()
+
     }
 
     @SuppressLint("ClickableViewAccessibility", "UseCompatLoadingForDrawables")

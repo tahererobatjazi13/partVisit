@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.viewModels
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
@@ -30,8 +30,8 @@ class OrderFragment : Fragment() {
     private var _binding: FragmentOrderBinding? = null
     private val binding get() = _binding!!
 
-    private val factorViewModel: FactorViewModel by viewModels()
     private lateinit var orderAdapter: OrderAdapter
+    private val factorViewModel: FactorViewModel by hiltNavGraphViewModels(R.id.nav_graph)
 
     private val formatter = DecimalFormat("#,###,###,###")
     private var currentCartItems: List<FactorDetailEntity> = emptyList()
@@ -71,19 +71,30 @@ class OrderFragment : Fragment() {
                 }
                 navigateToHomeClearOrder()
             }
+
+
             btnSendOrder.setOnClickListener {
-                factorViewModel.sendFactor { success ->
+                factorViewModel.sendFactor(args.factorId) { success ->
                     if (success) {
-                        Toast.makeText(requireContext(), "سفارش با موفقیت ارسال شد", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.msg_order_successfully_sent,
+                            Toast.LENGTH_SHORT
+                        ).show()
                         navigateToHomeClearOrder()
                     } else {
-                        Toast.makeText(requireContext(), "خطا در ارسال سفارش", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.error_sending_order,
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
                     }
                 }
             }
 
             btnCreateOrder.setOnClickBtnOneListener {
-               if (currentCartItems.isEmpty()) {
+                if (currentCartItems.isEmpty()) {
                     Toast.makeText(
                         requireContext(),
                         R.string.error_no_items_cart,
@@ -98,6 +109,7 @@ class OrderFragment : Fragment() {
             }
         }
     }
+
     private fun navigateToHomeClearOrder() {
         val navController = findNavController()
         navController.navigate(
@@ -110,7 +122,6 @@ class OrderFragment : Fragment() {
     }
 
 
-
     private fun initAdapter() {
 
         orderAdapter = OrderAdapter(loadProduct = { productId, actId ->
@@ -121,7 +132,6 @@ class OrderFragment : Fragment() {
             },
             onDelete = { item ->
                 factorViewModel.deleteFactorDetail(item)
-                Log.d("DELETE_TEST", "delete productId = ${item.productId}")
             }
         )
 
@@ -154,14 +164,12 @@ class OrderFragment : Fragment() {
     private fun calculateTotalPrices(items: List<FactorDetailEntity>?) {
         items ?: return
         val total = items.sumOf {
-            it.price!!.toInt()
-            /** it.unit1Value*/
+            it.price!!.toInt() * it.unit1Value
         }
         with(binding) {
             tvTotalOrder.text = "${formatter.format(total)} ریال"
-            //  tvDiscountOrder.text = formatter.format(0) // جایگزین با مقدار واقعی
-            //  tvTotalDiscount.text = formatter.format(0) // جایگزین با مقدار واقعی
-            //  tvTotalPrice.text = formatter.format(total) + " ریال"
+            tvTotalDiscount.text = "0 ریال"
+            tvTotalPrice.text = "${formatter.format(total)} ریال"
         }
     }
 

@@ -1,12 +1,14 @@
 package com.partsystem.partvisitapp.feature.group_product.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,9 +25,12 @@ import com.partsystem.partvisitapp.feature.group_product.adapter.CategoryAdapter
 import com.partsystem.partvisitapp.feature.group_product.adapter.MainGroupAdapter
 import com.partsystem.partvisitapp.feature.group_product.adapter.SubGroupAdapter
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
+import com.partsystem.partvisitapp.feature.product.ui.ProductListFragmentDirections
 import com.partsystem.partvisitapp.feature.product.ui.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.floor
 
 @AndroidEntryPoint
 class GroupProductFragment : Fragment() {
@@ -66,12 +71,14 @@ class GroupProductFragment : Fragment() {
         initRecyclerViews()
         observeData()
         observeCartBadge()
-
+        if (args.fromFactor) {
+            observeCartData()
+        }
         productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
             latestCategoryId?.let { categoryId ->
                 val products =
                     groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
-             //   productListAdapter.setProductData(products, imagesMap)
+                productListAdapter.setProductData(products, imagesMap)
             }
         }
     }
@@ -85,7 +92,6 @@ class GroupProductFragment : Fragment() {
         binding.hfGroupProduct.setOnClickImgTwoListener {
             findNavController().navigateUp()
         }
-
         binding.hfGroupProduct.setOnClickImgOneListener {
             val action =
                 GroupProductFragmentDirections.actionGroupProductFragmentToOrderFragment(args.factorId)
@@ -94,7 +100,6 @@ class GroupProductFragment : Fragment() {
     }
 
     private fun initAdapters() {
-
         mainGroupAdapter = MainGroupAdapter { group ->
             observeSubGroup(group.id)
         }
@@ -107,19 +112,33 @@ class GroupProductFragment : Fragment() {
             latestCategoryId = category.id
             observeProductsByCategory(category.id)
         }
-        val currentQuantities = mutableMapOf<Int, Int>()
 
-        productListAdapter = ProductListAdapter(factorViewModel,
-            fromFactor = args.fromFactor, factorId = args.factorId,
+        productListAdapter = ProductListAdapter(
+            factorViewModel = factorViewModel,
+            fromFactor = args.fromFactor,
+            factorId = args.factorId,
             onProductChanged = { item ->
-                factorViewModel.addDetail(item)
+                val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+                if (validFactorId <= 0) {
+                    Log.e("ProductList", "Invalid factorId: cannot save detail")
+                    return@ProductListAdapter
+                }
+
+                factorViewModel.updateHeader(hasDetail = true)
+
+                lifecycleScope.launch {
+                    val updatedHeader = factorViewModel.factorHeader.value?.copy(hasDetail = true)
+                    updatedHeader?.let {
+                        factorViewModel.updateFactorHeader(it)
+                    }
+                }
+                val updatedItem = item.copy(factorId = validFactorId.toInt())
+                factorViewModel.addOrUpdateFactorDetail(updatedItem)
             },
-          //  currentQuantities = currentQuantities,
+
             onClick = { product ->
-                val action = GroupProductFragmentDirections
-                    .actionGroupProductFragmentToProductDetailFragment(
-                        productId = product.id
-                    )
+                val action = ProductListFragmentDirections
+                    .actionProductListFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
             }
         )
@@ -163,6 +182,33 @@ class GroupProductFragment : Fragment() {
         }
     }
 
+    private fun observeCartData() {
+        val validFactorId =
+            factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        if (validFactorId <= 0) return
+
+        factorViewModel.getFactorDetails(validFactorId.toInt())
+            .observe(viewLifecycleOwner) { details ->
+                val values = mutableMapOf<Int, Pair<Double, Double>>()
+
+                details.forEach { detail ->
+                    val cached = factorViewModel.productInputCache[detail.productId]
+                    if (cached != null) {
+                        values[detail.productId] = cached
+                    } else {
+                        val packingSize = detail.packing?.unit1Value ?: 0.0
+                        if (packingSize > 0) {
+                            val pack = floor(detail.unit1Value / packingSize)
+                            val unit = detail.unit1Value % packingSize
+                            values[detail.productId] = Pair(unit, pack)
+                        } else {
+                            values[detail.productId] = Pair(detail.unit1Value, 0.0)
+                        }
+                    }
+                }
+                productListAdapter.updateProductValues(values)
+            }
+    }
 
     private fun observeSubGroup(mainGroupId: Int) {
         latestMainGroupId = mainGroupId
@@ -249,7 +295,7 @@ class GroupProductFragment : Fragment() {
                             binding.infoProduct.gone()
                             binding.tvTitleProduct.show()
                             binding.rvProduct.show()
-                            //productListAdapter.setProductData(products, imagesMap)
+                            productListAdapter.setProductData(products, imagesMap)
                         }
                     }
                 }
@@ -272,10 +318,14 @@ class GroupProductFragment : Fragment() {
     }
 
     private fun observeCartBadge() {
-        factorViewModel.totalCount.observe(viewLifecycleOwner) { count ->
-            binding.hfGroupProduct.isShowBadge = count > 0
-            binding.hfGroupProduct.textBadge = if (count > 0) count.toString() else ""
-        }
+        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        if (validFactorId <= 0) return
+
+        factorViewModel.getFactorItemCount(validFactorId.toInt())
+            .observe(viewLifecycleOwner) { count ->
+                binding.hfGroupProduct.isShowBadge = count > 0
+                binding.hfGroupProduct.textBadge = count.toString()
+            }
     }
 
     override fun onDestroyView() {

@@ -45,6 +45,10 @@ class OfflineOrderDetailAdapter :
             val total = item.unit1Rate * item.unit1Value
             tvPrice.text = formatter.format(total) + " ریال"
 
+            clDiscountPrice.gone()
+            clVat.gone()
+
+
             /*       if (item.discountPrice != null && item.discountPrice > 0) {
                        tvDiscountPrice.show()
                        tvPriceAfterDiscount.show()
@@ -65,7 +69,7 @@ class OfflineOrderDetailAdapter :
                        tvPriceAfterDiscount.gone()
                        tvPrice.paintFlags = tvPrice.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                        tvPrice.text = formatter.format(item.price) + " ریال"
-                   }*/
+                   }
 
             if (item.vat != null && item.vat > 0) {
                 tvVat.show()
@@ -78,8 +82,7 @@ class OfflineOrderDetailAdapter :
                 tvVat.gone()
                 tvPriceAfterVat.gone()
             }
-
-
+                */
             if (bindingAdapterPosition < itemCount - 1) {
                 view.show()
             } else view.gone()

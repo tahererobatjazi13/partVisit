@@ -80,10 +80,16 @@ class CustomDialog {
         mDialog!!.setCanceledOnTouchOutside(cancelable)
 
         // Set button listeners
-        binding!!.rlOk.setOnClickListener { clickPositiveButton?.invoke() }
+        binding!!.rlOk.setOnClickListener {
+            clickPositiveButton?.invoke()
+            mDialog?.dismiss()
+        }
+
         binding!!.rlCancel.setOnClickListener {
             clickNegativeButton?.invoke()
+            mDialog?.dismiss()
         }
+
         mDialog!!.show()
     }
 
@@ -92,15 +98,4 @@ class CustomDialog {
         mDialog = null
     }
 
-    companion object {
-        private var customDialog: CustomDialog? = null
-
-        val instance: CustomDialog?
-            get() {
-                if (customDialog == null) {
-                    customDialog = CustomDialog()
-                }
-                return customDialog
-            }
-    }
 }

@@ -249,15 +249,16 @@ class ProductListFragment : Fragment() {
         if (args.fromFactor) {
             binding.etSearch.addTextChangedListener { editable ->
                 val query = editable.toString()
-                productViewModel.filterProducts(query)
+                productViewModel.filterProductsWithAct(query)
             }
         } else {
             binding.etSearch.addTextChangedListener { editable ->
                 val query = editable.toString()
-                productViewModel.filterProductsWithAct(query)
+                productViewModel.filterProducts(query)
             }
         }
     }
+
 
     private fun observeCartBadge() {
         val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()

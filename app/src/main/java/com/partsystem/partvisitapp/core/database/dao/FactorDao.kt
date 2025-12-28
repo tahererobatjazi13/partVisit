@@ -81,8 +81,12 @@ interface FactorDao {
     @Query("SELECT * FROM factor_header_table ORDER BY id DESC ")
     fun getAllHeaders(): Flow<List<FactorHeaderEntity>>
 
-    @Query("DELETE FROM factor_header_table WHERE uniqueId = :uniqueId")
+ /*   @Query("DELETE FROM factor_header_table WHERE uniqueId = :uniqueId")
     suspend fun deleteHeaderByUniqueId(uniqueId: String)
+    */
+
+    @Query("DELETE FROM factor_header_table WHERE id = :factorId")
+    suspend fun deleteHeader(factorId: Int)
 
 
     // Detail
@@ -133,29 +137,29 @@ interface FactorDao {
     )
     suspend fun clearFactor(factorId: Int)
 
-
-    @Query(
-        """
-        SELECT 
-            fd.factorId,
-            fd.productId,
-            p.name AS productName,
-            p.unitName AS unit1Name,
-            pp.packingName AS packingName,
-            fd.unit1Value,
-            fd.unit2Value,
-            fd.packingValue,
-            fd.unit1Rate,
-            fd.vat
-        FROM factor_detail_table fd
-        LEFT JOIN product_table p ON fd.productId = p.id
-        LEFT JOIN product_packing_table pp ON fd.packingId = pp.id
-        WHERE fd.factorId = :factorId
-        ORDER BY fd.sortCode
-    """
-    )
+    @Query("""
+    SELECT 
+        fd.factorId,
+        fd.productId,
+        p.name AS productName,
+        p.unitName AS unit1Name,
+        pp.packingName AS packingName,
+        fd.unit1Value,
+        fd.unit2Value,
+        fd.packingValue,
+        fd.unit1Rate,
+        fd.vat
+    FROM factor_detail_table fd
+    LEFT JOIN product_table p 
+        ON fd.productId = p.id
+    LEFT JOIN product_packing_table pp 
+        ON fd.packingId = pp.packingCode
+       AND fd.productId = pp.productId
+    WHERE fd.factorId = :factorId
+    ORDER BY fd.sortCode
+""")
     fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailUiModel>>
-
+    
 
     @Query(
         """
@@ -200,7 +204,7 @@ interface FactorDao {
 
     @Query("SELECT * FROM factor_gift_info_table WHERE factorId = :factorId")
     suspend fun getFactorGifts(factorId: Int): List<FactorGiftInfoEntity>
-
+/*
     @Query("DELETE FROM factor_gift_info_table WHERE id = :headerId")
-    suspend fun deleteHeader(headerId: Long)
+    suspend fun deleteHeader(headerId: Long)*/
 }

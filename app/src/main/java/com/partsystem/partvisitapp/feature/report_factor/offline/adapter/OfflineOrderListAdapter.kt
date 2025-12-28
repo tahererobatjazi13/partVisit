@@ -16,7 +16,8 @@ import java.text.DecimalFormat
 
 class OfflineOrderListAdapter(
     private val showSyncButton: Boolean = false,
-    private val onClick: (FactorHeaderUiModel) -> Unit = {},
+    private val onDelete: (FactorHeaderUiModel) -> Unit,
+    private val onClick: (FactorHeaderUiModel) -> Unit = {}
 ) : ListAdapter<FactorHeaderUiModel, OfflineOrderListAdapter.OfflineOrderListViewHolder>(
     OfflineOrderListDiffCallback()
 ) {
@@ -28,7 +29,7 @@ class OfflineOrderListAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorHeaderUiModel) = with(binding) {
-            customDialog = CustomDialog.instance
+            customDialog = CustomDialog()
 
             tvOrderNumber.text = item.factorId.toString()
             tvCustomerName.text = item.customerName ?: "-"
@@ -42,7 +43,9 @@ class OfflineOrderListAdapter(
             } else {
                 tvSyncOrder.gone()
             }
-
+            ivDelete.setOnClickListener {
+                onDelete(item)
+            }
             val context = binding.root.context
             tvSyncOrder.setOnClickListener {
                 customDialog!!.showDialog(

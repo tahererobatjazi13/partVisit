@@ -118,9 +118,11 @@
     <string name="msg_no_order">سفارشی یافت نشد</string>
     <string name="msg_sure_send_order">سفارش به صورت قطعی ثبت شود؟</string>
     <string name="msg_sure_send_orders">همه سفارشات به صورت قطعی ثبت شوند؟</string>
+    <string name="msg_sure_delete_orders">آیا برای حذف اطمینان دارید؟</string>
     <string name="msg_log_out">آیا مایل به خروج از حساب کاربری خود می باشید؟</string>
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
     <string name="msg_press_back_button_again_exit">برای خروج دوباره دکمه بازگشت را بزنید</string>
+    <string name="msg_order_successfully_sent">سفارش با موفقیت ارسال شد</string>
 
     <!-- Errors -->
     <string name="error_enter_address_server">آدرس سرور را وارد کنید</string>
@@ -148,6 +150,7 @@
     <string name="error_there_not_default_warehouse_sales_center">انبار پیش فرض برای این مرکز فروش وجود ندارد</string>
     <string name="error_sales_center_not_assigned_visitor">مرکز فروش به ویزیتور تخصیص داده نشده است</string>
     <string name="error_configure_ip_domain_settings">ابتدا تنظیمات IP و دامنه را انجام دهید</string>
+    <string name="error_sending_order">خطا در ارسال سفارش</string>
 
 
 </resources>

@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.feature.report_factor.online.model.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.extensions.gone
@@ -22,14 +21,12 @@ class OnlineOrderListAdapter(
 ) {
 
     private val formatter = DecimalFormat("#,###")
-    private var customDialog: CustomDialog? = null
 
     inner class OnlineOrderListViewHolder(private val binding: ItemOrderListBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         @SuppressLint("SetTextI18n")
         fun bind(item: ReportFactorDto) = with(binding) {
-            customDialog = CustomDialog.instance
 
             tvOrderNumber.text = item.id.toString()
             tvCustomerName.text = item.customerName
@@ -41,18 +38,6 @@ class OnlineOrderListAdapter(
                 tvSyncOrder.show()
             } else {
                 tvSyncOrder.gone()
-            }
-            val context = binding.root.context
-            tvSyncOrder.setOnClickListener {
-                customDialog!!.showDialog(
-                    context,
-                    context.getString(R.string.msg_sure_send_order),
-                    true,
-                    context.getString(R.string.label_no),
-                    context.getString(R.string.label_ok),
-                    true,
-                    true
-                )
             }
         }
     }

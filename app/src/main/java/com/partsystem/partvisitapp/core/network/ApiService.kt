@@ -1,7 +1,7 @@
 package com.partsystem.partvisitapp.core.network
 
 
-import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequest
+import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
 import com.partsystem.partvisitapp.feature.main.home.model.GroupProductDto
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.feature.main.home.model.ActDto
@@ -110,7 +110,7 @@ interface ApiService {
 
     @POST("InsertFactor")
     suspend fun sendFactor(
-        @Body request: List<FinalFactorRequest>
+        @Body request: List<FinalFactorRequestDto>
     ): Response<Any>
 
     @GET("Mojoodi")

@@ -22,6 +22,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderListBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.adapter.OfflineOrderListAdapter
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 
 @SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
@@ -30,11 +31,13 @@ class OfflineOrderListFragment : Fragment() {
     private var _binding: FragmentOrderListBinding? = null
     private val binding get() = _binding!!
     private lateinit var offlineOrderListAdapter: OfflineOrderListAdapter
-    private var customDialog: CustomDialog? = null
+    private var customDialogSend: CustomDialog? = null
+    private var customDialogDelete: CustomDialog? = null
     private val factorViewModel: FactorViewModel by viewModels()
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
     private val clearIcon by lazy { requireContext().getDrawable(R.drawable.ic_clear) }
+    private var selectedFactor: FactorHeaderUiModel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,7 +54,8 @@ class OfflineOrderListFragment : Fragment() {
         observeData()
         setupClearIcon()
         setupSearch()
-        customDialog = CustomDialog.instance
+        customDialogSend = CustomDialog()
+        customDialogDelete = CustomDialog()
     }
 
     private fun initAdapter() {
@@ -61,6 +65,37 @@ class OfflineOrderListFragment : Fragment() {
 
             offlineOrderListAdapter = OfflineOrderListAdapter(
                 showSyncButton = true,
+                onDelete = { item ->
+                    selectedFactor = item
+
+                    customDialogDelete = CustomDialog().apply {
+
+                        setOnClickNegativeButton {
+                            selectedFactor = null
+                            hideProgress()
+                        }
+
+                        setOnClickPositiveButton {
+                            selectedFactor?.let {
+                                factorViewModel.deleteFactor(it.factorId)
+                            }
+                            selectedFactor = null
+                            hideProgress()
+                        }
+                    }
+
+                    customDialogDelete?.showDialog(
+                        requireActivity(),
+                        getString(R.string.msg_sure_delete_orders),
+                        true,
+                        getString(R.string.label_no),
+                        getString(R.string.label_ok),
+                        true,
+                        true
+                    )
+                }
+
+
             ) { factors ->
                 if (factors.hasDetail) {
                     val action =
@@ -80,6 +115,7 @@ class OfflineOrderListFragment : Fragment() {
                     navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
                 }
             }
+
             adapter = offlineOrderListAdapter
         }
     }
@@ -108,7 +144,7 @@ class OfflineOrderListFragment : Fragment() {
         binding.apply {
 
             btnSyncAllOrder.setOnClickBtnOneListener {
-                customDialog?.showDialog(
+                customDialogSend?.showDialog(
                     activity,
                     getString(R.string.msg_sure_send_orders),
                     true,
@@ -118,14 +154,30 @@ class OfflineOrderListFragment : Fragment() {
                     true
                 )
             }
+        }
+
+        customDialogDelete?.apply {
+            customDialogDelete?.setOnClickNegativeButton {
+                selectedFactor = null
+                customDialogDelete?.hideProgress()
+            }
+            customDialogDelete?.setOnClickPositiveButton {
+                selectedFactor?.let {
+                    factorViewModel.deleteFactor(it.factorId)
+                    selectedFactor = null
+                }
+                customDialogDelete?.hideProgress()
+            }
 
         }
     }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setupClearIcon() {
         binding.etSearch.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_UP) {
-                val drawableEnd = binding.etSearch.compoundDrawablesRelative[2] ?: return@setOnTouchListener false
+                val drawableEnd =
+                    binding.etSearch.compoundDrawablesRelative[2] ?: return@setOnTouchListener false
 
                 val touchAreaStart =
                     binding.etSearch.width - binding.etSearch.paddingEnd - drawableEnd.intrinsicWidth

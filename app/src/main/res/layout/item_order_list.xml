@@ -193,7 +193,6 @@
             android:layout_marginVertical="@dimen/xxx_small_size"
             android:background="@drawable/dashline" />
 
-        <!-- مبلغ نهایی-->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clFinalPrice"
             android:layout_width="match_parent"
@@ -214,16 +213,27 @@
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/xx_small_size"
+                android:layout_marginHorizontal="@dimen/xx_small_size"
                 android:text="@string/app_price_item"
                 android:textColor="@color/green_21BF73"
                 android:textDirection="rtl"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/tvTitleFinalPrice"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/ivDelete"
                 app:layout_constraintTop_toTopOf="parent" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ivDelete"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:scaleType="fitCenter"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_delete"
+                app:tint="@color/red_E92228" />
 
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

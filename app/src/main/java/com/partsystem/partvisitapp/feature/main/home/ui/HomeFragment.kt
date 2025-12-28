@@ -77,7 +77,7 @@ class HomeFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun init() {
 
-        customDialog = CustomDialog.instance
+        customDialog = CustomDialog()
         binding.tvDate.text = getTodayPersianDate()
 
         // جمع‌آوری دیتا از DataStore
