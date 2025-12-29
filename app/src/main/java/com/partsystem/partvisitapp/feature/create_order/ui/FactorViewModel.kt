@@ -454,7 +454,7 @@ class FactorViewModel @Inject constructor(
                 price = d.price?.toInt() ?: 0,
                 description = d.description ?: "",
                 packingId = d.packingId,
-                packingValue = d.packingValue?.toInt() ?: 0,
+                packingValue = d.packingValue ?: 0.0,
                 vat = d.vat?.toInt() ?: 0,
                 productSerial = d.productSerial ?: 0,
                 isGift = d.isGift ?: 0,

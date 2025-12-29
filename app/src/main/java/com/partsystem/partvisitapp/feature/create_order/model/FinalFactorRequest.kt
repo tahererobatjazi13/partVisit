@@ -41,7 +41,7 @@ data class FinalFactorDetailDto(
     val price: Int,
     val description: String?,
     val packingId: Int?,
-    val packingValue: Int,
+    val packingValue: Double,
     val vat: Int,
     val productSerial: Int,
     val isGift: Int,

@@ -1,5 +1,7 @@
 package com.partsystem.partvisitapp.feature.report_factor.online.model
 
+import kotlin.math.floor
+
 data class ReportFactorDto(
     val id: Int,
     val code: Int,
@@ -34,3 +36,18 @@ data class ReportFactorDto(
     val rate1: Double?,
     val priceAfterVat: Double?
 )
+
+fun ReportFactorDto.getPackingValueFormatted(): String {
+    val unitPerPack = unit1Value!! / packingValue!!
+    if (unitPerPack <= 0) return ""
+
+    val fullPacks = floor(unit1Value / unitPerPack).toInt()
+    val remain = unit1Value % unitPerPack
+
+    if (unit1Value <= 0) return ""
+
+    val remainText =
+        if (remain % 1 == 0.0) remain.toInt().toString() else remain.toString()
+
+    return "$remainText : $fullPacks"
+}

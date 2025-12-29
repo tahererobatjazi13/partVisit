@@ -28,6 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.math.floor
 
+@SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
 class ProductListFragment : Fragment() {
 
@@ -124,7 +125,6 @@ class ProductListFragment : Fragment() {
     private fun initAdapter() {
         productListAdapter = ProductListAdapter(
             factorViewModel = factorViewModel,
-            fromFactor = args.fromFactor,
             factorId = args.factorId,
             onProductChanged = { item ->
                 val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()

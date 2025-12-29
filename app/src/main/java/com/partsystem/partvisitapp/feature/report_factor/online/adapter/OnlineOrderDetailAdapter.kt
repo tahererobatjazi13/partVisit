@@ -15,6 +15,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.core.utils.getColorFromAttr
 import com.partsystem.partvisitapp.databinding.ItemOrderDetailBinding
+import com.partsystem.partvisitapp.feature.report_factor.online.model.getPackingValueFormatted
 import java.text.DecimalFormat
 
 class OnlineOrderDetailAdapter :
@@ -40,7 +41,7 @@ class OnlineOrderDetailAdapter :
             }
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
             tvPackingName.text = item.packingName
-            tvPackingValue.text = item.packingValue!!.clean()
+            tvPackingValue.text = item.getPackingValueFormatted()
             tvUnitName.text = item.unitName
             tvRate1.text = formatter.format(item.rate1) + " ریال"
             tvUnitValue.text = item.unit1Value!!.clean()

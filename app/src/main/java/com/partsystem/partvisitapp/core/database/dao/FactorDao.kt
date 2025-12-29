@@ -144,6 +144,7 @@ interface FactorDao {
         p.name AS productName,
         p.unitName AS unit1Name,
         pp.packingName AS packingName,
+        pp.unit1Value AS unitPerPack,
         fd.unit1Value,
         fd.unit2Value,
         fd.packingValue,

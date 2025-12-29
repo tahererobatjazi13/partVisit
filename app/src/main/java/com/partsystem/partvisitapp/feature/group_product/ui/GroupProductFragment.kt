@@ -115,7 +115,6 @@ class GroupProductFragment : Fragment() {
 
         productListAdapter = ProductListAdapter(
             factorViewModel = factorViewModel,
-            fromFactor = args.fromFactor,
             factorId = args.factorId,
             onProductChanged = { item ->
                 val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
