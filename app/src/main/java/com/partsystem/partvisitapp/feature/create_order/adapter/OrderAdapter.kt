@@ -6,6 +6,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
+import com.partsystem.partvisitapp.R
 
 
 class OrderAdapter(
@@ -46,7 +48,7 @@ class OrderAdapter(
                     item.applyProduct(product!!)
                 }
 
-                /* if (item.isGift == 0) {
+               if (item.isGift == 0) {
                           binding.root.setBackgroundColor(
                               ContextCompat.getColor(
                                   binding.root.context,
@@ -60,7 +62,7 @@ class OrderAdapter(
                                   R.color.transparent
                               )
                           )
-                      }*/
+                      }
 
                 withContext(Dispatchers.Main) {
                     tvName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"

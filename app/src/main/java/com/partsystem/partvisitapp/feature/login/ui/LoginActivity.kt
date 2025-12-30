@@ -101,8 +101,8 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 is NetworkResult.Error -> {
-                    processError(result.message)
                     binding.bmbLogin.checkShowPbOne(false)
+                    processError(result.message)
                 }
             }
         }
@@ -110,12 +110,14 @@ class LoginActivity : AppCompatActivity() {
 
     private fun processLogin(data: LoginResponse?) {
         if (data?.isSuccess != true) {
+            binding.bmbLogin.checkShowPbOne(false)
             processError(data?.message)
             return
         }
 
         val user = data.listResult?.firstOrNull()
         if (user == null) {
+            binding.bmbLogin.checkShowPbOne(false)
             CustomSnackBar.make(
                 findViewById(android.R.id.content),
                 getString(R.string.error_user_not_found),

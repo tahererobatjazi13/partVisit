@@ -20,21 +20,7 @@ enum class ImageProductType(val value: String) {
     GROUP_PRODUCT("Store.GroupProduct"), PRODUCT("Store.Product")
 }
 
-enum class ActKind(val value: String) {
-    None("none"),
 
-    // [Description("خدمات")]
-    Service("service"),
-
-    // [Description("کالا")]
-    Product("product"),
-
-    // [Description("خرید خدمات")]
-    BoughtService("boughtService"),
-
-    // [Description("خرید کالا")]
-    BoughtProduct("boughtProduct"),
-}
 
 enum class FactorFormKind {
     Unknown,
@@ -91,30 +77,231 @@ enum class FactorFormKind {
     RegisterOrderDistribute
 }
 
+
+
+/** <summary>
+ * نحوه تعیین نرخ فروش
+</summary> */
 enum class SaleRateKind {
     Pattern,
     Act,
     None
 }
 
+
+/** <summary>
+ * نوع سناریو بودجه
+</summary> */
+enum class FactorSettlementKind {
+    //        [Description("نقدی")]
+    Cash,
+
+    //        [Description("نقدی در سررسید")]
+    MaturityCash,
+
+    //        [Description("نقد و اسناد")]
+    SanadAndCash,
+
+    //        [Description("اسناد")]
+    Sanad,
+
+    //        [Description("اعتباری")]
+    Credit,
+}
+
+
+enum class PatternInclusionKind {
+    //        [Description("تمامی")]
+    All,
+
+    //        [Description("لیست")]
+    List
+}
+
+enum class DiscountInclusionKind {
+    //        [Description("تمامی کالاها/خدمات")]
+    All,
+
+    //        [Description("گروه")]
+    Group,
+
+    //        [Description("لیست")]
+    List,
+
+    //        [Description("نوع کالا")]
+    ProductKind
+}
+
+
+/** <summary>
+ * انواع تخفیفات/اضافات
+</summary> */
+enum class DiscountKind {
+    //        [Description("تخفیفات")]
+    Discount,
+
+    //        [Description("اضافات")]
+    Addition,
+
+    //        [Description("کسورات")]
+    Deduction,  //[Description("اشانتیون")]
+    //Gift = 3,
+}
+
+/** <summary>
+ * روش اعمال تخفیف
+</summary> */
+enum class DiscountApplyKind {
+    //        [Description("در سطح فاکتور")]
+    FactorLevel,
+
+    //        [Description("در سطح ردیف کالا")]
+    ProductLevel,
+
+    //        [Description("محاسبات خارج فاکتور")]
+    OutsideFactor
+}
+
+
+/** <summary>
+ * نوع مبلغ
+</summary> */
+enum class DiscountPriceKind {
+    //        [Description("مبلغ فروش")]
+    SalePrice,
+
+    //        [Description("مبلغ فروش پس از کسورات")]
+    DiscountedPrice,
+
+    //        [Description("مبلغ خالص فروش")]
+    PurePrice,
+
+    //        [Description("مبلغ قابل پرداخت")]
+    FinalPrice
+}
+
+/** <summary>
+ * روش محاسبه تخفیف
+</summary> */
+enum class DiscountCalculationKind {
+    //        [Description("ساده")]
+    Simple,
+
+    //        [Description("پلکانی براساس مبلغ")]
+    Stair,
+
+    //        [Description("اشانتیون")]
+    Eshantyun,
+
+    //        [Description("تاریخ تسویه")]
+    SettlementDate,
+
+    //        [Description("تنوع کالا")]
+    ProductKind,
+
+    //        [Description("رند")]
+    Round,
+
+    //        [Description("جایزه")]
+    Gift,
+
+    //        [Description("پلکانی براساس مقدار")]
+    StairByValue,
+
+    //        [Description("تخفیف به نسبت مقدار")]
+    DiscountByValue,
+
+    //        [Description("تخفیف به نسبت مبلغ")]
+    DiscountByPrice,
+
+    // [Description("رند نهایی")]
+    FinalRound,
+
+    //[Description("تاریخ تصفیه پلکانی")]
+    StairByDate
+}
+
+/** <summary>
+ * نحوه پرداخت
+</summary> */
+enum class DiscountPaymentKind {
+    //        [Description("درصد")]
+    Percent,
+
+    //        [Description("مبلغ")]
+    Price,
+
+
+    //[Description("مبلغ واحد")]
+    UnitPrice //[Description("مبلغ رند")]
+    //RoundPrice = 3,
+}
+
+
+enum class DiscountUnitKind {
+    //        [Description("واحد اول")]
+    Unit1,
+
+    //        [Description("واحد دوم")]
+    Unit2,
+
+    //        [Description("بسته بندی")]
+    Packing
+}
+
+/** <summary>
+ * نحوه اجرا تخفیفات
+</summary> */
+enum class DiscountExecuteKind {
+    //   [Description("ساده")]
+    Simple,
+
+    // [Description("ضریبی")]
+    Ratio
+}
+
+
+/** <summary>
+ * نحوه محاسبه واحد دوم
+ * تعریف کالا
+</summary> */
 enum class CalculateUnit2Type {
-    // [Description("میانگین واحد اول بر اساس واحد دوم")]
+    //        [Description("میانگین واحد اول بر اساس واحد دوم")]
     AverageUnits,
 
-    // [Description("فرمول استاندارد")]
+    //        [Description("فرمول استاندارد")]
     StandardFormula,
 
-    // [Description("توسط کاربر")]
+    //        [Description("توسط کاربر")]
     Manual
 }
 
-enum class DiscountKind {
-    // [Description("تخفیفات")]
-    Discount,
+/** <summary>
+ * انتخاب واحد اندازه گیری
+</summary> */
+enum class UnitKind {
+    //        [Description("واحد 1")]
+    Unit1,
 
-    // [Description("اضافات")]
-    Addition,
+    //        [Description("واحد 2")]
+    Unit2
+}
 
-    // [Description("کسورات")]
-    Deduction,  //[Description("اشانتیون")]
+/** <summary>
+ * نوع برگه مصوبه
+</summary> */
+enum class ActKind {
+    None,
+
+    // [Description("خدمات")]
+    Service,
+
+    //[Description("کالا")]
+    Product,
+
+    //        [Description("خرید خدمات")]
+    BoughtService,
+
+    //        [Description("خرید کالا")]
+    BoughtProduct,
 }
