@@ -34,9 +34,18 @@ data class PatternEntity(
     val hasCredit: Boolean,
     val dayCount: Int?,
     val hasAndroid: Boolean,
-    val patternDetails: String? // لیست رو به JSON تبدیل می‌کنیم
-)
-
+    var patternDetails: List<PatternDetailEntity>? = null
+) {
+    fun getDiscountIds(): java.util.ArrayList<Int> {
+        val result = java.util.ArrayList<Int>()
+        if (patternDetails != null) {
+            for (patternDetails in patternDetails!!) {
+                if (patternDetails.discountId != null) result.add(patternDetails.discountId)
+            }
+        }
+        return result
+    }
+}
 
 /*
 {

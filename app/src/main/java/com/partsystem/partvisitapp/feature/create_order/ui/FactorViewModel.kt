@@ -11,6 +11,7 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.google.gson.Gson
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
@@ -22,6 +23,7 @@ import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorDetailD
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorDiscountDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorGiftDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
+import com.partsystem.partvisitapp.feature.create_order.repository.DiscountRepository
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
@@ -32,6 +34,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class FactorViewModel @Inject constructor(
     private val factorRepository: FactorRepository,
+    private val discountRepository: DiscountRepository,
     val productRepository: ProductRepository,
 ) : ViewModel() {
 
@@ -604,6 +607,28 @@ class FactorViewModel @Inject constructor(
                 onResult(false)
             }
         }
-    }
 
+    }
+    // factorViewModel.onProductConfirmed(DiscountApplyKind.ProductLevel,factorViewModel.factorHeader.value, detail, true)
+
+    fun onProductConfirmed(
+        applyKind: Int,
+        factorHeader: FactorHeaderEntity,
+        factorDetail: FactorDetailEntity
+    ) {
+        viewModelScope.launch {
+            // Insert or update factor detail
+            // factorDao.insertFactorDetail(factorDetail)
+
+            // Calculate product-level discount
+            discountRepository.calculateDiscountInsert(
+                applyKind = applyKind,
+                factorHeader = factorHeader,
+                factorDetail = factorDetail
+            )
+
+            // Recalculate totals
+            // updateFactorTotals(factorId)
+        }
+    }
 }

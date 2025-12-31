@@ -137,11 +137,13 @@ interface PatternDao {
     fun getPatternsFinal(ids: List<Int>, date: String): List<PatternEntity>
 
 
-
     @Query("SELECT * FROM pattern_table WHERE id = :id LIMIT 1")
     fun getPatternById(id: Int): LiveData<PatternEntity>
 
     @Query("SELECT * FROM pattern_table WHERE id = :id LIMIT 1")
     suspend fun getPatternByIdSuspend(id: Int): PatternEntity
+
+    @Query("SELECT * FROM pattern_table WHERE Id = :id")
+    suspend fun getPattern(id: Int): PatternEntity?
 
 }

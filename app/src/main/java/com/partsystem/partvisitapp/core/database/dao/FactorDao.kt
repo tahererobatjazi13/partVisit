@@ -2,6 +2,7 @@ package com.partsystem.partvisitapp.core.database.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
@@ -188,8 +189,15 @@ interface FactorDao {
     fun getFactorHeaderUiList(): Flow<List<FactorHeaderUiModel>>
 
     // Discounts
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertDiscount(discount: FactorDiscountEntity): Long
+    suspend fun insertFactorDiscount(discount: FactorDiscountEntity)
+
+
+
+    @Query("SELECT * FROM factor_discount_table WHERE FactorId = :factorId")
+    suspend fun getFactorDiscounts(factorId: Int): List<FactorDiscountEntity>
+
 
     /*  @Query("SELECT * FROM factor_discount_table WHERE factorId = :factorId")
       suspend fun getDiscountsForHeader(factorId: String): List<FactorDiscountEntity>
@@ -208,4 +216,34 @@ interface FactorDao {
 /*
     @Query("DELETE FROM factor_gift_info_table WHERE id = :headerId")
     suspend fun deleteHeader(headerId: Long)*/
+
+
+    @Query("""
+        SELECT SUM(Price) 
+        FROM factor_detail_table 
+        WHERE FactorId = :factorId 
+          AND IsGift = 0 
+          AND ProductId IN (:productIds)
+    """)
+    suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double?
+
+
+    @Query("""
+        SELECT * 
+        FROM factor_detail_table 
+        WHERE FactorId = :factorId 
+          AND IsGift = 0
+    """)
+    suspend fun getNonGiftFactorDetails(factorId: Int): List<FactorDetailEntity>
+
+    @Query("""
+        SELECT * 
+        FROM factor_detail_table 
+        WHERE FactorId = :factorId 
+          AND IsGift = 0 
+          AND ProductId IN (:productIds)
+    """)
+    suspend fun getNonGiftFactorDetailsByProductIds(factorId: Int, productIds: List<Int>): List<FactorDetailEntity>
+
+
 }

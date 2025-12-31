@@ -16,7 +16,9 @@ import com.partsystem.partvisitapp.core.database.entity.*
         ActEntity::class, ActDetailEntity::class,
         VatEntity::class, VatDetailEntity::class,
         SaleCenterEntity::class, SaleCenterAnbarEntity::class, SaleCenterUserEntity::class,
-        DiscountEntity::class, FactorHeaderEntity::class, FactorDetailEntity::class,
+        DiscountEntity::class,  DiscountEshantyunEntity::class, DiscountCustomerEntity::class,
+        DiscountGroupEntity::class,  DiscountProductEntity::class, DiscountStairEntity::class,
+        FactorHeaderEntity::class, FactorDetailEntity::class,
         FactorDiscountEntity::class, FactorGiftInfoEntity::class, MojoodiEntity::class],
     version = 1,
     exportSchema = false

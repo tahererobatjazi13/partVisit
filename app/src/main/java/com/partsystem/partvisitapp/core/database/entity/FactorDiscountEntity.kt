@@ -17,11 +17,10 @@ import androidx.room.ForeignKey
 )
 data class FactorDiscountEntity(
     val id: Int = 0,
-    val factorId: Int,
-    val productId: Int,
-    val sortCode: Int,
+    var sortCode: Int,
     val discountId: Int,
     val price: Double,
-    val arzPrice: Double,
+    val factorDetailId: Int,
     val discountPercent: Double
 )
+

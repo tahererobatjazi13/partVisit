@@ -2,6 +2,7 @@ package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 
 
 @Entity(tableName = "factor_header_table")
@@ -40,81 +41,114 @@ data class FactorHeaderEntity(
     var latitude: Double? = 0.0,
     var longitude: Double? = 0.0
 )
+/*
 
-/*[
+[
 {
-    "uniqueId": "669DAF28-506C-4EAE-AAC3-F901B0B62A39",
-    "id": 78,
-    "formKind": 17,
+    "uniqueId": "F6EA69AA-040E-471D-A767-3CB93F90062A",
+    "id": 10,
+    "formKind":17,
     "centerId": 1,
-    "mainCode": 90901,
-    "code": 12999,
-    "createDate": "2025-11-30",
+    "createDate": "2025-12-20",
+    "persianDate": "1404/09/29",
     "invoiceCategoryId": 10,
-    "patternId": 66,
-    "dueDate": "2025-11-30",
-
-    "SaleCenterId": 2526,
-    "customerId": 2526,
-    "visitorId": 2512,
-
-    "description": "Test Android",
+    "patternId": 71,
+    "dueDate": "2025-12-20",
+    "persianDueDate": "1404/09/29",
+    "customerId": 3908,
+    "visitorId": 2471,
+    "distributorId": null,
+    "description": "ثبت از اندروید",
     "sabt": 1,
     "createUserId": 1,
-
+    //"sabtPayment": true,
 
     "saleCenterId": 3,
-    "actId": 195,
+    "actId":195,
     "settlementKind": 0,
-    "deliveryDate": "2025-11-30",
 
-    "createTime": "02:30:15",
-    "directionDetailId": 22239,
+    "createTime": "11:22:57",
+    "directionDetailId": 23261,
     "latitude": 0,
     "longitude": 0,
     "factorDetails": [
     {
-        "factorId": 78,
-        "id": 140,
+        "factorId": 10,
+        "id": 1,
         "sortCode": 1,
         "anbarId": 6,
         "productId": 107,
         "actId": 195,
-        "unit1Value": 40,
+        "unit1Value": 20,
         "unit2Value": 0,
-        "price": 80000,
-        "description": "string  test",
+        "price": 4000000.00,
         "packingId": 3,
-        "packingValue": 2,
-        "vat": 7320,
-        "productSerial": 0,
+        "packingValue": 1,
+        "vat": 400000.00,
+        "productSerial": null,
         "isGift": 0,
         "returnCauseId": 0,
         "isCanceled": 0,
         "isModified": 0,
-        "unit1Rate": 2000,
+        "unit1Rate": 200000,
+
+    },
+    {
+        "factorId": 10,
+        "id": 2,
+        "sortCode": 2,
+        "anbarId": 6,
+        "productId": 7,
+        "actId": 195,
+        "unit1Value": 5,
+        "unit2Value": 0,
+        "price": 21130000.00,
+        "packingId": 49,
+        "packingValue": 1.25,
+        "vat": 0,
+        "productSerial": null,
+        "isGift": 0,
+        "unit1Rate": 4226000,
         "factorDiscounts": [
         {
-
-            "id": 66,
             "sortCode": 1,
-            "discountId": 130,
-            "price": 6800,
-            "arzPrice": 0,
-            "factorDetailId": 140,
+            "discountId": 5,
+            "price": 1690400.00,
             "discountPercent": 0
         }
         ]
     }
+    ,{
+    "factorId": 10,
+    "id": 3,
+    "sortCode": 3,
+    "anbarId": 6,
+    "productId": 107,
+    "actId": 203,
+    "unit1Value": 1,
+    "unit2Value": 0,
+    "price": 200000.00,
+    "packingId": 3,
+    "packingValue":0.05,
+    "vat": 0,
+    "productSerial": null,
+    "isGift": 1,
+    "unit1Rate": 200000.00,
+    "factorDiscounts": [
+    {
+        "sortCode": 1,
+        "discountId": 107,
+        "price":200000.00,
+        "discountPercent": 0
+    }
+    ]
+}
     ],
     "factorGiftInfos": [
     {
-        "id": 10,
-        "factorId": 78,
         "discountId": 107,
         "productId": 107,
-        "price": 4000,
-        "arzPrice": 0
+        "price": 200000.00,
     }
     ]
 }

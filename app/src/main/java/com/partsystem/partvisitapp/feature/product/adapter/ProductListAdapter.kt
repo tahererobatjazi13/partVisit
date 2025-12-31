@@ -13,11 +13,12 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
-import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemProductBinding
 import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import java.io.File
 import java.text.DecimalFormat
@@ -295,6 +296,11 @@ class ProductListAdapter(
             detail.applyProduct(product)
             detail.applyPacking(packing)
 
+            factorViewModel.onProductConfirmed(
+                DiscountApplyKind.ProductLevel.ordinal,
+                factorViewModel.factorHeader.value,
+                detail
+            )
             onProductChanged(detail)
         }
 

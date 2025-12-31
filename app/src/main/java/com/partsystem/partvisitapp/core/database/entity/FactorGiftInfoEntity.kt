@@ -20,6 +20,5 @@ data class FactorGiftInfoEntity(
     val productId: Int,
     val discountId: Int,
     var price: Double = 0.0,
-    var arzPrice: Double = 0.0
 )
 

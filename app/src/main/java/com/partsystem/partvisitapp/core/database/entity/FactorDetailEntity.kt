@@ -3,6 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.feature.create_order.CalculateDiscount
 import com.partsystem.partvisitapp.core.utils.formatFloat
@@ -182,4 +183,23 @@ data class FactorDetailEntity(
     fun getPriceAfterVat(): Double {
         return Math.round(getPriceAfterDiscount() + vat + toll).toDouble()
     }
+
+
+    fun getDiscountIds(level: Int, factorDetailId: Int?): ArrayList<Int> {
+        val result = ArrayList<Int>()
+        if (factorDiscounts != null) {
+            for (factorDiscount in factorDiscounts) {
+                if (level === DiscountApplyKind.ProductLevel.ordinal && factorDiscount.factorDetailId.equals(
+                        factorDetailId
+                    )
+                ) result.add(factorDiscount.discountId)
+                else if (level === DiscountApplyKind.FactorLevel.ordinal && factorDiscount.factorDetailId == null) result.add(
+                    factorDiscount.discountId
+                )
+            }
+        }
+        return result
+    }
+
+
 }

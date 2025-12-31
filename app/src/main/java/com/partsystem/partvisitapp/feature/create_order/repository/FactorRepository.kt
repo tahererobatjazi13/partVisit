@@ -38,6 +38,7 @@ class FactorRepository @Inject constructor(
     suspend fun insertOrUpdateFactorDetail(detail: FactorDetailEntity) {
         factorDao.insertOrUpdate(detail)
     }
+
     suspend fun saveFactorDetails(details: List<FactorDetailEntity>) =
         factorDao.insertFactorDetail(details)
 
@@ -48,6 +49,7 @@ class FactorRepository @Inject constructor(
     suspend fun saveFactorHeader(header: FactorHeaderEntity): Long {
         return factorDao.insertFactorHeader(header) // بدون withContext
     }
+
     suspend fun updateFactorHeader(header: FactorHeaderEntity) {
         factorDao.updateFactorHeader(header)
     }
@@ -76,7 +78,6 @@ class FactorRepository @Inject constructor(
         factorDao.getHeaderByLocalId(localId)
 
 
-
     fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
         factorDao.getFactorDetails(factorId)
 
@@ -98,10 +99,10 @@ class FactorRepository @Inject constructor(
     suspend fun clearFactor(factorId: Int) {
         factorDao.clearFactor(factorId)
     }
-/*
-    // Network
-    suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
-*/
+    /*
+        // Network
+        suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
+    */
 
     suspend fun sendFactorToServer(request: FinalFactorRequestDto) =
         api.sendFactor(listOf(request))
@@ -112,4 +113,33 @@ class FactorRepository @Inject constructor(
     fun getAllHeaderUi(): Flow<List<FactorHeaderUiModel>> =
         factorDao.getFactorHeaderUiList()
 
+
+    suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double {
+        // اگر لیست خالی بود، نتیجه 0 است (مثل کد جاوا)
+        if (productIds.isEmpty()) return 0.0
+
+        return factorDao.getSumPriceByProductIds(factorId, productIds) ?: 0.0
+    }
+
+    private suspend fun getSumByField(
+        factorId: Int,
+        productIds: List<Int>,
+        fieldSelector: (FactorDetailEntity) -> Double
+    ): Double {
+
+        // اگر لیست محصولات خالی باشد، نتیجه 0 است
+        if (productIds.isEmpty()) return 0.0
+        val details = factorDao.getNonGiftFactorDetailsByProductIds(factorId, productIds)
+        return details.sumOf(fieldSelector)
+    }
+
+    // سپس:
+    suspend fun getSumPriceAfterVatByProductIds(factorId: Int, productIds: List<Int>) =
+        getSumByField(factorId, productIds) { it.getPriceAfterVat() }
+
+    suspend fun getSumPriceAfterDiscountByProductIds(factorId: Int, productIds: List<Int>) =
+        getSumByField(factorId, productIds) { it.getPriceAfterDiscount() }
+
+    suspend fun getSumUnit1ValueByProductIds(factorId: Int, productIds: List<Int>) =
+        getSumByField(factorId, productIds) { it.unit1Value }
 }
