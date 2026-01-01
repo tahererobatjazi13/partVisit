@@ -3,6 +3,7 @@ package com.partsystem.partvisitapp.core.database.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountEshantyunEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
@@ -245,5 +246,41 @@ interface FactorDao {
     """)
     suspend fun getNonGiftFactorDetailsByProductIds(factorId: Int, productIds: List<Int>): List<FactorDetailEntity>
 
+    @Query("""
+        SELECT IFNULL(SUM(Unit1Value), 0.0)
+        FROM factor_detail_table
+        WHERE FactorId = :factorId
+          AND IsGift = 0
+    """)
+    suspend fun getSumUnit1ValueByFactorId(factorId: Int): Double
 
+
+    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
+    suspend fun getDetailsByFactorId(factorId: Int): List<FactorDetailEntity>
+
+    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId AND id = :detailId")
+    suspend fun getDetailById(factorId: Int, detailId: Int): FactorDetailEntity?
+
+    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId AND productId IN (:productIds)")
+    suspend fun getDetailsByFactorAndProducts(factorId: Int, productIds: List<Int>): List<FactorDetailEntity>
+    @Transaction
+    @Query("SELECT * FROM discounts_table WHERE id = :discountId")
+    suspend fun getDiscountWithStairs(discountId: Int): DiscountEntity?
+
+
+        @Query(
+            """
+        SELECT pd.actId
+        FROM pattern_details_table AS pd
+        INNER JOIN act_table AS a ON a.id = pd.actId
+        WHERE pd.patternId = :patternId
+          AND a.kind = :kind
+          AND pd.isDefault = 1
+        LIMIT 1
+        """
+        )
+        suspend fun getPatternDetailActId(patternId: Int, kind: Int): Int?
+
+    @Query("SELECT * FROM discount_eshantyuns WHERE discountId = :discountId")
+    suspend fun getEshantyunsByDiscountId(discountId: Int): List<DiscountEshantyunEntity>
 }

@@ -142,4 +142,12 @@ class FactorRepository @Inject constructor(
 
     suspend fun getSumUnit1ValueByProductIds(factorId: Int, productIds: List<Int>) =
         getSumByField(factorId, productIds) { it.unit1Value }
+
+
+    /**
+     * معادل q.getSumUnitValueFactor(factorId) در جاوا
+     */
+    suspend fun getSumUnit1ValueByFactorId(factorId: Int): Double {
+        return factorDao.getSumUnit1ValueByFactorId(factorId)
+    }
 }

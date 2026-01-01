@@ -2,8 +2,6 @@ package com.partsystem.partvisitapp.core.database.dao
 
 import androidx.room.*
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountEshantyunEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountStairEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 

@@ -2,6 +2,7 @@ package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+
 @Entity(tableName = "discounts_table")
 data class DiscountEntity(
     @PrimaryKey
@@ -46,5 +47,14 @@ data class DiscountEntity(
     val customerFilterKind: Int,
 
     val toDate: String?,
-    val toPersianDate: String?
+    val toPersianDate: String?,
+
+    var discountEshantyun: ArrayList<DiscountEshantyunEntity?>? = null,
+    var discountGift: ArrayList<DiscountGiftEntity?>? = null,
+    var discountGroup: ArrayList<DiscountGroupEntity?>? = null,
+    var discountProduct: ArrayList<DiscountProductEntity?>? = null,
+    var discountProductKind: ArrayList<DiscountProductKindEntity?>? = null,
+    var discountProductKindInclusion: ArrayList<DiscountProductKindInclusionEntity?>? = null,
+    var discountStair: ArrayList<DiscountStairEntity?>? = null,
+    var discountUser: ArrayList<DiscountUserEntity?>? = null
 )

@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import kotlinx.coroutines.flow.Flow
 
@@ -31,6 +32,12 @@ interface ProductDao {
     /*@Query("SELECT * FROM product_table WHERE subGroupId = :subGroupId")
     fun getProductsBySubGroup(subGroupId: Int): LiveData<List<ProductEntity>>*/
 
+    @Query("SELECT * FROM product_table WHERE id = :id")
+    suspend fun getProduct(id: Int): ProductEntity?
+
+    @Transaction
+    @Query("SELECT * FROM product_table WHERE id = :id")
+    suspend fun getProductWithPacking(id: Int): ProductWithPacking?
 
     @Transaction
     @Query(
