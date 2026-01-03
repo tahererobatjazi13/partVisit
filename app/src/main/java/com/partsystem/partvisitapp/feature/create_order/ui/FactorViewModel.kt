@@ -11,7 +11,6 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
-import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.google.gson.Gson
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
@@ -468,12 +467,11 @@ class FactorViewModel @Inject constructor(
                 factorDiscounts = d.factorDiscounts.map { dis ->
                     FinalFactorDiscountDto(
                         id = dis.id,
-                        sortCode = dis.sortCode ?: 1,
+                        sortCode = dis.sortCode ,
                         discountId = dis.discountId,
-                        price = dis.price?.toInt() ?: 0,
-                        arzPrice = dis.arzPrice?.toInt() ?: 0,
+                        price = dis.price,
                         factorDetailId = d.id,
-                        discountPercent = dis.discountPercent?.toInt() ?: 0
+                        discountPercent = dis.discountPercent
                     )
                 }
             )
@@ -485,8 +483,7 @@ class FactorViewModel @Inject constructor(
                 factorId = g.factorId,
                 discountId = g.discountId,
                 productId = g.productId,
-                price = g.price?.toInt() ?: 0,
-                arzPrice = g.arzPrice?.toInt() ?: 0
+                price = g.price,
             )
         }
 
@@ -576,7 +573,6 @@ class FactorViewModel @Inject constructor(
                                     "sortCode" to dis.sortCode,
                                     "discountId" to dis.discountId,
                                     "price" to dis.price,
-                                    "arzPrice" to dis.arzPrice,
                                     "factorDetailId" to dis.factorDetailId,
                                     "discountPercent" to dis.discountPercent
                                 )
@@ -590,7 +586,6 @@ class FactorViewModel @Inject constructor(
                             "discountId" to g.discountId,
                             "productId" to g.productId,
                             "price" to g.price,
-                            "arzPrice" to g.arzPrice
                         )
                     }
                 )

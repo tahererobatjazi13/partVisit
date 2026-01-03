@@ -63,4 +63,15 @@ interface ActDao {
         kind: Int
     ): Int?
 
+
+    @Query("""
+        SELECT * FROM act_detail_table
+        WHERE actId = :actId
+        AND productId = :productId
+        LIMIT 1
+    """)
+    fun getActDetail(
+        actId: Int,
+        productId: Int
+    ): ActDetailEntity?
 }

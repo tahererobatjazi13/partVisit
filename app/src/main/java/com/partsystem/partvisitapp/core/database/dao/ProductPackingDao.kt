@@ -21,4 +21,15 @@ interface ProductPackingDao {
 
     @Query("SELECT * FROM product_packing_table WHERE productId = :productId")
     suspend fun getProductPacking(productId: Int): List<ProductPackingEntity>
+
+    @Query("""
+        SELECT * FROM product_packing_table
+        WHERE packingId = :packingId
+        AND productId = :productId
+    """)
+    suspend fun getProductPacking(
+        packingId: Int,
+        productId: Int
+    ): List<ProductPackingEntity>
+
 }

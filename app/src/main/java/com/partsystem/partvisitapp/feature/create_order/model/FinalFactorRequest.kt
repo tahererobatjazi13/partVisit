@@ -56,10 +56,9 @@ data class FinalFactorDiscountDto(
     val id: Int?,
     val sortCode: Int,
     val discountId: Int?,
-    val price: Int,
-    val arzPrice: Int,
+    val price: Double,
     val factorDetailId: Int?,
-    val discountPercent: Int
+    val discountPercent: Double
 )
 
 data class FinalFactorGiftDto(
@@ -67,8 +66,7 @@ data class FinalFactorGiftDto(
     val factorId: Int?,
     val discountId: Int?,
     val productId: Int?,
-    val price: Int,
-    val arzPrice: Int
+    val price: Double,
 )
 
 

@@ -19,7 +19,7 @@ data class FactorDiscountEntity(
     val id: Int = 0,
     var sortCode: Int,
     val discountId: Int,
-    val price: Double,
+    var price: Double,
     val factorDetailId: Int,
     val discountPercent: Double
 )

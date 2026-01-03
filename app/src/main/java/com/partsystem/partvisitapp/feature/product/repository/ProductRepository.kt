@@ -9,6 +9,7 @@ import com.partsystem.partvisitapp.core.database.dao.ProductImageDao
 import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.database.mapper.toEntity
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
@@ -45,6 +46,7 @@ class ProductRepository @Inject constructor(
     suspend fun getProductByActId(id: Int, actId: Int): ProductWithPacking? {
         return dao.getProductWithRate(id, actId)
     }
+
 
     suspend fun fetchAndSaveMojoodi(
         anbarId: Int,

@@ -26,5 +26,5 @@ data class ProductWithPacking(
         parentColumn = "id",
         entityColumn = "productId"
     )
-    val packings: List<ProductPackingEntity>
+    var packings: List<ProductPackingEntity>
 )

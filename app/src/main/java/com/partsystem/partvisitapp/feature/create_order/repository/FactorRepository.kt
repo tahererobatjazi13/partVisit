@@ -114,12 +114,6 @@ class FactorRepository @Inject constructor(
         factorDao.getFactorHeaderUiList()
 
 
-    suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double {
-        // اگر لیست خالی بود، نتیجه 0 است (مثل کد جاوا)
-        if (productIds.isEmpty()) return 0.0
-
-        return factorDao.getSumPriceByProductIds(factorId, productIds) ?: 0.0
-    }
 
     private suspend fun getSumByField(
         factorId: Int,

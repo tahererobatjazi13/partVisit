@@ -8,6 +8,8 @@ import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
+import com.partsystem.partvisitapp.feature.create_order.model.VwFactorDetail
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import kotlinx.coroutines.flow.Flow
@@ -196,9 +198,9 @@ interface FactorDao {
 
 
 
-    @Query("SELECT * FROM factor_discount_table WHERE FactorId = :factorId")
+ /*   @Query("SELECT * FROM factor_discount_table WHERE FactorId = :factorId")
     suspend fun getFactorDiscounts(factorId: Int): List<FactorDiscountEntity>
-
+*/
 
     /*  @Query("SELECT * FROM factor_discount_table WHERE factorId = :factorId")
       suspend fun getDiscountsForHeader(factorId: String): List<FactorDiscountEntity>
@@ -283,4 +285,53 @@ interface FactorDao {
 
     @Query("SELECT * FROM discount_eshantyuns WHERE discountId = :discountId")
     suspend fun getEshantyunsByDiscountId(discountId: Int): List<DiscountEshantyunEntity>
+
+
+    @Query("""
+        SELECT 
+            FactorId,
+            Id,
+            SortCode,
+            ProductId,
+            Unit1Value,
+            Unit2Value,
+            Price,
+            PackingId,
+            PackingValue,
+            IsGift
+        FROM factor_detail_table
+        WHERE FactorId = :factorId
+        AND ProductId IN (:productIds)
+        ORDER BY SortCode ASC
+    """)
+    suspend fun getFactorDetailByProductIds(
+        factorId: Int,
+        productIds: List<Int>
+    ): List<VwFactorDetail>
+
+
+    @Query("""
+    SELECT 
+        FactorId,
+        Id,
+        SortCode,
+        ProductId,
+        Unit1Value,
+        Unit2Value,
+        Price,
+        PackingId,
+        PackingValue,
+        IsGift
+    FROM factor_detail_table
+    WHERE FactorId = :factorId
+    ORDER BY SortCode ASC
+""")
+    suspend fun getFactorDetail(
+        factorId: Int
+    ): List<VwFactorDetail>
+
+
+        @Query("SELECT IFNULL(MAX(SortCode), 0) FROM factor_detail_table WHERE FactorId = :factorId")
+        suspend fun getMaxSortCode(factorId: Int): Int
+
 }

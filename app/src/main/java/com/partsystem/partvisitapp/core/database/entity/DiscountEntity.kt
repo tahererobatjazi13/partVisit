@@ -57,4 +57,24 @@ data class DiscountEntity(
     var discountProductKindInclusion: ArrayList<DiscountProductKindInclusionEntity?>? = null,
     var discountStair: ArrayList<DiscountStairEntity?>? = null,
     var discountUser: ArrayList<DiscountUserEntity?>? = null
-)
+) {
+    val productIds: List<Int>
+        get() = discountProducts?.map { it.productId } ?: emptyList()
+
+    fun getKindName(): String = when (kind) {
+        0.toByte().toInt() -> "تخفیف"
+        1.toByte().toInt() -> "اضافه"
+        2.toByte().toInt() -> "کسورات"
+        else -> ""
+    }
+
+    // برای Room Relation
+    var discountEshantyuns: List<DiscountEshantyunEntity>? = null
+    var discountGifts: List<DiscountGiftEntity>? = null
+    var discountGroups: List<DiscountGroupEntity>? = null
+    var discountProducts: List<DiscountProductEntity>? = null
+    var discountProductKinds: List<DiscountProductKindEntity>? = null
+    var discountProductKindInclusions: List<DiscountProductKindInclusionEntity>? = null
+    var discountStairs: List<DiscountStairEntity>? = null
+    var discountUsers: List<DiscountUserEntity>? = null
+}

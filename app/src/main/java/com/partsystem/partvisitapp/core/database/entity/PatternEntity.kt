@@ -40,7 +40,7 @@ data class PatternEntity(
         val result = java.util.ArrayList<Int>()
         if (patternDetails != null) {
             for (patternDetails in patternDetails!!) {
-                if (patternDetails.discountId != null) result.add(patternDetails.discountId)
+                result.add(patternDetails.discountId)
             }
         }
         return result

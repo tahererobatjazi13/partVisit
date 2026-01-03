@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 
@@ -37,9 +38,10 @@ data class ProductEntity(
     val saleRastehId: Int?,
     val convertRatio: Double?,
     var calculateUnit2Type: Int? = null
-
-)
-
+) {
+    @Ignore
+    var ProductPacking: ArrayList<ProductPackingEntity>? = null
+}
 /*{
     "id": 1,
     "code": "1033001",
