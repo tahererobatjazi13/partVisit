@@ -494,9 +494,49 @@ class HomeRepository @Inject constructor(
 
             val discountList = body.map { it.toEntity() }
 
+            val discountEshantyunsList = body.flatMap { discount ->
+                discount.discountEshantyuns?.map { it.toEntity() } ?: emptyList()
+            }
+            val discountGiftsList = body.flatMap { discount ->
+                discount.discountGifts?.map { it.toEntity() } ?: emptyList()
+            }
+            val discountGroupsList = body.flatMap { discount ->
+                discount.discountGroups?.map { it.toEntity() } ?: emptyList()
+            }
+
+            val discountProductKindInclusionsList = body.flatMap { discount ->
+                discount.discountProductKindInclusions?.map { it.toEntity() } ?: emptyList()
+            }
+            val discountProductKindsList = body.flatMap { discount ->
+                discount.discountProductKinds?.map { it.toEntity() } ?: emptyList()
+            }
+            val discountProductsList = body.flatMap { discount ->
+                discount.discountProducts?.map { it.toEntity() } ?: emptyList()
+            }
+
+            val discountStairsList = body.flatMap { discount ->
+                discount.discountStairs?.map { it.toEntity() } ?: emptyList()
+            }
+            val discountUsersList = body.flatMap { discount ->
+                discount.discountUsers?.map { it.toEntity() } ?: emptyList()
+            }
+            val discountCustomersList = body.flatMap { discount ->
+                discount.discountCustomers?.map { it.toEntity() } ?: emptyList()
+            }
+
+            discountDao.clearDiscounts()
             discountDao.clearDiscounts()
 
             discountDao.insertDiscounts(discountList)
+            discountDao.insertDiscountEshantyuns(discountEshantyunsList)
+            discountDao.insertDiscountGifts(discountGiftsList)
+            discountDao.insertDiscountGroups(discountGroupsList)
+            discountDao.insertDiscountProductKindInclusions(discountProductKindInclusionsList)
+            discountDao.insertDiscountProductKinds(discountProductKindsList)
+            discountDao.insertDiscountProducts(discountProductsList)
+            discountDao.insertDiscountStairs(discountStairsList)
+            discountDao.insertDiscountUsers(discountUsersList)
+            discountDao.insertDiscountCustomers(discountCustomersList)
 
             return NetworkResult.Success(discountList)
 

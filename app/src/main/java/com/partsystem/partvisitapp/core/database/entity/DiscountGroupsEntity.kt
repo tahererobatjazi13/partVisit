@@ -17,7 +17,7 @@ import androidx.room.PrimaryKey
     ],
     indices = [Index("discountId")]
 )
-data class DiscountGroupEntity(
+data class DiscountGroupsEntity(
     @PrimaryKey
     val id: Int,
 

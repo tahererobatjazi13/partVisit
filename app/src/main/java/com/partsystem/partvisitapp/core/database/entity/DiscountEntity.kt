@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "discounts_table")
@@ -49,15 +50,8 @@ data class DiscountEntity(
     val toDate: String?,
     val toPersianDate: String?,
 
-    var discountEshantyun: ArrayList<DiscountEshantyunEntity?>? = null,
-    var discountGift: ArrayList<DiscountGiftEntity?>? = null,
-    var discountGroup: ArrayList<DiscountGroupEntity?>? = null,
-    var discountProduct: ArrayList<DiscountProductEntity?>? = null,
-    var discountProductKind: ArrayList<DiscountProductKindEntity?>? = null,
-    var discountProductKindInclusion: ArrayList<DiscountProductKindInclusionEntity?>? = null,
-    var discountStair: ArrayList<DiscountStairEntity?>? = null,
-    var discountUser: ArrayList<DiscountUserEntity?>? = null
-) {
+    ) {
+
     val productIds: List<Int>
         get() = discountProducts?.map { it.productId } ?: emptyList()
 
@@ -68,13 +62,20 @@ data class DiscountEntity(
         else -> ""
     }
 
-    // برای Room Relation
-    var discountEshantyuns: List<DiscountEshantyunEntity>? = null
-    var discountGifts: List<DiscountGiftEntity>? = null
-    var discountGroups: List<DiscountGroupEntity>? = null
-    var discountProducts: List<DiscountProductEntity>? = null
-    var discountProductKinds: List<DiscountProductKindEntity>? = null
-    var discountProductKindInclusions: List<DiscountProductKindInclusionEntity>? = null
-    var discountStairs: List<DiscountStairEntity>? = null
-    var discountUsers: List<DiscountUserEntity>? = null
+    @Ignore
+    var discountEshantyuns: List<DiscountEshantyunsEntity>? = null
+    @Ignore
+    var discountGifts: List<DiscountGiftsEntity>? = null
+    @Ignore
+    var discountGroups: List<DiscountGroupsEntity>? = null
+    @Ignore
+    var discountProducts: List<DiscountProductsEntity>? = null
+    @Ignore
+    var discountProductKinds: List<DiscountProductKindsEntity>? = null
+    @Ignore
+    var discountProductKindInclusions: List<DiscountProductKindInclusionsEntity>? = null
+    @Ignore
+    var discountStairs: List<DiscountStairsEntity>? = null
+    @Ignore
+    var discountUsers: List<DiscountUsersEntity>? = null
 }

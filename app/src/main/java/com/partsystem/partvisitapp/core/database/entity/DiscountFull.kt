@@ -10,29 +10,29 @@ data class DiscountFull(
         parentColumn = "id",
         entityColumn = "discountId"
     )
-    val products: List<DiscountProductEntity>,
+    val products: List<DiscountProductsEntity>,
 
     @Relation(
         parentColumn = "id",
         entityColumn = "discountId"
     )
-    val groups: List<DiscountGroupEntity>,
+    val groups: List<DiscountGroupsEntity>,
 
     @Relation(
         parentColumn = "id",
         entityColumn = "discountId"
     )
-    val stairs: List<DiscountStairEntity>,
+    val stairs: List<DiscountStairsEntity>,
 
     @Relation(
         parentColumn = "id",
         entityColumn = "discountId"
     )
-    val customers: List<DiscountCustomerEntity>,
+    val customers: List<DiscountCustomersEntity>,
 
     @Relation(
         parentColumn = "id",
         entityColumn = "discountId"
     )
-    val eshantyuns: List<DiscountEshantyunEntity>
+    val eshantyuns: List<DiscountEshantyunsEntity>
 )

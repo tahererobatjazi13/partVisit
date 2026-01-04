@@ -8,8 +8,8 @@ import com.partsystem.partvisitapp.core.database.dao.PatternDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
 import com.partsystem.partvisitapp.core.database.dao.ProductPackingDao
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountGiftEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountStairEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountGiftsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountStairsEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
@@ -33,9 +33,10 @@ import com.partsystem.partvisitapp.feature.create_order.model.ProductModel
 import com.partsystem.partvisitapp.feature.create_order.model.VwFactorDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 import kotlin.math.floor
 
-class DiscountRepository(
+class DiscountRepository @Inject constructor(
     private val factorDao: FactorDao,
     private val discountDao: DiscountDao,
     private val patternDao: PatternDao,
@@ -126,7 +127,9 @@ class DiscountRepository(
             if (productOfDiscount) {
                 val factorDiscount = FactorDiscountEntity(
                     id = 0, // will be assigned by DB or logic
+                    factorId = factor.id,
                     discountId = discount.id,
+                    productId = factorDetail?.productId!!,
                     factorDetailId = factorDetail?.id!!,
                     sortCode = 0, // will set below
                     price = 0.0,
@@ -199,7 +202,7 @@ class DiscountRepository(
 
                 // Recalculate product-level discount totals
                 if (factorDetail != null) {
-                    repository.recalculateProductDiscounts(factor.id, factorDetail.id)
+                    //repository.recalculateProductDiscounts(factor.id, factorDetail.id)
                 }
             }
         }
@@ -426,7 +429,9 @@ class DiscountRepository(
                             // ایجاد تخفیف مرتبط
                             val detailDiscount = FactorDiscountEntity(
                                 id = 0,
+                                factorId = factor.id,
                                 discountId = discount.id,
+                                productId = detail.productId,
                                 factorDetailId = detail.id,
                                 sortCode = 1,
                                 price = detail.price,
@@ -446,9 +451,9 @@ class DiscountRepository(
                                         id = ++maxId,
                                         factorId = factor.id,
                                         discountId = discount.id,
-                                        productId = itemDetail.ProductId,
+                                        productId = itemDetail.productId,
                                         price = kotlin.math.round(
-                                            detail.price * itemDetail.Unit1Value / allValue
+                                            detail.price * itemDetail.unit1Value / allValue
                                         )
                                     )
                                     factorDao.insertFactorGift(giftInfo)
@@ -588,7 +593,9 @@ class DiscountRepository(
 
                             val detailDiscount = FactorDiscountEntity(
                                 id = 0,
+                                factorId = factor.id,
                                 discountId = discount.id,
+                                productId = detail.productId,
                                 factorDetailId = detail.id,
                                 sortCode = 1,
                                 price = detail.price,
@@ -645,7 +652,7 @@ class DiscountRepository(
         var discountPrice = 0.0
 
         // discountStair ممکن است null باشد (چون در Room optional است)
-        this.discountStair?.forEach { item ->
+        this.discountStairs?.forEach { item ->
             // اگر item null باشد (مثلاً به دلیل left join یا اشتباه دیتابیس)، نادیده بگیر
             item ?: return@forEach
 
@@ -837,13 +844,13 @@ class DiscountRepository(
             if (!isInRange) continue
 
             // محاسبه نهایی Value — دقیقاً معادل کوئری شما
-            val finalValue = if (eshantyun.executeKind == 0) {
+        /*    val finalValue = if (eshantyun.executeKind == 0) {
                 // Simple
                 eshantyun.value
             } else {
                 // Complex: floor(actualValue / ratio) * value
                 val multiplier = if (eshantyun.ratio != 0.0) {
-                    kotlin.math.floor(actualValue / eshantyun.ratio)
+                  floor(actualValue / eshantyun.ratio)
                 } else {
                     0.0
                 }
@@ -859,7 +866,7 @@ class DiscountRepository(
                     unitKind = eshantyun.unitKind,
                     value = finalValue
                 )
-            }
+            }*/
         }
 
         return null
@@ -869,7 +876,7 @@ class DiscountRepository(
         val product = productDao.getProduct(id) ?: return null
 
         val packing = if (includeDetail) {
-            productPackingDao.getProductPacking(id)
+            productPackingDao.getPackingsByProductId(id)
         } else {
             emptyList()
         }
@@ -928,7 +935,7 @@ class DiscountRepository(
 
         val product = productDao.getProductByProductId(productId)
         val packing = packingId?.let {
-            productPackingDao.getProductPacking(it, productId).firstOrNull()
+            productPackingDao.getPackingByPackingIdAndProductId(it, productId).firstOrNull()
         }
 
         return fillProductValuesInternal(
@@ -1084,7 +1091,7 @@ class DiscountRepository(
         return discountDao.getDiscountByProductKind(discountId, factorId)
     }
 
-    suspend fun getDiscountGift(discountId: Int, allPrice: Double): DiscountGiftEntity? {
+    suspend fun getDiscountGift(discountId: Int, allPrice: Double): DiscountGiftsEntity? {
         return discountDao.getDiscountGift(discountId, allPrice)
     }
 
@@ -1108,7 +1115,7 @@ class DiscountRepository(
         ) ?: 0.0
     }
 
-    suspend fun getDiscountStairByPrice(discountId: Int, price: Double): DiscountStairEntity? {
+    suspend fun getDiscountStairByPrice(discountId: Int, price: Double): DiscountStairsEntity? {
         return discountDao.getDiscountStairByPrice(discountId, price)
     }
 

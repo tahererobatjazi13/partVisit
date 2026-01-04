@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.feature.create_order.model
 import androidx.room.Embedded
 import androidx.room.Relation
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountStairEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountStairsEntity
 
 data class DiscountWithStairs(
     @Embedded val discount: DiscountEntity,
@@ -11,5 +11,5 @@ data class DiscountWithStairs(
         parentColumn = "id",
         entityColumn = "discountId"
     )
-    val discountStair: List<DiscountStairEntity>
+    val discountStair: List<DiscountStairsEntity>
 )

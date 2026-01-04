@@ -24,7 +24,7 @@ data class DiscountDto(
     val dayCount: Int,
     val isSystem: Boolean,
     val hasUseToolsPercnet: Boolean,
-    val hasUseToolsPrice: Double?,
+    val hasUseToolsPrice: Boolean,
     val unitKind: Int?,
     val hasLastControl: Boolean,
     val executeKind: Int,
@@ -32,4 +32,15 @@ data class DiscountDto(
     val customerFilterKind: Int,
     val toDate: String?,
     val toPersianDate: String?,
-)
+    val discountEshantyuns: List<DiscountEshantyunsDto>?,
+    val discountGifts: List<DiscountGiftsDto>?,
+    val discountGroups: List<DiscountGroupsDto>?,
+    val discountProductKindInclusions: List<DiscountProductKindInclusionsDto>?,
+    val discountProductKinds: List<DiscountProductKindsDto>?,
+    val discountProducts: List<DiscountProductsDto>?,
+    val discountStairs: List<DiscountStairsDto>?,
+    val discountUsers: List<DiscountUsersDto>?,
+    val discountCustomers: List<DiscountCustomersDto>?,
+    )
+
+

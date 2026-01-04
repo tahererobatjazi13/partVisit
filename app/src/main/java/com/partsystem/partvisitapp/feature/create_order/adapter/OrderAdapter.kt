@@ -37,6 +37,21 @@ class OrderAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
+            if (item.isGift == 0) {
+                binding.root.setBackgroundColor(
+                    ContextCompat.getColor(
+                        binding.root.context,
+                        R.color.yellow_EDDD50
+                    )
+                )
+            } else {
+                binding.root.setBackgroundColor(
+                    ContextCompat.getColor(
+                        binding.root.context,
+                        R.color.transparent
+                    )
+                )
+            }
 
             CoroutineScope(Dispatchers.IO).launch {
                 // packing را resolve کن
@@ -48,21 +63,6 @@ class OrderAdapter(
                     item.applyProduct(product!!)
                 }
 
-               if (item.isGift == 0) {
-                          binding.root.setBackgroundColor(
-                              ContextCompat.getColor(
-                                  binding.root.context,
-                                  R.color.yellow_EDDD50
-                              )
-                          )
-                      } else {
-                          binding.root.setBackgroundColor(
-                              ContextCompat.getColor(
-                                  binding.root.context,
-                                  R.color.transparent
-                              )
-                          )
-                      }
 
                 withContext(Dispatchers.Main) {
                     tvName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"

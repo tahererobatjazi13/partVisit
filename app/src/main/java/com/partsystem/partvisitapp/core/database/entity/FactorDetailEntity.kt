@@ -184,16 +184,16 @@ data class FactorDetailEntity(
         return Math.round(getPriceAfterDiscount() + vat + toll).toDouble()
     }
 
-
+    @Ignore
     fun getDiscountIds(level: Int, factorDetailId: Int?): ArrayList<Int> {
         val result = ArrayList<Int>()
         if (factorDiscounts != null) {
             for (factorDiscount in factorDiscounts) {
-                if (level === DiscountApplyKind.ProductLevel.ordinal && factorDiscount.factorDetailId.equals(
+                if (level === DiscountApplyKind.ProductLevel.ordinal && factorDiscount.factorId.equals(
                         factorDetailId
                     )
                 ) result.add(factorDiscount.discountId)
-                else if (level === DiscountApplyKind.FactorLevel.ordinal && factorDiscount.factorDetailId == null) result.add(
+                else if (level === DiscountApplyKind.FactorLevel.ordinal && factorDiscount.factorId == null) result.add(
                     factorDiscount.discountId
                 )
             }

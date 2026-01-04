@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "pattern_table")
@@ -34,10 +35,14 @@ data class PatternEntity(
     val hasCredit: Boolean,
     val dayCount: Int?,
     val hasAndroid: Boolean,
-    var patternDetails: List<PatternDetailEntity>? = null
 ) {
-    fun getDiscountIds(): java.util.ArrayList<Int> {
-        val result = java.util.ArrayList<Int>()
+
+    @Ignore
+    var patternDetails: List<PatternDetailEntity>? = null
+
+    @Ignore
+    fun getDiscountIds(): ArrayList<Int> {
+        val result = ArrayList<Int>()
         if (patternDetails != null) {
             for (patternDetails in patternDetails!!) {
                 result.add(patternDetails.discountId)

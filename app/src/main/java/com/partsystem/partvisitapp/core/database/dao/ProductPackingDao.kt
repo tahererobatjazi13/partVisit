@@ -18,18 +18,18 @@ interface ProductPackingDao {
     @Query("DELETE FROM product_packing_table")
     suspend fun clearProductPacking()
 
-
     @Query("SELECT * FROM product_packing_table WHERE productId = :productId")
-    suspend fun getProductPacking(productId: Int): List<ProductPackingEntity>
+    suspend fun getPackingsByProductId(productId: Int): List<ProductPackingEntity>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM product_packing_table
         WHERE packingId = :packingId
         AND productId = :productId
-    """)
-    suspend fun getProductPacking(
+    """
+    )
+    suspend fun getPackingByPackingIdAndProductId(
         packingId: Int,
         productId: Int
     ): List<ProductPackingEntity>
-
 }

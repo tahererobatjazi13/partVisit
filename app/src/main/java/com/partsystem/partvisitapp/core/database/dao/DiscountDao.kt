@@ -1,16 +1,17 @@
 package com.partsystem.partvisitapp.core.database.dao
 
 import androidx.room.*
+import com.partsystem.partvisitapp.core.database.entity.DiscountCustomersEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountEshantyunEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountEshantyunsEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountFull
-import com.partsystem.partvisitapp.core.database.entity.DiscountGiftEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountGroupEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountProductEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindInclusionEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountStairEntity
-import com.partsystem.partvisitapp.core.database.entity.DiscountUserEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountGiftsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountGroupsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountProductsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindInclusionsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountStairsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountUsersEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 
@@ -22,6 +23,33 @@ interface DiscountDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDiscounts(discounts: List<DiscountEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountEshantyuns(eshantyuns: List<DiscountEshantyunsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountGifts(gifts: List<DiscountGiftsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountGroups(groups: List<DiscountGroupsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountProductKindInclusions(productKindInclusions: List<DiscountProductKindInclusionsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountProductKinds(productKinds: List<DiscountProductKindsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountProducts(products: List<DiscountProductsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountStairs(stairs: List<DiscountStairsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountUsers(users: List<DiscountUsersEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDiscountCustomers(customers: List<DiscountCustomersEntity>)
 
     @Query("SELECT * FROM discounts_table")
     suspend fun getAllDiscounts(): List<DiscountEntity>
@@ -45,36 +73,38 @@ interface DiscountDao {
         persianDate: String
     ): List<DiscountEntity>
 
-    @Dao
-    interface DiscountDao {
-        @Query("SELECT * FROM Discount WHERE Id = :id")
-        suspend fun getDiscount(id: Int): Discount?
+    @Query("SELECT * FROM discounts_table WHERE Id = :id")
+    suspend fun getDiscount(id: Int): DiscountEntity?
 
-        @Transaction
-        @Query("""
+    @Transaction
+    @Query(
+        """
         SELECT DISTINCT p.Id 
         FROM discount_product_kind_inclusion_table AS g 
         INNER JOIN product_table AS p ON p.ProductKindId = g.ProductKindId 
         WHERE g.DiscountId = :discountId AND p.Id IN (:productIds)
-    """)
-        suspend fun getProductMatchProductKindInclusion(
-            discountId: Int,
-            productIds: List<Int>
-        ): List<Int>
+    """
+    )
+    suspend fun getProductMatchProductKindInclusion(
+        discountId: Int,
+        productIds: List<Int>
+    ): List<Int>
 
-        // مشابه برای DiscountGroup (در صورت نیاز)
-        @Transaction
-        @Query("""
+    // مشابه برای DiscountGroup (در صورت نیاز)
+    @Transaction
+    @Query(
+        """
         SELECT DISTINCT p.Id 
         FROM discount_groups_table AS g 
-        INNER JOIN product_table AS p ON p.GroupId = g.GroupId 
+        INNER JOIN product_table AS p ON p.groupProductId = g.GroupId 
         WHERE g.DiscountId = :discountId AND p.Id IN (:productIds)
-    """)
-        suspend fun getProductMatchDiscountGroup(
-            discountId: Int,
-            productIds: List<Int>
-        ): List<Int>
-    }
+    """
+    )
+    suspend fun getProductMatchDiscountGroup(
+        discountId: Int,
+        productIds: List<Int>
+    ): List<Int>
+
     /*
         @Query(
             """
@@ -96,35 +126,35 @@ interface DiscountDao {
 
     @Transaction
     @Query("SELECT * FROM discount_eshantyuns_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountEshantyun(discountId: Int): List<DiscountEshantyunEntity>
+    suspend fun getDiscountEshantyun(discountId: Int): List<DiscountEshantyunsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_eshantyuns_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountGift(discountId: Int): List<DiscountGiftEntity>
+    @Query("SELECT * FROM discount_gift_table WHERE DiscountId = :discountId")
+    suspend fun getDiscountGift(discountId: Int): List<DiscountGiftsEntity>
 
     @Transaction
     @Query("SELECT * FROM discount_groups_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountGroup(discountId: Int): List<DiscountGroupEntity>
+    suspend fun getDiscountGroup(discountId: Int): List<DiscountGroupsEntity>
 
     @Transaction
     @Query("SELECT * FROM discount_stairs_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountStair(discountId: Int): List<DiscountStairEntity>
+    suspend fun getDiscountStair(discountId: Int): List<DiscountStairsEntity>
 
     @Transaction
     @Query("SELECT * FROM discount_products_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountProducts(discountId: Int): List<DiscountProductEntity>
+    suspend fun getDiscountProducts(discountId: Int): List<DiscountProductsEntity>
 
     @Transaction
     @Query("SELECT * FROM discount_product_kind_inclusion_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountProductKindInclusion(discountId: Int): List<DiscountProductKindInclusionEntity>
+    suspend fun getDiscountProductKindInclusion(discountId: Int): List<DiscountProductKindInclusionsEntity>
 
     @Transaction
     @Query("SELECT * FROM discount_product_kind_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountProductKind(discountId: Int): List<DiscountProductKindEntity>
+    suspend fun getDiscountProductKind(discountId: Int): List<DiscountProductKindsEntity>
 
     @Transaction
     @Query("SELECT * FROM discount_user_table WHERE DiscountId = :discountId")
-    suspend fun getDiscountUser(discountId: Int): List<DiscountUserEntity>
+    suspend fun getDiscountUser(discountId: Int): List<DiscountUsersEntity>
 
 
     // اگر بخواهید همه چیز را در یک query بگیرید (ترکیبی)
@@ -143,9 +173,6 @@ interface DiscountDao {
         toDate: String,
         persianDate: String
     ): List<DiscountFull>
-
-    @Query("SELECT * FROM discounts_table WHERE Id = :id")
-    suspend fun getDiscount(id: Int): DiscountEntity?
 
 
     @Query("SELECT COUNT(*) FROM factor_discount_table WHERE id = :factorId")
@@ -204,7 +231,7 @@ interface DiscountDao {
         LIMIT 1
     """
     )
-    suspend fun getDiscountGift(discountId: Int, allPrice: Double): DiscountGiftEntity?
+    suspend fun getDiscountGift(discountId: Int, allPrice: Double): DiscountGiftsEntity?
 
 
     @Query(
@@ -279,6 +306,6 @@ interface DiscountDao {
         LIMIT 1
     """
     )
-    suspend fun getDiscountStairByPrice(discountId: Int, price: Double): DiscountStairEntity?
+    suspend fun getDiscountStairByPrice(discountId: Int, price: Double): DiscountStairsEntity?
 
 }

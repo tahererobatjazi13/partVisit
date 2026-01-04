@@ -7,7 +7,16 @@ import com.partsystem.partvisitapp.core.database.entity.ApplicationSettingEntity
 import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountCustomersEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountEshantyunsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountGiftsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountGroupsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountProductsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindInclusionsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountStairsEntity
+import com.partsystem.partvisitapp.core.database.entity.DiscountUsersEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
@@ -46,6 +55,15 @@ import com.partsystem.partvisitapp.feature.main.home.model.VatDto
 import com.partsystem.partvisitapp.feature.main.home.model.VisitScheduleDetailDto
 import com.partsystem.partvisitapp.feature.main.home.model.VisitScheduleDto
 import com.partsystem.partvisitapp.feature.login.model.VisitorDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountCustomersDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountEshantyunsDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountGiftsDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountGroupsDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountProductKindInclusionsDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountProductKindsDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountProductsDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountStairsDto
+import com.partsystem.partvisitapp.feature.main.home.model.DiscountUsersDto
 
 fun ApplicationSettingDto.toEntity() = ApplicationSettingEntity(
     id = id,
@@ -294,7 +312,6 @@ fun PatternDto.toEntity() = PatternEntity(
     hasCredit = hasCredit,
     dayCount = dayCount,
     hasAndroid = hasAndroid,
-    patternDetails = patternDetails?.toString()
 )
 
 fun PatternDetailDto.toEntity(): PatternDetailEntity {
@@ -420,6 +437,97 @@ fun DiscountDto.toEntity() = DiscountEntity(
     customerFilterKind = customerFilterKind,
     toDate = toDate,
     toPersianDate = toPersianDate
+)
+
+fun DiscountEshantyunsDto.toEntity() = DiscountEshantyunsEntity(
+    id = id,
+    discountId = discountId,
+    sortCode = sortCode,
+    saleUnitKind = saleUnitKind,
+    fromValue = fromValue,
+    toValue = toValue,
+    anbarId = anbarId,
+    productId = productId,
+    unitKind = unitKind,
+    value = value,
+    packingId = packingId,
+    ratio = ratio,
+)
+
+fun DiscountGiftsDto.toEntity() = DiscountGiftsEntity(
+    id = id,
+    discountId = discountId,
+    sortCode = sortCode,
+    fromPrice = fromPrice,
+    toPrice = toPrice,
+    anbarId = anbarId,
+    productId = productId,
+    unitKind = unitKind,
+    value = value,
+    packingId = packingId,
+    ratio = ratio,
+)
+
+fun DiscountGroupsDto.toEntity() = DiscountGroupsEntity(
+    id = id,
+    discountId = discountId,
+    kind = kind,
+    groupId = groupId,
+    groupDetailId = groupDetailId,
+    rastehId = rastehId,
+)
+
+fun DiscountProductKindInclusionsDto.toEntity() = DiscountProductKindInclusionsEntity(
+    id = id,
+    discountId = discountId,
+    productKindId = productKindId
+)
+
+fun DiscountProductKindsDto.toEntity() = DiscountProductKindsEntity(
+    id = id,
+    discountId = discountId,
+    sortCode = sortCode,
+    fromProductKind = fromProductKind,
+    toProductKind = toProductKind,
+    discountPercent = discountPercent,
+    minPrice = minPrice,
+)
+
+fun DiscountProductsDto.toEntity() = DiscountProductsEntity(
+    id = id,
+    discountId = discountId,
+    kind = kind,
+    productId = productId,
+)
+
+fun DiscountStairsDto.toEntity() = DiscountStairsEntity(
+    id = id,
+    discountId = discountId,
+    sortCode = sortCode,
+    fromPrice = fromPrice,
+    toPrice = toPrice,
+    price = price,
+    unitKind = unitKind,
+    ratio = ratio,
+)
+
+fun DiscountUsersDto.toEntity() = DiscountUsersEntity(
+    id = id,
+    discountId = discountId,
+    userId = userId,
+)
+
+fun DiscountCustomersDto.toEntity() = DiscountCustomersEntity(
+    id = id,
+    discountId = discountId,
+    customerId = customerId,
+    customerKindId = customerKindId,
+    customerDegreeId = customerDegreeId,
+    customerPishehId = customerPishehId,
+    tafsiliGroupId = tafsiliGroupId,
+    tafsiliGroupDetailId = tafsiliGroupDetailId,
+    customerPriceAmount = customerPriceAmount,
+    maxCustomerPriceAmount = maxCustomerPriceAmount
 )
 
 fun MojoodiDto.toEntity() = MojoodiEntity(
