@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.repository
 
+import android.util.Log
 import com.partsystem.partvisitapp.core.database.dao.ActDao
 import com.partsystem.partvisitapp.core.database.dao.DiscountDao
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
@@ -59,7 +60,10 @@ class DiscountRepository @Inject constructor(
         val productSortCode = 0
 
         val date = persianToGregorian(factorHeader.persianDate!!)
+        Log.d("EshantyunapplyKind",applyKind.toString())
+        Log.d("Eshantyundate",date.toString())
         var discounts = getDiscounts(applyKind, date, true)
+
 
         val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return
         val discountInclusionKind: Int = pattern.discountInclusionKind!!
@@ -95,6 +99,9 @@ class DiscountRepository @Inject constructor(
                 break
             }
         }
+        Log.d("Eshantyundiscounts",discounts.toString())
+        Log.d("Eshantyundiscsizeounts",discounts.size.toString())
+
         processDiscounts(
             discounts = discounts,
             factor = factorHeader,
@@ -111,6 +118,8 @@ class DiscountRepository @Inject constructor(
         applyKind: Int, // 0 = FactorLevel, 1 = ProductLevel
         repository: DiscountRepository
     ) {
+        Log.d("Eshantyun","okkkk1")
+
         var factorSortCode = 0
         var productSortCode =
             0 // Note: در کد اصلی به اشتباه از factorSortCode استفاده شده در بخش else!
@@ -124,7 +133,11 @@ class DiscountRepository @Inject constructor(
                 factorDetail,
                 applyKind
             )
+            Log.d("Eshantyun","okkkk111")
+
             if (productOfDiscount) {
+                Log.d("Eshantyun","okkkk222")
+
                 val factorDiscount = FactorDiscountEntity(
                     id = 0, // will be assigned by DB or logic
                     factorId = factor.id,
@@ -171,6 +184,7 @@ class DiscountRepository @Inject constructor(
                 if (discount.calculationKind != DiscountCalculationKind.Eshantyun.ordinal &&
                     discount.calculationKind != DiscountCalculationKind.Gift.ordinal
                 ) {
+
                     if (factorDiscount.price > 0) {
                         // Insert into DB and update local factor if needed
                         repository.insertFactorDiscount(factorDiscount)
@@ -215,6 +229,10 @@ class DiscountRepository @Inject constructor(
         factorDetail: FactorDetailEntity?,
         applyKind: Int
     ): Pair<Boolean, List<Int>> {
+
+
+        Log.d("Eshantyun","okkkk333")
+
         val inclusionKind = discount.inclusionKind
         return when (inclusionKind) {
             DiscountInclusionKind.All.ordinal -> {
@@ -260,6 +278,8 @@ class DiscountRepository @Inject constructor(
         var discountPrice = 0.0
         var price = 0.0
         val lastSortCode: Int = getMaxSortCode(factor.id)
+        Log.d("Eshantyun","okkkk4")
+        Log.d("Eshantyundiscount", discount.toString())
 
         // --- تعیین پایه‌ی محاسبه قیمت ---
         when (discount.priceKind) {
@@ -333,6 +353,8 @@ class DiscountRepository @Inject constructor(
             }
 
             DiscountCalculationKind.Eshantyun.ordinal -> {
+
+                Log.d("Eshantyun","okkkk3")
                 if (factor.patternId != null) {
                     var actId =
                         factorDao.getPatternDetailActId(factor.patternId!!, ActKind.Product.ordinal)
@@ -844,29 +866,29 @@ class DiscountRepository @Inject constructor(
             if (!isInRange) continue
 
             // محاسبه نهایی Value — دقیقاً معادل کوئری شما
-        /*    val finalValue = if (eshantyun.executeKind == 0) {
-                // Simple
-                eshantyun.value
-            } else {
-                // Complex: floor(actualValue / ratio) * value
-                val multiplier = if (eshantyun.ratio != 0.0) {
-                  floor(actualValue / eshantyun.ratio)
+            /*    val finalValue = if (eshantyun.executeKind == 0) {
+                    // Simple
+                    eshantyun.value
                 } else {
-                    0.0
+                    // Complex: floor(actualValue / ratio) * value
+                    val multiplier = if (eshantyun.ratio != 0.0) {
+                      floor(actualValue / eshantyun.ratio)
+                    } else {
+                        0.0
+                    }
+                    multiplier * eshantyun.value
                 }
-                multiplier * eshantyun.value
-            }
 
-            // فقط اگر Value > 0 باشد
-            if (finalValue > 0) {
-                return DiscountEshantyunResult(
-                    anbarId = eshantyun.anbarId,
-                    productId = eshantyun.productId,
-                    packingId = eshantyun.packingId,
-                    unitKind = eshantyun.unitKind,
-                    value = finalValue
-                )
-            }*/
+                // فقط اگر Value > 0 باشد
+                if (finalValue > 0) {
+                    return DiscountEshantyunResult(
+                        anbarId = eshantyun.anbarId,
+                        productId = eshantyun.productId,
+                        packingId = eshantyun.packingId,
+                        unitKind = eshantyun.unitKind,
+                        value = finalValue
+                    )
+                }*/
         }
 
         return null
@@ -1208,7 +1230,7 @@ class DiscountRepository @Inject constructor(
                     discountProducts = discountDao.getDiscountProducts(item.discount.id)
                     discountProductKinds = discountDao.getDiscountProductKind(item.discount.id)
                     discountProductKindInclusions =
-                        discountDao.getDiscountProductKindInclusion(item.discount.id)
+                    discountDao.getDiscountProductKindInclusion(item.discount.id)
                     discountStairs = discountDao.getDiscountStair(item.discount.id)
                     discountUsers = discountDao.getDiscountUser(item.discount.id)
                 }

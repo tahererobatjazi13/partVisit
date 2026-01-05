@@ -37,7 +37,7 @@ class OrderAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailEntity) = with(binding) {
-            if (item.isGift == 0) {
+            if (item.isGift == 1) {
                 binding.root.setBackgroundColor(
                     ContextCompat.getColor(
                         binding.root.context,

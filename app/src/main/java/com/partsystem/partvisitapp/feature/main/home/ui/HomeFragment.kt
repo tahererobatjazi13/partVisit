@@ -406,10 +406,10 @@ class HomeFragment : Fragment() {
                         syncType = "در حال بروزرسانی"
 
                         val updateSteps = listOf(
-                            "مصوبه" to suspend { viewModel.fetchAct() },
-                            "طرح فروش" to suspend { viewModel.fetchPattern() },
-                            "محصولات" to suspend { viewModel.fetchProducts() },
-                            "تخفیفات" to suspend { viewModel.fetchDiscount() }
+                            "مصوبه" to suspend { viewModel.syncAct() },
+                            "طرح فروش" to suspend { viewModel.syncPattern() },
+                            "محصولات" to suspend { viewModel.syncProducts() },
+                            "تخفیفات" to suspend { viewModel.syncDiscount() }
                         )
 
                         for ((title, action) in updateSteps) {

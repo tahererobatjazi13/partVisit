@@ -78,7 +78,6 @@ class HomeViewModel @Inject constructor(
     val saleCenter = MutableLiveData<NetworkResult<List<SaleCenterEntity>>>()
     val discount = MutableLiveData<NetworkResult<List<DiscountEntity>>>()
 
-
     // ------------------- Fetch Functions -------------------
     fun fetchApplicationSetting() = viewModelScope.launch {
         applicationSetting.value = NetworkResult.Loading
@@ -104,8 +103,9 @@ class HomeViewModel @Inject constructor(
         fetchTable(homeRepository::fetchAndSaveVisitSchedules, visitSchedule)
 
     fun fetchGroupProducts() = fetchTable(homeRepository::fetchAndSaveGroups, groupProducts)
+    fun fetchProducts() = fetchTable(homeRepository::fetchAndSaveProducts, products)
 
-    suspend fun fetchProducts() {
+    suspend fun syncProducts() {
         products.postValue(NetworkResult.Loading)
 
         val result = homeRepository.fetchAndSaveProducts()
@@ -132,7 +132,10 @@ class HomeViewModel @Inject constructor(
     fun fetchInvoiceCategory() =
         fetchTable(homeRepository::fetchAndSaveInvoiceCategory, invoiceCategory)
 
-    suspend fun fetchPattern() {
+    fun fetchPattern() =
+        fetchTable(homeRepository::fetchAndSavePattern, pattern)
+
+    suspend fun syncPattern() {
         pattern.postValue(NetworkResult.Loading)
 
         val result = homeRepository.fetchAndSavePattern()
@@ -148,8 +151,9 @@ class HomeViewModel @Inject constructor(
     fun fetchPatternDetails() =
         fetchTable(homeRepository::fetchAndSavePatternDetails, patternDetails)
 
+    fun fetchAct() = fetchTable(homeRepository::fetchAndSaveAct, act)
 
-    suspend fun fetchAct() {
+    suspend fun syncAct() {
         act.postValue(NetworkResult.Loading)
 
         val result = homeRepository.fetchAndSaveAct()
@@ -164,7 +168,8 @@ class HomeViewModel @Inject constructor(
 
     fun fetchVat() = fetchTable(homeRepository::fetchAndSaveVat, vat)
     fun fetchSaleCenter() = fetchTable(homeRepository::fetchAndSaveSaleCenter, saleCenter)
-    suspend fun fetchDiscount() {
+    fun fetchDiscount() = fetchTable(homeRepository::fetchAndSaveDiscount, discount)
+    suspend fun syncDiscount() {
         discount.postValue(NetworkResult.Loading)
 
         val result = homeRepository.fetchAndSaveDiscount()
@@ -177,7 +182,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // ------------------- تابع عمومی برای کاهش تکرار -------------------
+    // ------------------- تابع عمومی -------------------
     private fun <T> fetchTable(
         fetch: suspend () -> NetworkResult<List<T>>,
         liveData: MutableLiveData<NetworkResult<List<T>>>

@@ -105,14 +105,7 @@ class HeaderOrderFragment : Fragment() {
         if (isEditMode) {
             loadEditData()
         } else {
-            // حالت ایجاد جدید
-            if (!factorViewModel.enteredProductPage) {
-                factorViewModel.resetHeader()
-                if (factorViewModel.factorHeader.value?.createDate == null) {
-                    factorViewModel.setDefaultDates()
-                }
-                createNewHeader()
-            }
+            ensureHeaderInitialized()
         }
 
         setupClicks()
@@ -131,6 +124,10 @@ class HeaderOrderFragment : Fragment() {
     private fun initCustomer() {
         if (args.typeCustomer && args.customerId != 0) {
             loadCustomerData(args.customerId, args.customerName)
+            // اطمینان از مقداردهی saleCenterId در هر حالت
+            lifecycleScope.launch {
+                saleCenterId = mainPreferences.saleCenterId.first() ?: 0
+            }
         }
     }
 
@@ -273,6 +270,53 @@ class HeaderOrderFragment : Fragment() {
         }
     }
 
+    private fun ensureHeaderInitialized() {
+        lifecycleScope.launch {
+            // فقط یک بار اجرا شود (برای جلوگیری از تداخل در تغییرات مکرر)
+            if (hasLoadedEditData) return@launch
+            hasLoadedEditData = true
+
+            val current = factorViewModel.factorHeader.value
+
+            // اگر هدر هنوز ایجاد نشده یا uniqueId ندارد، یکی بساز
+            if (current?.uniqueId == null) {
+                createNewHeader()
+            } else {
+                // حتی اگر هدر وجود داشت، مطمئن شویم saleCenterId و سایر مقادیر ضروری ست شده‌اند
+                val saleCenterIdPref = mainPreferences.saleCenterId.first() ?: 0
+                val userId = mainPreferences.id.first() ?: 0
+                val visitorId = mainPreferences.personnelId.first() ?: 0
+
+                // فقط اگر فیلدهای ضروری null بودند، آپدیت کن
+                if (current.saleCenterId == null || current.createUserId == null || current.visitorId == null) {
+                    factorViewModel.factorHeader.value = current.copy(
+                        saleCenterId = current.saleCenterId ?: saleCenterIdPref,
+                        createUserId = current.createUserId ?: userId,
+                        visitorId = current.visitorId ?: visitorId,
+                        // اطمینان از تاریخ‌ها (اختیاری)
+                        createDate = current.createDate ?: getTodayGregorian(),
+                        persianDate = current.persianDate ?: getTodayPersianDate(),
+                        dueDate = current.dueDate ?: getTodayGregorian(),
+                        deliveryDate = current.deliveryDate ?: getTodayGregorian(),
+                        createTime = current.createTime ?: getCurrentTime()
+                    )
+                }
+
+                // همیشه saleCenterId را به‌روز کن (برای استفاده در loadPatterns)
+                saleCenterId = current.saleCenterId ?: saleCenterIdPref
+
+                // اگر defaultAnbarId نبود، بارگیری کن
+                if (current.defaultAnbarId == null) {
+                    headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
+                    headerOrderViewModel.defaultAnbarId.collect { anbarId ->
+                        if (anbarId != null) {
+                            factorViewModel.updateHeader(defaultAnbarId = anbarId)
+                        }
+                    }
+                }
+            }
+        }
+    }
     private fun createNewHeader() {
 
         lifecycleScope.launch {
