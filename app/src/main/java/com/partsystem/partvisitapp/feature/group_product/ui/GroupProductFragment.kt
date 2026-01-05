@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -35,7 +35,7 @@ import kotlin.math.floor
 @AndroidEntryPoint
 class GroupProductFragment : Fragment() {
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private var _binding: FragmentGroupProductBinding? = null
     private val binding get() = _binding!!

@@ -21,5 +21,9 @@ interface GroupProductDao {
 
     @Query("DELETE FROM group_product_table")
     suspend fun clearGroupProduct()
+
+    @Query("SELECT COUNT(*) FROM group_product_table")
+    suspend fun getCount(): Int
+
 }
 

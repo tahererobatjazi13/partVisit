@@ -52,7 +52,6 @@ suspend fun saveBase64ImageToFile(base64Data: String, fileName: String, context:
     }
 }
 
-object NetworkUtil {
     fun isInternetAvailable(context: Context): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -66,7 +65,7 @@ object NetworkUtil {
             return networkInfo != null && networkInfo.isConnected
         }
     }
-}
+
 
 fun getTypefaceRegular(context: Context): Typeface {
     return ResourcesCompat.getFont(context, R.font.iran_sans)!!

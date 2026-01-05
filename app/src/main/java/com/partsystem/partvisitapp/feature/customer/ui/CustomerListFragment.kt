@@ -14,7 +14,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
@@ -31,7 +31,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class CustomerListFragment : Fragment() {
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private var _binding: FragmentCustomerListBinding? = null
     private val binding get() = _binding!!
@@ -154,7 +154,7 @@ class CustomerListFragment : Fragment() {
 
     private fun observeData() {
         lifecycleScope.launch {
-            val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+            val controlVisit = mainPreferences.controlVisitSchedule.first() ?: false
             val persianDate = getTodayPersianDate()
 
             if (controlVisit) {

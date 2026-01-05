@@ -12,7 +12,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderDetailBinding
@@ -24,7 +24,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class OnlineOrderDetailFragment : Fragment() {
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
     private var _binding: FragmentOrderDetailBinding? = null
     private val binding get() = _binding!!
     private val viewModel: OnlineOrderListViewModel by viewModels()

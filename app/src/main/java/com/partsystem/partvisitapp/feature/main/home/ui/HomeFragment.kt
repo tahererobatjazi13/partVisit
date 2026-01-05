@@ -24,21 +24,24 @@ import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.isInternetAvailable
 import com.partsystem.partvisitapp.databinding.DialogLoadingBinding
 import com.partsystem.partvisitapp.databinding.FragmentHomeBinding
 import com.partsystem.partvisitapp.feature.splash.SplashActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     @Inject
     lateinit var db: AppDatabase
@@ -55,6 +58,8 @@ class HomeFragment : Fragment() {
     private val tasks = mutableListOf<() -> Unit>()
     private var currentTaskIndex = 0
     private var doubleBackToExit = false
+    private var customDialogForceUpdate: CustomDialog? = null
+    private var syncType = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,20 +76,20 @@ class HomeFragment : Fragment() {
         initAdapter()
         setupClicks()
         handleBackToExit()
-        //setupObserver()
     }
 
     @SuppressLint("SetTextI18n")
     private fun init() {
 
         customDialog = CustomDialog()
+        customDialogForceUpdate = CustomDialog()
         binding.tvDate.text = getTodayPersianDate()
 
         // جمع‌آوری دیتا از DataStore
         lifecycleScope.launch {
             combine(
-                userPreferences.firstName,
-                userPreferences.lastName
+                mainPreferences.firstName,
+                mainPreferences.lastName
             ) { firstName, lastName ->
                 "${firstName ?: ""} ${lastName ?: ""}"
             }.collect { fullName ->
@@ -99,85 +104,87 @@ class HomeFragment : Fragment() {
 
         addTask(
             liveData = viewModel.applicationSetting,
-            loadingMsg = "در حال دریافت تنظیمات ..."
+            loadingMsg = "$syncType تنظیمات ..."
         ) { viewModel.fetchApplicationSetting() }
 
         addTask(
             liveData = viewModel.visitor,
-            loadingMsg = "در حال دریافت ویزیتور ..."
+            loadingMsg = "$syncType ویزیتور ..."
         ) { viewModel.fetchVisitors() }
+
         addTask(
             liveData = viewModel.visitSchedule,
-            loadingMsg = "در حال دریافت برنامه ویزیت ..."
+            loadingMsg = "$syncType برنامه ویزیت ..."
         ) { viewModel.fetchVisitSchedules() }
 
         addTask(
             liveData = viewModel.groupProducts,
-            loadingMsg = "در حال دریافت گروه کالا ..."
+            loadingMsg = "$syncType گروه کالا ..."
         ) { viewModel.fetchGroupProducts() }
 
         addTask(
-            liveData = viewModel.products,
-            loadingMsg = "در حال دریافت محصولات ..."
+            viewModel.products,
+            loadingMsg = "$syncType محصولات ..."
         ) { viewModel.fetchProducts() }
 
         addTask(
             liveData = viewModel.productImages,
-            loadingMsg = "در حال دریافت تصاویر کالا ..."
+            loadingMsg = "$syncType تصاویر کالا ..."
         ) { viewModel.fetchProductImages() }
 
         addTask(
             liveData = viewModel.productPacking,
-            loadingMsg = "در حال دریافت بسته‌بندی ..."
+            loadingMsg = "$syncType بسته‌بندی ..."
         ) { viewModel.fetchProductPacking() }
 
         addTask(
             liveData = viewModel.customers,
-            loadingMsg = "در حال دریافت مشتریان ..."
+            loadingMsg = "$syncType مشتریان ..."
         ) { viewModel.fetchCustomers() }
 
         addTask(
             liveData = viewModel.customerDirections,
-            loadingMsg = "در حال دریافت مسیر مشتریان ..."
+            loadingMsg = "$syncType مسیر مشتریان ..."
         ) { viewModel.fetchCustomerDirections() }
 
         addTask(
-            liveData = viewModel.assignDirectionCustome,
-            loadingMsg = "در حال دریافت مسیر مشتری ..."
+            liveData = viewModel.assignDirectionCustomer,
+            loadingMsg = "$syncType مسیر مشتری ..."
         ) { viewModel.fetchAssignDirectionCustomer() }
 
         addTask(
             liveData = viewModel.invoiceCategory,
-            loadingMsg = "در حال دریافت گروه صورتحساب ..."
+            loadingMsg = "$syncType گروه صورتحساب ..."
         ) { viewModel.fetchInvoiceCategory() }
 
         addTask(
             liveData = viewModel.pattern,
-            loadingMsg = "در حال دریافت طرح فروش ..."
+            loadingMsg = "$syncType طرح فروش ..."
         ) { viewModel.fetchPattern() }
+
         addTask(
             liveData = viewModel.patternDetails,
-            loadingMsg = "در حال دریافت جزییات طرح فروش ..."
+            loadingMsg = "$syncType جزییات طرح فروش ..."
         ) { viewModel.fetchPatternDetails() }
 
         addTask(
             liveData = viewModel.act,
-            loadingMsg = "در حال دریافت مصوبه ..."
+            loadingMsg = "$syncType مصوبه ..."
         ) { viewModel.fetchAct() }
 
         addTask(
             liveData = viewModel.vat,
-            loadingMsg = "در حال دریافت مالیات و عوارض ..."
+            loadingMsg = "$syncType مالیات و عوارض ..."
         ) { viewModel.fetchVat() }
 
         addTask(
             liveData = viewModel.saleCenter,
-            loadingMsg = "در حال دریافت مراکز فروش ..."
+            loadingMsg = "$syncType مراکز فروش ..."
         ) { viewModel.fetchSaleCenter() }
 
         addTask(
             liveData = viewModel.discount,
-            loadingMsg = "در حال دریافت تخفیفات ..."
+            loadingMsg = "$syncType تخفیفات ..."
         ) { viewModel.fetchDiscount() }
 
         // اولین کار را شروع کن
@@ -228,241 +235,30 @@ class HomeFragment : Fragment() {
         } else {
             // همه کارها تمام شد
             loadingDialog.dismiss()
+
+            onAllDataUpdatedSuccessfully()
         }
     }
 
-    /*
-        private fun setupObserver() {
-
-            viewModel.applicationSetting.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت تنظیمات...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchApplicationSetting()
-
-            viewModel.visitor.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت ویزیتور...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchVisitors()
-
-            viewModel.groupProducts.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت گروه کالا...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchGroupProducts()
-
-            viewModel.products.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت محصولات ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchProducts()
-
-            viewModel.productImages.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت تصاویرکالا ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchProductImages()
-
-            viewModel.productPacking.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت بسته بندی ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchProductPacking()
-
-            viewModel.customers.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> {
-                        showLoading("در حال دریافت مشتریان...")
-                    }
-
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchCustomers()
-
-            viewModel.customerDirections.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتریان ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchCustomerDirections()
-
-            viewModel.assignDirectionCustome.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت مسیر مشتری ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchAssignDirectionCustomer()
-
-            viewModel.invoiceCategory.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت گروه صورتحساب  ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchInvoiceCategory()
-
-            viewModel.pattern.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت طرح فروش ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchPattern()
-
-            viewModel.act.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت مصوبه ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchAct()
-
-            viewModel.vat.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت مالیات و عوارض ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchVat()
-
-            viewModel.saleCenter.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت مراکز فروش ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchSaleCenter()
-
-            viewModel.discount.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is NetworkResult.Loading -> showLoading("در حال دریافت تخفیفات ...")
-                    is NetworkResult.Success -> {
-                        hideLoading()
-                    }
-
-                    is NetworkResult.Error -> {
-                        hideLoading()
-                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-            viewModel.fetchDiscount()
+    private fun onAllDataUpdatedSuccessfully() {
+        lifecycleScope.launch {
+            mainPreferences.setActUpdated()
+            mainPreferences.setPatternUpdated()
+            mainPreferences.setProductUpdated()
+            mainPreferences.setDiscountUpdated()
         }
-    */
+    }
+
+    private fun openFactorScreen() {
+        val action =
+            HomeFragmentDirections.actionHomeFragmentToHeaderOrderFragment(
+                typeCustomer = false,
+                typeOrder = OrderType.Add.value,
+                customerId = 0,
+                customerName = ""
+            )
+        findNavController().navigate(action)
+    }
 
     private fun initAdapter() {
         binding.rvHomeMenu.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -470,36 +266,68 @@ class HomeFragment : Fragment() {
             binding.rvHomeMenu.adapter = HomeMenuAdapter(items) { item ->
                 when (item.id) {
                     1 -> { /* باز کردن صفحه کاتالوگ */
-                        val action =
-                            HomeFragmentDirections.actionHomeFragmentToProductListFragment(
-                                fromFactor = false
-                            )
-                        findNavController().navigate(action)
+                        lifecycleScope.launch {
+                            if (!isDatabaseReady()) {
+                                showSyncRequiredMessage()
+                                return@launch
+                            }
+                            val action =
+                                HomeFragmentDirections.actionHomeFragmentToProductListFragment(
+                                    fromFactor = false
+                                )
+                            findNavController().navigate(action)
+                        }
                     }
 
                     2 -> { /* باز کردن صفحه لیست کالاها */
-                        val action =
-                            HomeFragmentDirections.actionHomeFragmentToGroupProductFragment(
-                                fromFactor = false
-                            )
-                        findNavController().navigate(action)
+                        lifecycleScope.launch {
+                            if (!isDatabaseReady()) {
+                                showSyncRequiredMessage()
+                                return@launch
+                            }
+                            val action =
+                                HomeFragmentDirections.actionHomeFragmentToGroupProductFragment(
+                                    fromFactor = false
+                                )
+                            findNavController().navigate(action)
+                        }
                     }
 
                     3 -> { /* باز کردن صفحه ثبت سفارش */
-                        val action =
-                            HomeFragmentDirections.actionHomeFragmentToHeaderOrderFragment(
-                                typeCustomer = false,
-                                typeOrder = OrderType.Add.value,
-                                customerId = 0,
-                                customerName = ""
-                            )
-                        findNavController().navigate(action)
+                        lifecycleScope.launch {
+
+                            if (!isDatabaseReady()) {
+                                showSyncRequiredMessage()
+                                return@launch
+                            }
+
+                            val canOpen = mainPreferences.hasDownloadedToday()
+                            if (canOpen) {
+                                openFactorScreen()
+                            } else {
+                                customDialogForceUpdate?.showDialog(
+                                    activity,
+                                    getString(R.string.error_receiving_product_pattern_act_mandatory),
+                                    true,
+                                    getString(R.string.label_no),
+                                    getString(R.string.label_update),
+                                    true,
+                                    true
+                                )
+                            }
+                        }
                     }
 
                     4 -> { /* باز کردن صفحه مشتریان */
-                        val action =
-                            HomeFragmentDirections.actionHomeFragmentToCustomerListFragment()
-                        findNavController().navigate(action)
+                        lifecycleScope.launch {
+                            if (!isDatabaseReady()) {
+                                showSyncRequiredMessage()
+                                return@launch
+                            }
+                            val action =
+                                HomeFragmentDirections.actionHomeFragmentToCustomerListFragment()
+                            findNavController().navigate(action)
+                        }
                     }
 
                     5 -> { /* باز کردن صفحه گزارشات */
@@ -536,14 +364,74 @@ class HomeFragment : Fragment() {
         }
     }
 
+
     private fun setupClicks() {
         binding.ivSync.setOnClickListener {
-            setupObserver()
+            lifecycleScope.launch {
+                if (!isInternetAvailable(requireContext())) {
+                    CustomSnackBar.make(
+                        requireView(),
+                        getString(R.string.error_network_internet),
+                        SnackBarType.Error.value
+                    )?.show()
+                    return@launch
+                }
+                syncType = if (isDatabaseEmpty()) "در حال دریافت" else "در حال بروزرسانی"
+
+                showOrUpdateLoading("$syncType")
+                setupObserver()
+            }
         }
+
         customDialog?.apply {
             setOnClickNegativeButton { hideProgress() }
             setOnClickPositiveButton { logout() }
         }
+
+        customDialogForceUpdate?.apply {
+            setOnClickNegativeButton { hideProgress() }
+            setOnClickPositiveButton {
+                lifecycleScope.launch {
+
+                    if (!isInternetAvailable(requireContext())) {
+                        CustomSnackBar.make(
+                            requireView(),
+                            getString(R.string.error_network_internet),
+                            SnackBarType.Error.value
+                        )?.show()
+                        return@launch
+                    }
+
+                    try {
+                        syncType = "در حال بروزرسانی"
+
+                        val updateSteps = listOf(
+                            "مصوبه" to suspend { viewModel.fetchAct() },
+                            "طرح فروش" to suspend { viewModel.fetchPattern() },
+                            "محصولات" to suspend { viewModel.fetchProducts() },
+                            "تخفیفات" to suspend { viewModel.fetchDiscount() }
+                        )
+
+                        for ((title, action) in updateSteps) {
+                            updateLoadingMessage("$syncType $title ...")
+                            action()
+                            delay(200)
+                        }
+
+                        loadingDialog.dismiss()
+                    } catch (e: Exception) {
+                        loadingDialog.dismiss()
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.error_updating_information),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+
+
     }
 
     private fun initLoadingDialog() {
@@ -564,17 +452,17 @@ class HomeFragment : Fragment() {
 
         if (!loadingDialog.isShowing) {
             loadingDialog.show()
+            loadingDialog.window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.8).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+
         }
     }
 
-    private fun hideLoadingIfDone() {
-        loadingCount--
-
-        if (loadingCount <= 0) {
-            loadingCount = 0
-            if (::loadingDialog.isInitialized && loadingDialog.isShowing) {
-                loadingDialog.dismiss()
-            }
+    private suspend fun updateLoadingMessage(message: String) {
+        withContext(kotlinx.coroutines.Dispatchers.Main) {
+            showOrUpdateLoading(message)
         }
     }
 
@@ -601,7 +489,7 @@ class HomeFragment : Fragment() {
     private fun logout() {
         viewLifecycleOwner.lifecycleScope.launch {
             // پاک کردن اطلاعات کاربر از DataStore
-            userPreferences.clearUserInfo()
+            mainPreferences.clearUserInfo()
 
             // پاک کردن تمام جدول‌ها
             db.applicationSettingDao().clearApplicationSetting() // جدول تنظیمات
@@ -629,6 +517,26 @@ class HomeFragment : Fragment() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
+    }
+
+    private suspend fun isDatabaseEmpty(): Boolean {
+        return db.groupProductDao().getCount() == 0 ||
+                db.productDao().getCount() == 0 ||
+                db.customerDao().getCount() == 0
+    }
+
+    private suspend fun isDatabaseReady(): Boolean {
+        return db.groupProductDao().getCount() > 0 &&
+                db.productDao().getCount() > 0 &&
+                db.customerDao().getCount() > 0
+    }
+
+    private fun showSyncRequiredMessage() {
+        CustomSnackBar.make(
+            requireView(),
+            getString(R.string.error_click_sync_button_download_information),
+            SnackBarType.Warning.value
+        )?.show()
     }
 
     override fun onDestroyView() {

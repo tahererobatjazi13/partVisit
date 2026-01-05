@@ -13,7 +13,6 @@ import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
-import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
@@ -24,12 +23,10 @@ import com.partsystem.partvisitapp.core.database.entity.VatEntity
 import com.partsystem.partvisitapp.core.database.entity.VisitScheduleEntity
 import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.feature.main.home.model.HomeMenuItem
 import com.partsystem.partvisitapp.feature.main.home.repository.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,7 +34,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
-    private val userPreferences: UserPreferences
+    private val mainPreferences: MainPreferences
 
 ) : ViewModel() {
 
@@ -61,166 +58,135 @@ class HomeViewModel @Inject constructor(
         )
     }
 
-    private val _applicationSetting =
-        MutableLiveData<NetworkResult<List<ApplicationSettingEntity>>>()
-    val applicationSetting: LiveData<NetworkResult<List<ApplicationSettingEntity>>> =
-        _applicationSetting
+    // ----------- LiveData برای همه جداول ----------------
+    val applicationSetting = MutableLiveData<NetworkResult<List<ApplicationSettingEntity>>>()
+    val visitor = MutableLiveData<NetworkResult<List<VisitorEntity>>>()
+    val visitSchedule = MutableLiveData<NetworkResult<List<VisitScheduleEntity>>>()
+    val groupProducts = MutableLiveData<NetworkResult<List<GroupProductEntity>>>()
+    val products = MutableLiveData<NetworkResult<List<ProductEntity>>>()
+    val productImages = MutableLiveData<NetworkResult<List<ProductImageEntity>>>()
+    val productPacking = MutableLiveData<NetworkResult<List<ProductPackingEntity>>>()
+    val customers = MutableLiveData<NetworkResult<List<CustomerEntity>>>()
+    val customerDirections = MutableLiveData<NetworkResult<List<CustomerDirectionEntity>>>()
+    val assignDirectionCustomer =
+        MutableLiveData<NetworkResult<List<AssignDirectionCustomerEntity>>>()
+    val invoiceCategory = MutableLiveData<NetworkResult<List<InvoiceCategoryEntity>>>()
+    val pattern = MutableLiveData<NetworkResult<List<PatternEntity>>>()
+    val patternDetails = MutableLiveData<NetworkResult<List<PatternDetailEntity>>>()
+    val act = MutableLiveData<NetworkResult<List<ActEntity>>>()
+    val vat = MutableLiveData<NetworkResult<List<VatEntity>>>()
+    val saleCenter = MutableLiveData<NetworkResult<List<SaleCenterEntity>>>()
+    val discount = MutableLiveData<NetworkResult<List<DiscountEntity>>>()
 
+
+    // ------------------- Fetch Functions -------------------
     fun fetchApplicationSetting() = viewModelScope.launch {
-        _applicationSetting.value = NetworkResult.Loading
-        val result = homeRepository.fetchAndSaveApplicationSetting()
-        _applicationSetting.value = result
+        applicationSetting.value = NetworkResult.Loading
 
-        // اگر موفق بود → برو مقدار ControlVisitSchedule را ذخیره کن
+        val result = homeRepository.fetchAndSaveApplicationSetting()
+        applicationSetting.value = result
+
+        // اگر موفق بود → مقدار ControlVisitSchedule را ذخیره کن
         if (result is NetworkResult.Success) {
             loadAndSaveControlVisitSchedule()
         }
     }
 
-
     private fun loadAndSaveControlVisitSchedule() {
         viewModelScope.launch {
             val value = homeRepository.getControlVisitSchedule()
-            userPreferences.saveControlVisitSchedule(value)
+            mainPreferences.saveControlVisitSchedule(value)
         }
     }
 
-    private val _visitor =
-        MutableLiveData<NetworkResult<List<VisitorEntity>>>()
-    val visitor: LiveData<NetworkResult<List<VisitorEntity>>> =
-        _visitor
+    fun fetchVisitors() = fetchTable(homeRepository::fetchAndSaveVisitors, visitor)
+    fun fetchVisitSchedules() =
+        fetchTable(homeRepository::fetchAndSaveVisitSchedules, visitSchedule)
 
-    fun fetchVisitors() = viewModelScope.launch {
-        _visitor.value = NetworkResult.Loading
-        _visitor.value = homeRepository.fetchAndSaveVisitor()
+    fun fetchGroupProducts() = fetchTable(homeRepository::fetchAndSaveGroups, groupProducts)
+
+    suspend fun fetchProducts() {
+        products.postValue(NetworkResult.Loading)
+
+        val result = homeRepository.fetchAndSaveProducts()
+        products.postValue(result)
+
+        if (result is NetworkResult.Success) {
+            mainPreferences.setProductUpdated()
+        } else if (result is NetworkResult.Error) {
+            throw Exception(result.message)
+        }
     }
 
-    private val _visitSchedule =
-        MutableLiveData<NetworkResult<List<VisitScheduleEntity>>>()
-    val visitSchedule: LiveData<NetworkResult<List<VisitScheduleEntity>>> =
-        _visitSchedule
+    fun fetchProductImages() = fetchTable(homeRepository::fetchAndSaveProductImages, productImages)
+    fun fetchProductPacking() =
+        fetchTable(homeRepository::fetchAndSaveProductPacking, productPacking)
 
-    fun fetchVisitSchedules() = viewModelScope.launch {
-        _visitSchedule.value = NetworkResult.Loading
-        _visitSchedule.value = homeRepository.fetchAndSaveVisitSchedule()
+    fun fetchCustomers() = fetchTable(homeRepository::fetchAndSaveCustomers, customers)
+    fun fetchCustomerDirections() =
+        fetchTable(homeRepository::fetchAndSaveCustomerDirections, customerDirections)
+
+    fun fetchAssignDirectionCustomer() =
+        fetchTable(homeRepository::fetchAndSaveAssignDirectionCustomer, assignDirectionCustomer)
+
+    fun fetchInvoiceCategory() =
+        fetchTable(homeRepository::fetchAndSaveInvoiceCategory, invoiceCategory)
+
+    suspend fun fetchPattern() {
+        pattern.postValue(NetworkResult.Loading)
+
+        val result = homeRepository.fetchAndSavePattern()
+        pattern.postValue(result)
+
+        if (result is NetworkResult.Success) {
+            mainPreferences.setPatternUpdated()
+        } else if (result is NetworkResult.Error) {
+            throw Exception(result.message)
+        }
     }
 
-    private val _groupProducts = MutableLiveData<NetworkResult<List<GroupProductEntity>>>()
-    val groupProducts: LiveData<NetworkResult<List<GroupProductEntity>>> = _groupProducts
+    fun fetchPatternDetails() =
+        fetchTable(homeRepository::fetchAndSavePatternDetails, patternDetails)
 
-    fun fetchGroupProducts() = viewModelScope.launch {
-        _groupProducts.value = NetworkResult.Loading
-        _groupProducts.value = homeRepository.fetchAndSaveGroups()
+
+    suspend fun fetchAct() {
+        act.postValue(NetworkResult.Loading)
+
+        val result = homeRepository.fetchAndSaveAct()
+        act.postValue(result)
+
+        if (result is NetworkResult.Success) {
+            mainPreferences.setActUpdated()
+        } else if (result is NetworkResult.Error) {
+            throw Exception(result.message)
+        }
     }
 
-    private val _products = MutableLiveData<NetworkResult<List<ProductEntity>>>()
-    val products: LiveData<NetworkResult<List<ProductEntity>>> = _products
+    fun fetchVat() = fetchTable(homeRepository::fetchAndSaveVat, vat)
+    fun fetchSaleCenter() = fetchTable(homeRepository::fetchAndSaveSaleCenter, saleCenter)
+    suspend fun fetchDiscount() {
+        discount.postValue(NetworkResult.Loading)
 
-    fun fetchProducts() = viewModelScope.launch {
-        _products.value = NetworkResult.Loading
-        _products.value = homeRepository.fetchAndSaveProducts()
+        val result = homeRepository.fetchAndSaveDiscount()
+        discount.postValue(result)
+
+        if (result is NetworkResult.Success) {
+            mainPreferences.setDiscountUpdated()
+        } else if (result is NetworkResult.Error) {
+            throw Exception(result.message)
+        }
     }
 
-    private val _productImages = MutableLiveData<NetworkResult<List<ProductImageEntity>>>()
-    val productImages: LiveData<NetworkResult<List<ProductImageEntity>>> = _productImages
-
-    fun fetchProductImages() = viewModelScope.launch {
-        _productImages.value = NetworkResult.Loading
-        _productImages.value = homeRepository.fetchAndSaveImages()
+    // ------------------- تابع عمومی برای کاهش تکرار -------------------
+    private fun <T> fetchTable(
+        fetch: suspend () -> NetworkResult<List<T>>,
+        liveData: MutableLiveData<NetworkResult<List<T>>>
+    ) {
+        viewModelScope.launch {
+            liveData.value = NetworkResult.Loading
+            liveData.value = fetch()
+        }
     }
-
-    private val _productPacking = MutableLiveData<NetworkResult<List<ProductPackingEntity>>>()
-    val productPacking: LiveData<NetworkResult<List<ProductPackingEntity>>> = _productPacking
-
-    fun fetchProductPacking() = viewModelScope.launch {
-        _productPacking.value = NetworkResult.Loading
-        _productPacking.value = homeRepository.fetchAndSaveProductPacking()
-    }
-
-    private val _customers = MutableLiveData<NetworkResult<List<CustomerEntity>>>()
-    val customers: LiveData<NetworkResult<List<CustomerEntity>>> = _customers
-
-    fun fetchCustomers() = viewModelScope.launch {
-        _customers.value = NetworkResult.Loading
-        _customers.value = homeRepository.fetchAndSaveCustomers()
-    }
-
-    private val _customerDirections =
-        MutableLiveData<NetworkResult<List<CustomerDirectionEntity>>>()
-    val customerDirections: LiveData<NetworkResult<List<CustomerDirectionEntity>>> =
-        _customerDirections
-
-    fun fetchCustomerDirections() = viewModelScope.launch {
-        _customerDirections.value = NetworkResult.Loading
-        _customerDirections.value = homeRepository.fetchAndSaveCustomerDirections()
-    }
-
-    private val _assignDirectionCustome =
-        MutableLiveData<NetworkResult<List<AssignDirectionCustomerEntity>>>()
-    val assignDirectionCustome: LiveData<NetworkResult<List<AssignDirectionCustomerEntity>>> =
-        _assignDirectionCustome
-
-    fun fetchAssignDirectionCustomer() = viewModelScope.launch {
-        _assignDirectionCustome.value = NetworkResult.Loading
-        _assignDirectionCustome.value = homeRepository.fetchAndSaveAssignDirectionCustomer()
-    }
-
-    private val _invoiceCategory = MutableLiveData<NetworkResult<List<InvoiceCategoryEntity>>>()
-    val invoiceCategory: LiveData<NetworkResult<List<InvoiceCategoryEntity>>> = _invoiceCategory
-
-    fun fetchInvoiceCategory() = viewModelScope.launch {
-        _invoiceCategory.value = NetworkResult.Loading
-        _invoiceCategory.value = homeRepository.fetchAndSaveInvoiceCategory()
-    }
-
-    private val _pattern = MutableLiveData<NetworkResult<List<PatternEntity>>>()
-    val pattern: LiveData<NetworkResult<List<PatternEntity>>> = _pattern
-
-    fun fetchPattern() = viewModelScope.launch {
-        _pattern.value = NetworkResult.Loading
-        _pattern.value = homeRepository.fetchAndSavePattern()
-    }
-    private val _patternDetails = MutableLiveData<NetworkResult<List<PatternDetailEntity>>>()
-    val patternDetails: LiveData<NetworkResult<List<PatternDetailEntity>>> = _patternDetails
-
-    fun fetchPatternDetails() = viewModelScope.launch {
-        _patternDetails.value = NetworkResult.Loading
-        _patternDetails.value = homeRepository.fetchAndSavePatternDetails()
-    }
-
-    private val _act = MutableLiveData<NetworkResult<List<ActEntity>>>()
-    val act: LiveData<NetworkResult<List<ActEntity>>> = _act
-
-    fun fetchAct() = viewModelScope.launch {
-        _act.value = NetworkResult.Loading
-        _act.value = homeRepository.fetchAndSaveAct()
-    }
-
-
-    private val _vat = MutableLiveData<NetworkResult<List<VatEntity>>>()
-    val vat: LiveData<NetworkResult<List<VatEntity>>> = _vat
-
-    fun fetchVat() = viewModelScope.launch {
-        _vat.value = NetworkResult.Loading
-        _vat.value = homeRepository.fetchAndSaveVat()
-    }
-
-    private val _saleCenter = MutableLiveData<NetworkResult<List<SaleCenterEntity>>>()
-    val saleCenter: LiveData<NetworkResult<List<SaleCenterEntity>>> = _saleCenter
-
-    fun fetchSaleCenter() = viewModelScope.launch {
-        _saleCenter.value = NetworkResult.Loading
-        _saleCenter.value = homeRepository.fetchAndSaveSaleCenter()
-    }
-
-    private val _discount = MutableLiveData<NetworkResult<List<DiscountEntity>>>()
-    val discount: LiveData<NetworkResult<List<DiscountEntity>>> = _discount
-
-    fun fetchDiscount() = viewModelScope.launch {
-        _discount.value = NetworkResult.Loading
-        _discount.value = homeRepository.fetchAndSaveDiscount()
-    }
-
 
 }
 

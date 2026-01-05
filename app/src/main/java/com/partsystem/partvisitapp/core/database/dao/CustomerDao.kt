@@ -109,6 +109,9 @@ interface CustomerDao {
     @Query("SELECT * FROM customer_table WHERE name LIKE '%' || :keyword || '%'")
     suspend fun searchCustomer(keyword: String): List<CustomerEntity>
 
+    @Query("SELECT COUNT(*) FROM customer_table")
+    suspend fun getCount(): Int
+
     // حذف همه مشتری‌ها (برای زمانی که API سینک کامل می‌کنی)
     @Query("DELETE FROM customer_table")
     suspend fun clearCustomers()

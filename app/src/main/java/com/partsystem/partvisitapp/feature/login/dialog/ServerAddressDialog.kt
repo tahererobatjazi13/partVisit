@@ -9,7 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.BaseUrlValidator
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.databinding.DialogServerAddressBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class ServerAddressDialog : DialogFragment() {
 
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private lateinit var binding: DialogServerAddressBinding
 
@@ -36,7 +36,7 @@ class ServerAddressDialog : DialogFragment() {
 
         lifecycleScope.launch {
             //  مقدار واقعی
-            val savedBaseUrl = userPreferences.baseUrlFlow.firstOrNull()
+            val savedBaseUrl = mainPreferences.baseUrlFlow.firstOrNull()
 
             if (savedBaseUrl.isNullOrBlank()) {
                 binding.tieServerAddress.setText("")
@@ -68,7 +68,7 @@ class ServerAddressDialog : DialogFragment() {
                     return@launch
                 }
 
-                userPreferences.saveBaseUrl(baseUrl)
+                mainPreferences.saveBaseUrl(baseUrl)
                 dismiss()
             }
         }

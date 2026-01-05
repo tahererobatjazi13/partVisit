@@ -1,6 +1,6 @@
 package com.partsystem.partvisitapp.core.network
 
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -8,14 +8,14 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import javax.inject.Inject
 
 class BaseUrlInterceptor @Inject constructor(
-    private val userPreferences: UserPreferences
+    private val mainPreferences: MainPreferences
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
         val baseUrlString = runBlocking {
-            userPreferences.getBaseUrl()
+            mainPreferences.getBaseUrl()
         }
 
         val baseUrl = baseUrlString.toHttpUrl()

@@ -16,62 +16,71 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/medium_size"
-        android:orientation="horizontal"
-        android:weightSum="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvMessage">
 
-        <RelativeLayout
-            android:id="@+id/rlCancel"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clCancel"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/small_size"
             android:layout_marginVertical="@dimen/medium_size"
-            android:layout_weight="0.33">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvNo"
                 style="@style/SmallBoldTextStyle"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:background="@drawable/bg_rounded_rectangle_stroke_red"
                 android:gravity="center"
-                android:paddingHorizontal="@dimen/small_size"
+                android:paddingHorizontal="@dimen/large_size"
                 android:paddingVertical="@dimen/x_small_size"
                 android:text="@string/label_no"
-                android:textColor="@color/red_E92228" />
-        </RelativeLayout>
+                android:textColor="@color/red_E92228"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <RelativeLayout
-            android:id="@+id/rlOk"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clOk"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/small_size"
             android:layout_marginVertical="@dimen/medium_size"
-            android:layout_weight="0.33">
+            android:layout_marginStart="@dimen/medium_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/clCancel"
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvOk"
                 style="@style/MediumTextStyle"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:background="@drawable/bg_rounded_rectangle_stroke_green"
                 android:gravity="center"
-                android:paddingHorizontal="@dimen/small_size"
+                android:paddingHorizontal="@dimen/large_size"
                 android:paddingVertical="@dimen/x_small_size"
                 android:text="@string/label_ok"
-                android:textColor="@color/green_21BF73" />
+                android:textColor="@color/green_21BF73"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

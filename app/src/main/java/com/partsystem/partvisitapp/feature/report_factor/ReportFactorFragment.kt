@@ -12,7 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.ReportFactorListType
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.databinding.FragmentReportFactorBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class ReportFactorFragment : Fragment() {
 
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private var _binding: FragmentReportFactorBinding? = null
     private val binding get() = _binding!!
@@ -98,7 +98,7 @@ class ReportFactorFragment : Fragment() {
         binding.tabSent.setOnClickListener {
             setActiveTab(false)
             lifecycleScope.launch {
-                val visitorId = userPreferences.personnelId.first() ?: 0
+                val visitorId = mainPreferences.personnelId.first() ?: 0
                 navController.navigate(
                     R.id.onlineOrderListFragment,
                     Bundle().apply {

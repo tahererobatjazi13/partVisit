@@ -42,7 +42,8 @@ import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.database.mapper.toEntity
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -51,7 +52,7 @@ import javax.inject.Inject
 
 class HomeRepository @Inject constructor(
     private val api: ApiService,
-    private val userPreferences: UserPreferences,
+    private val mainPreferences: MainPreferences,
     private val applicationSettingDao: ApplicationSettingDao,
     private val visitorDao: VisitorDao,
     private val visitScheduleDao: VisitScheduleDao,
@@ -76,7 +77,7 @@ class HomeRepository @Inject constructor(
 
     private val visitorId: Int by lazy {
         runBlocking {
-            userPreferences.personnelId.first() ?: 0
+            mainPreferences.personnelId.first() ?: 0
         }
     }
 
@@ -90,15 +91,13 @@ class HomeRepository @Inject constructor(
             }
 
             val applicationSettingList = body.map { it.toEntity() }
-
-            applicationSettingDao.clearApplicationSetting()
             applicationSettingDao.insertAll(applicationSettingList)
 
             NetworkResult.Success(applicationSettingList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            return NetworkResult.Error(errorMsg)
         }
     }
 
@@ -107,8 +106,7 @@ class HomeRepository @Inject constructor(
         return setting?.value?.equals("true", ignoreCase = true) ?: false
     }
 
-
-    suspend fun fetchAndSaveVisitor(): NetworkResult<List<VisitorEntity>> {
+    suspend fun fetchAndSaveVisitors(): NetworkResult<List<VisitorEntity>> {
         return try {
 
             val response = api.getVisitors(visitorId)
@@ -119,19 +117,17 @@ class HomeRepository @Inject constructor(
             }
 
             val visitorList = body.map { it.toEntity() }
-
-            visitorDao.clearVisitors()
             visitorDao.insertAll(visitorList)
 
             NetworkResult.Success(visitorList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            return NetworkResult.Error(errorMsg)
         }
     }
 
-    suspend fun fetchAndSaveVisitSchedule(): NetworkResult<List<VisitScheduleEntity>> {
+    suspend fun fetchAndSaveVisitSchedules(): NetworkResult<List<VisitScheduleEntity>> {
         try {
             val response = api.getVisitSchedule(visitorId)
             val body = response.body()
@@ -139,24 +135,20 @@ class HomeRepository @Inject constructor(
             if (!response.isSuccessful || body == null) {
                 return NetworkResult.Error("Server Error: ${response.code()}")
             }
-
             val visitScheduleList = body.map { it.toEntity() }
 
             val visitScheduleDetailList = body.flatMap { act ->
                 act.visitScheduleDetails?.map { it.toEntity() } ?: emptyList()
             }
 
-            visitScheduleDao.clearVisitSchedule()
-            visitScheduleDao.clearVisitScheduleDetails()
-
             visitScheduleDao.insertVisitSchedule(visitScheduleList)
             visitScheduleDao.insertVisitScheduleDetails(visitScheduleDetailList)
 
             return NetworkResult.Success(visitScheduleList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            return NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            return NetworkResult.Error(errorMsg)
         }
     }
 
@@ -170,15 +162,13 @@ class HomeRepository @Inject constructor(
             }
 
             val groupList = body.map { it.toEntity() }
-
-            groupProductDao.clearGroupProduct()
             groupProductDao.insertAll(groupList)
 
             NetworkResult.Success(groupList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -192,19 +182,17 @@ class HomeRepository @Inject constructor(
             }
 
             val productList = body.map { it.toEntity() }
-
-            productDao.clearProducts()
             productDao.insertProducts(productList)
 
             NetworkResult.Success(productList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
-    suspend fun fetchAndSaveImages(): NetworkResult<List<ProductImageEntity>> {
+    suspend fun fetchAndSaveProductImages(): NetworkResult<List<ProductImageEntity>> {
         return try {
             val response = api.getProductImages()
             val body = response.body()
@@ -214,14 +202,13 @@ class HomeRepository @Inject constructor(
             }
 
             val imageList = body.map { it.toEntity(context) }
-
-            productImageDao.clearProductImage()
             productImageDao.insertImages(imageList)
 
             NetworkResult.Success(imageList)
 
-        } catch (e: Exception) {
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -235,15 +222,13 @@ class HomeRepository @Inject constructor(
             }
 
             val productPackingList = body.map { it.toEntity() }
-
-            productPackingDao.clearProductPacking()
             productPackingDao.insertAll(productPackingList)
 
             NetworkResult.Success(productPackingList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -257,15 +242,13 @@ class HomeRepository @Inject constructor(
             }
 
             val customerList = body.map { it.toEntity() }
-            Log.d("customerList", customerList.size.toString());
-            customerDao.clearCustomers()
             customerDao.insertCustomers(customerList)
 
             NetworkResult.Success(customerList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -279,15 +262,13 @@ class HomeRepository @Inject constructor(
             }
 
             val customerDirectionList = body.map { it.toEntity() }
-
-            customerDirectionDao.clearCustomerDirection()
             customerDirectionDao.insertAll(customerDirectionList)
 
             NetworkResult.Success(customerDirectionList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -301,15 +282,13 @@ class HomeRepository @Inject constructor(
             }
 
             val assignDirectionCustomerList = body.map { it.toEntity() }
-
-            assignDirectionCustomerDao.clearAssignDirectionCustomer()
             assignDirectionCustomerDao.insertAll(assignDirectionCustomerList)
 
             NetworkResult.Success(assignDirectionCustomerList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -323,15 +302,13 @@ class HomeRepository @Inject constructor(
             }
 
             val invoiceCategoryList = body.map { it.toEntity() }
-
-            invoiceCategoryDao.clearInvoiceCategory()
             invoiceCategoryDao.insertAll(invoiceCategoryList)
 
             NetworkResult.Success(invoiceCategoryList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -345,15 +322,13 @@ class HomeRepository @Inject constructor(
             }
 
             val patternList = body.map { it.toEntity() }
-
-            patternDao.clearPatterns()
             patternDao.insertAll(patternList)
 
             NetworkResult.Success(patternList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -367,15 +342,13 @@ class HomeRepository @Inject constructor(
             }
 
             val patternDetailsList = body.map { it.toEntity() }
-
-            patternDetailDao.clearPatternDetails()
             patternDetailDao.insertAll(patternDetailsList)
 
             NetworkResult.Success(patternDetailsList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
         }
     }
 
@@ -394,17 +367,14 @@ class HomeRepository @Inject constructor(
                 act.actDetails?.map { it.toEntity() } ?: emptyList()
             }
 
-            actDao.clearAct()
-            actDao.clearActDetails()
-
             actDao.insertActs(actList)
             actDao.insertActDetails(actDetailList)
 
             return NetworkResult.Success(actList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            return NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            return NetworkResult.Error(errorMsg)
         }
     }
 
@@ -423,17 +393,14 @@ class HomeRepository @Inject constructor(
                 act.vatDetails.map { it.toEntity() }
             }
 
-            vatDao.clearVat()
-            vatDao.clearVatDetails()
-
             vatDao.insertVat(vatList)
             vatDao.insertVatDetails(vatDetailList)
 
             return NetworkResult.Success(vatList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            return NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            return NetworkResult.Error(errorMsg)
         }
     }
 
@@ -467,19 +434,15 @@ class HomeRepository @Inject constructor(
                 }
             }
 
-            saleCenterDao.clearSaleCenters()
-            saleCenterDao.clearAnbars()
-            saleCenterDao.clearUsers()
-
             saleCenterList.forEach { saleCenterDao.insertSaleCenter(it) }
             saleCenterDao.insertAnbars(saleCenterAnbarsList)
             saleCenterDao.insertUsers(saleCenterUsersList)
 
             return NetworkResult.Success(saleCenterList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            return NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            return NetworkResult.Error(errorMsg)
         }
     }
 
@@ -524,9 +487,6 @@ class HomeRepository @Inject constructor(
                 discount.discountCustomers?.map { it.toEntity() } ?: emptyList()
             }
 
-            discountDao.clearDiscounts()
-            discountDao.clearDiscounts()
-
             discountDao.insertDiscounts(discountList)
             discountDao.insertDiscountEshantyuns(discountEshantyunsList)
             discountDao.insertDiscountGifts(discountGiftsList)
@@ -540,9 +500,9 @@ class HomeRepository @Inject constructor(
 
             return NetworkResult.Success(discountList)
 
-        } catch (e: Exception) {
-            Log.e("NetworkError", e.toString())
-            return NetworkResult.Error("Network error: ${e.localizedMessage}")
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            return NetworkResult.Error(errorMsg)
         }
     }
 

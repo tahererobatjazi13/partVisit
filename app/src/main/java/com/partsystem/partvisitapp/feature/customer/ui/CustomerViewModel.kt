@@ -2,7 +2,7 @@ package com.partsystem.partvisitapp.feature.customer.ui
 
 import androidx.lifecycle.*
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.feature.customer.repository.CustomerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -13,7 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CustomerViewModel @Inject constructor(
     private val repository: CustomerRepository,
-    private val userPreferences: UserPreferences
+    private val mainPreferences: MainPreferences
 ) : ViewModel() {
 
     private val _customers = MutableLiveData<List<CustomerEntity>>()  // لیست کامل
@@ -24,8 +24,8 @@ class CustomerViewModel @Inject constructor(
     //  با برنامه ویزیت (با تاریخ)
     fun loadCustomersWithSchedule(persianDate: String) {
         viewModelScope.launch {
-            val saleCenterId = userPreferences.saleCenterId.first() ?: 0
-            val visitorId = userPreferences.personnelId.first() ?: 0
+            val saleCenterId = mainPreferences.saleCenterId.first() ?: 0
+            val visitorId = mainPreferences.personnelId.first() ?: 0
 
             if (saleCenterId == 0 || visitorId == 0) {
                 _customers.postValue(emptyList())
@@ -44,8 +44,8 @@ class CustomerViewModel @Inject constructor(
     // بدون برنامه ویزیت
     fun loadCustomersWithoutSchedule() {
         viewModelScope.launch {
-            val saleCenterId = userPreferences.saleCenterId.first() ?: 0
-            val visitorId = userPreferences.personnelId.first() ?: 0
+            val saleCenterId = mainPreferences.saleCenterId.first() ?: 0
+            val visitorId = mainPreferences.personnelId.first() ?: 0
 
             if (saleCenterId == 0 || visitorId == 0) {
                 _customers.postValue(emptyList())

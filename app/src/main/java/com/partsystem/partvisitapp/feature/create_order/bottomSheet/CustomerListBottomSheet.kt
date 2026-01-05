@@ -13,7 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.partsystem.partvisitapp.R
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
@@ -34,7 +34,7 @@ class CustomerListBottomSheet(
     private val customerViewModel: CustomerViewModel by viewModels()
 
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private var _binding: BottomSheetCustomerListBinding? = null
     private val binding get() = _binding!!
@@ -126,7 +126,7 @@ class CustomerListBottomSheet(
 
     private fun observeData() {
         lifecycleScope.launch {
-            val controlVisit = userPreferences.controlVisitSchedule.first() ?: false
+            val controlVisit = mainPreferences.controlVisitSchedule.first() ?: false
             val persianDate = getTodayPersianDate()
 
             if (controlVisit) {

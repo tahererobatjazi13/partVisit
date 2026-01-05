@@ -27,7 +27,7 @@ import com.partsystem.partvisitapp.core.utils.FactorFormKind
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.BottomSheetChooseDialog
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getCurrentTime
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
@@ -56,7 +56,7 @@ import javax.inject.Inject
 class HeaderOrderFragment : Fragment() {
 
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private var _binding: FragmentHeaderOrderBinding? = null
     private val binding get() = _binding!!
@@ -282,10 +282,10 @@ class HeaderOrderFragment : Fragment() {
             //  اگر هدر  جدید است
             if (current?.uniqueId == null) {
 
-                saleCenterId = userPreferences.saleCenterId.first() ?: 0
-                controlVisit = userPreferences.controlVisitSchedule.first() ?: false
-                userId = userPreferences.id.first() ?: 0
-                visitorId = userPreferences.personnelId.first() ?: 0
+                saleCenterId = mainPreferences.saleCenterId.first() ?: 0
+                controlVisit = mainPreferences.controlVisitSchedule.first() ?: false
+                userId = mainPreferences.id.first() ?: 0
+                visitorId = mainPreferences.personnelId.first() ?: 0
 
                 factorViewModel.factorHeader.value = current?.copy(
                     uniqueId = getGUID(),
@@ -692,8 +692,8 @@ class HeaderOrderFragment : Fragment() {
                 lifecycleScope.launch {
 
                     // ست کردن مقادیر اولیه
-                    saleCenterId = header.saleCenterId ?: userPreferences.saleCenterId.first() ?: 0
-                    userId = userPreferences.id.first() ?: 0
+                    saleCenterId = header.saleCenterId ?: mainPreferences.saleCenterId.first() ?: 0
+                    userId = mainPreferences.id.first() ?: 0
                 }
 
                 // دریافت نام مشتری بر اساس ID

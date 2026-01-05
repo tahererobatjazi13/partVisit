@@ -97,6 +97,7 @@
     <string name="label_sync_all_order">ارسال همه سفارشات</string>
     <string name="label_please_select">لطفا انتخاب کنید</string>
     <string name="label_server_setting">تنظیمات سرور</string>
+    <string name="label_update">آپدیت</string>
 
 
     <!-- date picker -->
@@ -151,6 +152,8 @@
     <string name="error_sales_center_not_assigned_visitor">مرکز فروش به ویزیتور تخصیص داده نشده است</string>
     <string name="error_configure_ip_domain_settings">ابتدا تنظیمات IP و دامنه را انجام دهید</string>
     <string name="error_sending_order">خطا در ارسال سفارش</string>
-
+    <string name="error_updating_information">خطا در بروزرسانی اطلاعات</string>
+    <string name="error_receiving_product_pattern_act_mandatory">دریافت اطلاعات محصول، طرح و مصوبه اجباری است.</string>
+    <string name="error_click_sync_button_download_information">ابتدا دکمه سینک بالای صفحه را بزنید تا اطلاعات دانلود شود</string>
 
 </resources>

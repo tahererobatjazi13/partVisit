@@ -25,6 +25,8 @@ interface ProductDao {
     @Query("SELECT * FROM product_table WHERE id = :id")
     fun getProductById(id: Int): LiveData<ProductEntity>
 
+    @Query("SELECT COUNT(*) FROM product_table")
+    suspend fun getCount(): Int
 
     @Query("SELECT * FROM product_table WHERE id = :id")
      fun getProductByProductId(id: Int): ProductEntity?

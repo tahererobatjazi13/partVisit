@@ -26,6 +26,7 @@ class CustomDialog {
     interface ClickNegativeButton {
         fun onClick()
     }
+
     private var clickNegativeButton: (() -> Unit)? = null
 
     fun setOnClickNegativeButton(clickNegativeButton: () -> Unit) {
@@ -72,20 +73,20 @@ class CustomDialog {
         binding!!.tvOk.text = textPositive
 
         // Handle button visibility
-        if (!showNegativeButton) binding!!.rlCancel.gone()
-        if (!showPositiveButton) binding!!.rlOk.gone()
+        if (!showNegativeButton) binding!!.clCancel.gone()
+        if (!showPositiveButton) binding!!.clOk.gone()
 
         // Set dialog properties
         mDialog!!.setCancelable(cancelable)
         mDialog!!.setCanceledOnTouchOutside(cancelable)
 
         // Set button listeners
-        binding!!.rlOk.setOnClickListener {
+        binding!!.clOk.setOnClickListener {
             clickPositiveButton?.invoke()
             mDialog?.dismiss()
         }
 
-        binding!!.rlCancel.setOnClickListener {
+        binding!!.clCancel.setOnClickListener {
             clickNegativeButton?.invoke()
             mDialog?.dismiss()
         }

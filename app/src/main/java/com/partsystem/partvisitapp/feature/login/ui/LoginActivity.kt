@@ -14,7 +14,7 @@ import com.partsystem.partvisitapp.feature.login.model.VisitorDto
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.core.utils.hideKeyboard
 import com.partsystem.partvisitapp.databinding.ActivityLoginBinding
@@ -31,7 +31,7 @@ import javax.inject.Inject
 class LoginActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private lateinit var binding: ActivityLoginBinding
     private val loginViewModel: LoginViewModel by viewModels()
@@ -62,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun doLogin() {
         lifecycleScope.launch {
-            val baseUrl = userPreferences.baseUrlFlow.firstOrNull()
+            val baseUrl = mainPreferences.baseUrlFlow.firstOrNull()
 
             if (baseUrl.isNullOrEmpty()) {
                 showSettingDialog()
@@ -133,7 +133,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun saveUserInfo(user: User) {
         lifecycleScope.launch {
-            userPreferences.saveUserInfo(
+            mainPreferences.saveUserInfo(
                 id = user.id,
                 firstName = user.firstName,
                 lastName = user.lastName,
@@ -193,7 +193,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun saveVisitorInfo(visitor: VisitorDto) {
         lifecycleScope.launch {
-            userPreferences.saveVisitorInfo(
+            mainPreferences.saveVisitorInfo(
                 id = visitor.id,
                 saleCenterId = visitor.saleCenterId
             )

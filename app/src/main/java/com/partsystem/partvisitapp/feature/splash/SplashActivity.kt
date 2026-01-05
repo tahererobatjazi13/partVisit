@@ -9,7 +9,7 @@ import com.partsystem.partvisitapp.databinding.ActivitySplashBinding
 import com.partsystem.partvisitapp.feature.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.BuildConfig
-import com.partsystem.partvisitapp.core.utils.datastore.UserPreferences
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.feature.login.ui.LoginActivity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -21,7 +21,7 @@ import javax.inject.Inject
 class SplashActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var userPreferences: UserPreferences
+    lateinit var mainPreferences: MainPreferences
 
     private lateinit var binding: ActivitySplashBinding
 
@@ -43,7 +43,7 @@ class SplashActivity : AppCompatActivity() {
 
     private fun checkLoginStatus() {
         lifecycleScope.launch {
-            val loggedIn = userPreferences.isLoggedIn.first()
+            val loggedIn = mainPreferences.isLoggedIn.first()
 
             val intent = if (loggedIn == true) {
                 Intent(this@SplashActivity, MainActivity::class.java)
