@@ -135,7 +135,11 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "fix bug header"
+git commit -m "discount repository"
 git push -u origin master
 git push
+*/
+
+/*
+http://178.131.164.145:52439/WebService.asmx
 */

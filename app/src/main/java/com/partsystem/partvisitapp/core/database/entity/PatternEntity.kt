@@ -50,6 +50,17 @@ data class PatternEntity(
         }
         return result
     }
+
+
+/*   fun getDiscountIds(): java.util.ArrayList<Int> {
+        val result = java.util.ArrayList<Int>()
+        if (PatternDetail != null) {
+            for (patternDetail in PatternDetail) {
+                if (patternDetail.DiscountId != null) result.add(patternDetail.DiscountId)
+            }
+        }
+        return result
+    }*/
 }
 
 /*

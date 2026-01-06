@@ -57,18 +57,19 @@ interface DiscountDao {
     @Query("DELETE FROM discounts_table")
     suspend fun clearDiscounts()
 
+   //AND ApplyKind = :applyKind
     @Transaction
     @Query(
         """
         SELECT * FROM discounts_table 
         WHERE FormType = 1 
-          AND ApplyKind = :applyKind 
+          
           AND (ToDate IS NULL OR ToDate = '' OR ToDate >= :toDate)
           AND PersianBeginDate <= :persianDate
     """
     )
     suspend fun getDiscounts(
-        applyKind: Int,
+       // applyKind: Int,
         toDate: String,
         persianDate: String
     ): List<DiscountEntity>
@@ -157,19 +158,19 @@ interface DiscountDao {
     suspend fun getDiscountUser(discountId: Int): List<DiscountUsersEntity>
 
 
-    // اگر بخواهید همه چیز را در یک query بگیرید (ترکیبی)
+    //AND ApplyKind = :applyKind
     @Transaction
     @Query(
         """
         SELECT * FROM discounts_table 
         WHERE FormType = 1 
-          AND ApplyKind = :applyKind 
+
           AND (ToDate IS NULL OR ToDate = '' OR ToDate >= :toDate)
           AND PersianBeginDate <= :persianDate
     """
     )
     suspend fun getDiscountsWithDetails(
-        applyKind: Int,
+       // applyKind: Int,
         toDate: String,
         persianDate: String
     ): List<DiscountFull>

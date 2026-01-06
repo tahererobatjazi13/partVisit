@@ -3,6 +3,8 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.feature.create_order.CalculateDiscount
@@ -10,10 +12,8 @@ import com.partsystem.partvisitapp.core.utils.formatFloat
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import kotlin.math.floor
 
-
 @Entity(
     tableName = "factor_detail_table",
-    primaryKeys = ["factorId", "productId"],
     foreignKeys = [
         ForeignKey(
             entity = FactorHeaderEntity::class,
@@ -21,11 +21,17 @@ import kotlin.math.floor
             childColumns = ["factorId"],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index(value = ["factorId", "productId"], unique = true),
+        Index("factorId"),
+        Index("productId")
     ]
 )
 data class FactorDetailEntity(
-    val factorId: Int,
+    @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    val factorId: Int,
     var productId: Int,
     var sortCode: Int? = null,
     var anbarId: Int? = null,
