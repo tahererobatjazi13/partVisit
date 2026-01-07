@@ -371,4 +371,5 @@ interface DiscountDao {
         productIdsSize: Int = productIds.size
     ): DiscountEshantyunResult
 
+
 }

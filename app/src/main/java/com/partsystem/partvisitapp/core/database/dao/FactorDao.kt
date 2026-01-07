@@ -210,10 +210,9 @@ interface FactorDao {
       suspend fun deleteDiscountsForHeader(factorId: String)*/
 
     // Gift
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFactorGift(discount: FactorGiftInfoEntity): Long
 
-
-    @Insert
-    suspend fun insertFactorGift(gift: FactorGiftInfoEntity): Long
 
     @Query("SELECT * FROM factor_gift_info_table WHERE factorId = :factorId")
     suspend fun getFactorGifts(factorId: Int): List<FactorGiftInfoEntity>
@@ -351,4 +350,17 @@ interface FactorDao {
 
     @Query("SELECT IFNULL(MAX(SortCode), 0) FROM factor_detail_table WHERE FactorId = :factorId")
     suspend fun getMaxSortCode(factorId: Int): Int
+
+
+
+    @Transaction
+    suspend fun insertFactorWithDiscountAndGifts(
+        detail: FactorDetailEntity,
+        discount: FactorDiscountEntity,
+        gifts: List<FactorGiftInfoEntity>
+    ) {
+        insertFactorDetail(detail)
+        insertFactorDiscount(discount)
+        gifts.forEach { insertFactorGift(it) }
+    }
 }

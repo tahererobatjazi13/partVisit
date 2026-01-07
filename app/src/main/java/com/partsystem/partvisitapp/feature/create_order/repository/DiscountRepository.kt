@@ -113,7 +113,7 @@ class DiscountRepository @Inject constructor(
     suspend fun processDiscounts(
         discounts: List<DiscountEntity>,
         factor: FactorHeaderEntity,
-        factorDetail: FactorDetailEntity?,
+        factorDetail: FactorDetailEntity,
         applyKind: Int, // 0 = FactorLevel, 1 = ProductLevel
         repository: DiscountRepository
     ) {
@@ -143,7 +143,7 @@ class DiscountRepository @Inject constructor(
                     id = 0, // will be assigned by DB or logic
                     factorId = factor.id,
                     discountId = discount.id,
-                    productId = factorDetail?.productId!!,
+                    productId = factorDetail.productId,
                     factorDetailId = factorDetail?.id!!,
                     sortCode = 0, // will set below
                     price = 0.0,
@@ -353,136 +353,136 @@ class DiscountRepository @Inject constructor(
             DiscountCalculationKind.Eshantyun.ordinal -> {
 
                 Log.d("Eshantyun", "okkkk3")
-                if (factor.patternId != null) {
-                    var actId =
-                        factorDao.getPatternDetailActId(factor.patternId!!, ActKind.Product.ordinal)
-                    if (actId == null) {
-                        actId = factorDao.getPatternDetailActId(
-                            factor.patternId!!,
-                            ActKind.Service.ordinal
+
+                val patternId = factor.patternId ?: return
+
+                var actId = factorDao.getPatternDetailActId(patternId, ActKind.Product.ordinal)
+                if (actId == null) {
+                    actId = factorDao.getPatternDetailActId(patternId, ActKind.Service.ordinal)
+                }
+                if (actId == null) return
+
+                Log.d("EshantyunactId", "ok")
+
+                val eshantyun = calculateDiscountEshantyun(
+                    factorId = factor.id,
+                    discountId = discount.id,
+                    productIds = productIds
+                ) ?: return
+                Log.d("Eshantyuneshantyun", "ok")
+
+                val lastSortCode = getMaxSortCode(factor.id)
+                val productId = eshantyun.productId
+                val anbarId = eshantyun.anbarId
+
+                // 1. ساخت detail هدیه (بدون ذخیره)
+                val detail = FactorDetailEntity(
+                    id = 0,
+                    factorId = factor.id,
+                    productId = productId,
+                    sortCode = lastSortCode,
+                    anbarId = anbarId,
+                    isGift = 1,
+                    unit1Value = 0.0,
+                    unit2Value = 0.0,
+                    packingValue = 0.0,
+                    packingId = null,
+                    price = 0.0
+                )
+
+                // تنظیم مقادیر بر اساس نوع واحد هدیه
+                when (eshantyun.unitKind) {
+                    DiscountUnitKind.Unit1.ordinal -> {
+                        detail.unit1Value = eshantyun.value
+                        val values = fillProductValues(
+                            anbarId = anbarId,
+                            productId = productId,
+                            factorDetailId = detail.id,
+                            packingId = null,
+                            unit1ValueInput = detail.unit1Value,
+                            unit2ValueInput = null,
+                            packingValueInput = null,
+                            isInput = false
                         )
+                        detail.unit2Value = values["Unit2Value"] ?: 0.0
+                        detail.packingValue = values["PackingValue"] ?: 0.0
                     }
-                    if (actId != null) {
-                        Log.d("EshantyunactId", "ok")
 
-                        val eshantyun = calculateDiscountEshantyun(
-                            factorId = factor.id,
-                            discountId = discount.id,
-                            productIds = productIds
+                    DiscountUnitKind.Unit2.ordinal -> {
+                        detail.unit2Value = eshantyun.value
+                        val values = fillProductValues(
+                            anbarId = anbarId,
+                            productId = productId,
+                            factorDetailId = detail.id,
+                            packingId = null,
+                            unit1ValueInput = null,
+                            unit2ValueInput = detail.unit2Value,
+                            packingValueInput = null,
+                            isInput = false
                         )
-                        if (eshantyun != null) {
-                            Log.d("Eshantyuneshantyun", "ok")
+                        detail.unit1Value = values["Unit1Value"] ?: 0.0
+                        detail.packingValue = values["PackingValue"] ?: 0.0
+                    }
 
-                            val detail = FactorDetailEntity(
-                                factorId = factor.id,
-                                productId = eshantyun.productId!!,
-                                sortCode = lastSortCode,
-                                anbarId = eshantyun.anbarId,
-                                isGift = 1,
-                                unit1Value = 0.0,
-                                unit2Value = 0.0,
-                                packingValue = 0.0,
-                                packingId = null,
-                                price = 0.0
-                            )
+                    DiscountUnitKind.Packing.ordinal -> {
+                        detail.packingId = eshantyun.packingId
+                        detail.packingValue = eshantyun.value
+                        val values = fillProductValues(
+                            anbarId = anbarId,
+                            productId = productId,
+                            factorDetailId = detail.id,
+                            packingId = detail.packingId,
+                            unit1ValueInput = null,
+                            unit2ValueInput = null,
+                            packingValueInput = detail.packingValue,
+                            isInput = false
+                        )
+                        detail.unit1Value = values["Unit1Value"] ?: 0.0
+                        detail.unit2Value = values["Unit2Value"] ?: 0.0
+                    }
 
-                            // تنظیم مقادیر واحد بر اساس نوع
-                            when (eshantyun.unitKind) {
-                                DiscountUnitKind.Unit1.ordinal -> {
+                    else -> return // واحد ناشناخته
+                }
 
-                                    val values = fillProductValues(
-                                        detail.anbarId,
-                                        detail.productId,
-                                        detail.id,
-                                        null,
-                                        detail.unit1Value,
-                                        null,
-                                        null,
-                                        false
-                                    )
-                                    detail.unit2Value = values["Unit2Value"] ?: 0.0
-                                    detail.packingValue = values["PackingValue"] ?: 0.0
-                                }
+                // 3. محاسبه قیمت نهایی (fillByAct)
+                fillByAct(detail) // فرض: این تابع detail.price را ست می‌کند
 
-                                DiscountUnitKind.Unit2.ordinal -> {
-                                    detail.unit2Value = eshantyun.value
-
-                                    val values = fillProductValues(
-                                        detail.anbarId,
-                                        detail.productId,
-                                        detail.id,
-                                        null,
-                                        null,
-                                        detail.unit2Value,
-                                        null,
-                                        false
-                                    )
-                                    detail.unit1Value = values["Unit1Value"] ?: 0.0
-                                    detail.packingValue = values["PackingValue"] ?: 0.0
-                                }
-
-                                DiscountUnitKind.Packing.ordinal -> {
-                                    detail.packingId = eshantyun.packingId
-                                    detail.packingValue = eshantyun.value
-
-                                    val values = fillProductValues(
-                                        detail.anbarId,
-                                        detail.productId,
-                                        detail.id,
-                                        detail.packingId,
-                                        null,
-                                        null,
-                                        detail.packingValue,
-                                        false
-                                    )
-                                    detail.unit1Value = values["Unit1Value"] ?: 0.0
-                                    detail.unit2Value = values["Unit2Value"] ?: 0.0
-
-                                }
-                            }
-
-                            // ذخیره جزئیات هدیه
-                            factorDao.insertFactorDetail(detail)
-                            fillByAct(detail)
-
-                            // ایجاد تخفیف مرتبط
-                            val detailDiscount = FactorDiscountEntity(
+                // 4. ساخت تخفیف مرتبط با هدیه
+                val detailDiscount = FactorDiscountEntity(
+                    id = 0,
+                    factorId = factor.id,
+                    discountId = discount.id,
+                    productId = detail.productId,
+                    factorDetailId = detail.id,
+                    sortCode = 1,
+                    price = detail.price,
+                    discountPercent = 0.0
+                )
+                // مرحله 4: ایجاد FactorGiftInfo برای توزیع هدیه بین محصولات اصلی
+                // 5. ساخت لیست FactorGiftInfo
+                val gifts = mutableListOf<FactorGiftInfoEntity>()
+                if (productIds.isNotEmpty()) {
+                    val allValue = getSumUnit1ValueByProductIds(factor.id, productIds)
+                    if (allValue > 0) {
+                        val allDetails = getFactorDetailProductIds(factor.id, productIds)
+                        var maxId = getMaxFactorGiftInfoId()
+                        for (itemDetail in allDetails) {
+                            val giftInfo = FactorGiftInfoEntity(
+                                id = ++maxId,
                                 factorId = factor.id,
                                 discountId = discount.id,
-                                productId = detail.productId,
-                                factorDetailId = detail.id,
-                                sortCode = 1,
-                                price = detail.price,
-                                discountPercent = 0.0
+                                productId = itemDetail.productId,
+                                price = kotlin.math.round(detail.price * itemDetail.unit1Value / allValue)
                             )
-                            factorDao.insertFactorDiscount(detailDiscount)
-
-                            // ایجاد FactorGiftInfo
-                            val allValue =
-                                getSumUnit1ValueByProductIds(factor.id, productIds)
-                            if (allValue > 0) {
-                                val allDetails =
-                                    getFactorDetailProductIds(factor.id, productIds)
-                                var maxId = getMaxFactorGiftInfoId()
-                                for (itemDetail in allDetails) {
-                                    val giftInfo = FactorGiftInfoEntity(
-                                        id = ++maxId,
-                                        factorId = factor.id,
-                                        discountId = discount.id,
-                                        productId = itemDetail.productId,
-                                        price = kotlin.math.round(
-                                            detail.price * itemDetail.unit1Value / allValue
-                                        )
-                                    )
-                                    factorDao.insertFactorGift(giftInfo)
-                                }
-                            }
-                            // پس از ایجاد هدیه، این تخفیف مبلغی ندارد
-                            factorDiscount.price = 0.0
-                            return
+                            gifts.add(giftInfo)
                         }
                     }
                 }
+                factorDao.insertFactorWithDiscountAndGifts(detail, detailDiscount, gifts)
+
+                // پس از ایجاد هدیه، تخفیف اصلی مبلغی ندارد
+                factorDiscount.price = 0.0
+                return
             }
 
             DiscountCalculationKind.SettlementDate.ordinal -> {
@@ -814,7 +814,7 @@ class DiscountRepository @Inject constructor(
 
          totalDiscount
      }
- */
+    */
     private suspend fun calculateDiscountEshantyun(
         factorId: Int,
         discountId: Int,
