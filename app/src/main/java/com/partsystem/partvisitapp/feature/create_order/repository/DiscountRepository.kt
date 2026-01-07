@@ -59,6 +59,9 @@ class DiscountRepository @Inject constructor(
         val productSortCode = 0
 
         var discounts = getDiscounts(/*applyKind,*/ factorHeader.createDate!!, true)
+        //  1404/10/17  2026-01-06
+        // discounts=108
+        Log.d("Eshantyundiscountssize", discounts.size.toString())
 
         val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return
         val discountInclusionKind: Int = pattern.discountInclusionKind!!
@@ -68,20 +71,20 @@ class DiscountRepository @Inject constructor(
             factorDetail.getDiscountIds(applyKind, null)
         else
             factorDetail.getDiscountIds(applyKind, factorDetail.id)
-
+        //  usedDiscountIds=[]
         discounts = discounts.filter { !usedDiscountIds.contains(it.id) }
 
         // Apply pattern inclusion filter
 
         if (discountInclusionKind == PatternInclusionKind.List.ordinal) {
             val listDiscount = pattern.getDiscountIds()
-          /*  discounts = if (listDiscount.isNotEmpty()) {
-                discounts.filter { it.id in listDiscount }.toMutableList()
+            /*  discounts = if (listDiscount.isNotEmpty()) {
+                  discounts.filter { it.id in listDiscount }.toMutableList()
 
-            } else {
-                mutableListOf()
-            }*/
-            Log.d("Eshantyundiscounte",discounts.size.toString())
+              } else {
+                  mutableListOf()
+              }*/
+            Log.d("Eshantyundiscounte", discounts.size.toString())
         }
 
         var lastSortCode = 1
@@ -96,7 +99,7 @@ class DiscountRepository @Inject constructor(
                 break
             }
         }
-        Log.d("Eshantyundiscsizeounts",discounts.size.toString())
+        Log.d("Eshantyundiscsizeounts", discounts.size.toString())
 
         processDiscounts(
             discounts = discounts,
@@ -114,7 +117,7 @@ class DiscountRepository @Inject constructor(
         applyKind: Int, // 0 = FactorLevel, 1 = ProductLevel
         repository: DiscountRepository
     ) {
-        Log.d("Eshantyundiscountssize2",discounts.size.toString())
+        Log.d("Eshantyundiscountssize2", discounts.size.toString())
 
         var factorSortCode = 0
         var productSortCode =
@@ -123,7 +126,7 @@ class DiscountRepository @Inject constructor(
         var hasGift = false
 
         for (discount in discounts) {
-            Log.d("Eshantyundiscountssize3",discounts.size.toString())
+            Log.d("Eshantyundiscountssize3", discounts.size.toString())
 
             val (productOfDiscount, productIds) = checkProductInDiscount(
                 discount,
@@ -133,8 +136,8 @@ class DiscountRepository @Inject constructor(
             )
 
             if (productOfDiscount) {
-                Log.d("Eshantyun","okkkk222")
-                Log.d("EshantyunproductOfDiscount",productOfDiscount.toString())
+                Log.d("Eshantyun", "okkkk222")
+                Log.d("EshantyunproductOfDiscount", productOfDiscount.toString())
 
                 val factorDiscount = FactorDiscountEntity(
                     id = 0, // will be assigned by DB or logic
@@ -227,7 +230,7 @@ class DiscountRepository @Inject constructor(
         factorDetail: FactorDetailEntity?,
         applyKind: Int
     ): Pair<Boolean, List<Int>> {
-        Log.d("Eshantyundiscountssize4",discount.toString())
+        Log.d("Eshantyundiscountssize4", discount.toString())
 
         val inclusionKind = discount.inclusionKind
         return when (inclusionKind) {
@@ -349,7 +352,7 @@ class DiscountRepository @Inject constructor(
 
             DiscountCalculationKind.Eshantyun.ordinal -> {
 
-                Log.d("Eshantyun","okkkk3")
+                Log.d("Eshantyun", "okkkk3")
                 if (factor.patternId != null) {
                     var actId =
                         factorDao.getPatternDetailActId(factor.patternId!!, ActKind.Product.ordinal)
@@ -360,26 +363,21 @@ class DiscountRepository @Inject constructor(
                         )
                     }
                     if (actId != null) {
-                        Log.d("EshantyunactId","ok")
+                        Log.d("EshantyunactId", "ok")
 
-                        val eshantyun = getCalculateDiscountEshantyun(
+                        val eshantyun = calculateDiscountEshantyun(
                             factorId = factor.id,
                             discountId = discount.id,
                             productIds = productIds
                         )
                         if (eshantyun != null) {
-                            Log.d("Eshantyuneshantyun","ok")
+                            Log.d("Eshantyuneshantyun", "ok")
 
-                            // val lastSortCode = factorDetail.maxOfOrNull { it.sortCode } ?: 0
-
-                            // val product = getProduct(eshantyun.productId!!,true)
                             val detail = FactorDetailEntity(
-                                id = 0,
                                 factorId = factor.id,
                                 productId = eshantyun.productId!!,
                                 sortCode = lastSortCode,
                                 anbarId = eshantyun.anbarId,
-                                description = "",
                                 isGift = 1,
                                 unit1Value = 0.0,
                                 unit2Value = 0.0,
@@ -402,8 +400,8 @@ class DiscountRepository @Inject constructor(
                                         null,
                                         false
                                     )
-                                    detail.unit2Value = values["Unit2Value"] as? Double ?: 0.0
-                                    detail.packingValue = values["PackingValue"] as? Double ?: 0.0
+                                    detail.unit2Value = values["Unit2Value"] ?: 0.0
+                                    detail.packingValue = values["PackingValue"] ?: 0.0
                                 }
 
                                 DiscountUnitKind.Unit2.ordinal -> {
@@ -419,8 +417,8 @@ class DiscountRepository @Inject constructor(
                                         null,
                                         false
                                     )
-                                    detail.unit1Value = values["Unit1Value"] as? Double ?: 0.0
-                                    detail.packingValue = values["PackingValue"] as? Double ?: 0.0
+                                    detail.unit1Value = values["Unit1Value"] ?: 0.0
+                                    detail.packingValue = values["PackingValue"] ?: 0.0
                                 }
 
                                 DiscountUnitKind.Packing.ordinal -> {
@@ -437,19 +435,18 @@ class DiscountRepository @Inject constructor(
                                         detail.packingValue,
                                         false
                                     )
-                                    detail.unit1Value = values["Unit1Value"] as? Double ?: 0.0
-                                    detail.unit2Value = values["Unit2Value"] as? Double ?: 0.0
+                                    detail.unit1Value = values["Unit1Value"] ?: 0.0
+                                    detail.unit2Value = values["Unit2Value"] ?: 0.0
 
                                 }
                             }
 
                             // ذخیره جزئیات هدیه
                             factorDao.insertFactorDetail(detail)
-                            fillByAct(detail, false)
+                            fillByAct(detail)
 
                             // ایجاد تخفیف مرتبط
                             val detailDiscount = FactorDiscountEntity(
-                                id = 0,
                                 factorId = factor.id,
                                 discountId = discount.id,
                                 productId = detail.productId,
@@ -544,7 +541,6 @@ class DiscountRepository @Inject constructor(
                                 productId = gift.productId,
                                 sortCode = lastSortCode,
                                 anbarId = gift.anbarId,
-                                description = "",
                                 isGift = 1,
                                 unit1Value = 0.0,
                                 unit2Value = 0.0,
@@ -567,8 +563,8 @@ class DiscountRepository @Inject constructor(
                                         null,
                                         false
                                     )
-                                    detail.unit2Value = values["Unit2Value"] as? Double ?: 0.0
-                                    detail.packingValue = values["PackingValue"] as? Double ?: 0.0
+                                    detail.unit2Value = values["Unit2Value"] ?: 0.0
+                                    detail.packingValue = values["PackingValue"] ?: 0.0
                                 }
 
                                 DiscountUnitKind.Unit2.ordinal -> {
@@ -585,8 +581,8 @@ class DiscountRepository @Inject constructor(
                                         false
                                     )
 
-                                    detail.unit1Value = values["Unit1Value"] as? Double ?: 0.0
-                                    detail.packingValue = values["PackingValue"] as? Double ?: 0.0
+                                    detail.unit1Value = values["Unit1Value"] ?: 0.0
+                                    detail.packingValue = values["PackingValue"] ?: 0.0
                                 }
 
                                 DiscountUnitKind.Packing.ordinal -> {
@@ -604,13 +600,13 @@ class DiscountRepository @Inject constructor(
                                     )
 
 
-                                    detail.unit1Value = values["Unit1Value"] as? Double ?: 0.0
-                                    detail.unit2Value = values["Unit2Value"] as? Double ?: 0.0
+                                    detail.unit1Value = values["Unit1Value"] ?: 0.0
+                                    detail.unit2Value = values["Unit2Value"] ?: 0.0
                                 }
                             }
 
                             factorDao.insertFactorDetail(detail)
-                            fillByAct(detail, false)
+                            fillByAct(detail)
 
                             val detailDiscount = FactorDiscountEntity(
                                 id = 0,
@@ -819,78 +815,20 @@ class DiscountRepository @Inject constructor(
          totalDiscount
      }
  */
-    suspend fun getCalculateDiscountEshantyun(
+    private suspend fun calculateDiscountEshantyun(
         factorId: Int,
         discountId: Int,
-        productIds: List<Int>? = null
+        productIds: List<Int>?
     ): DiscountEshantyunResult? {
-        // ۱. جزئیات فاکتور را بخوان
-        val factorDetails = if (productIds.isNullOrEmpty()) {
-            factorDao.getDetailsByFactorId(factorId)
-        } else {
-            factorDao.getDetailsByFactorAndProducts(factorId, productIds)
-        }
 
-        if (factorDetails.isEmpty()) return null
+        val ids = productIds ?: emptyList()
 
-        // ۲. مقادیر جمع‌بندی شده را محاسبه کن
-        val totalUnit1 = factorDetails.sumOf { it.unit1Value }
-        val totalUnit2 = factorDetails.sumOf { it.unit2Value }
-        val totalPacking = factorDetails.sumOf { it.packingValue }
-
-        // ۳. تمام DiscountEshantyun مربوط به این تخفیف را بخوان
-        val eshantyuns = factorDao.getEshantyunsByDiscountId(discountId)
-
-        // ۴. تخفیف معتبر را پیدا کن (اولین موردی که شرط BETWEEN را دارد و Value > 0)
-        for (eshantyun in eshantyuns) {
-            val (isInRange, actualValue) = when (eshantyun.saleUnitKind) {
-                0 -> {
-                    val v = totalUnit1
-                    (v >= eshantyun.fromValue && v <= eshantyun.toValue) to v
-                }
-
-                1 -> {
-                    val v = totalUnit2
-                    (v >= eshantyun.fromValue && v <= eshantyun.toValue) to v
-                }
-
-                2 -> {
-                    val v = totalPacking
-                    (v >= eshantyun.fromValue && v <= eshantyun.toValue) to v
-                }
-
-                else -> false to 0.0
-            }
-
-            if (!isInRange) continue
-
-            // محاسبه نهایی Value — دقیقاً معادل کوئری شما
-            /*    val finalValue = if (eshantyun.executeKind == 0) {
-                    // Simple
-                    eshantyun.value
-                } else {
-                    // Complex: floor(actualValue / ratio) * value
-                    val multiplier = if (eshantyun.ratio != 0.0) {
-                      floor(actualValue / eshantyun.ratio)
-                    } else {
-                        0.0
-                    }
-                    multiplier * eshantyun.value
-                }
-
-                // فقط اگر Value > 0 باشد
-                if (finalValue > 0) {
-                    return DiscountEshantyunResult(
-                        anbarId = eshantyun.anbarId,
-                        productId = eshantyun.productId,
-                        packingId = eshantyun.packingId,
-                        unitKind = eshantyun.unitKind,
-                        value = finalValue
-                    )
-                }*/
-        }
-
-        return null
+        return discountDao.getCalculateDiscountEshantyun(
+            factorId = factorId,
+            discountId = discountId,
+            productIds = ids,
+            productIdsSize = ids.size
+        )
     }
 
     suspend fun getProduct(id: Int, includeDetail: Boolean): ProductModel? {
@@ -1039,24 +977,17 @@ class DiscountRepository @Inject constructor(
         )
     }
 
-    fun fillByAct(insItem: FactorDetailEntity, hasArz: Boolean) {
+    private suspend fun fillByAct(insItem: FactorDetailEntity) {
 
-        // اگر کاربر مصوبه زده باشد، نرخ و مبلغ پر می‌شود
-        val item = actDao.getActDetail(insItem.actId!!, insItem.productId!!)
+        val actId = insItem.actId ?: return
+        val productId = insItem.productId ?: return
 
-        item?.let {
-            if (it.unitKind == UnitKind.Unit1.ordinal) {
+        val item = actDao.getActDetail(actId, productId) ?: return
 
-                val unit1Rate = it.rate
-                val calc = insItem.unit1Value * unit1Rate
-                insItem.price = kotlin.math.round(calc).toDouble()
-
-            } else {
-
-                val unit2Rate = it.rate
-                val calc = insItem.unit2Value * unit2Rate
-                insItem.price = kotlin.math.round(calc).toDouble()
-            }
+        if (item.unitKind == UnitKind.Unit1.ordinal) {
+            insItem.price = kotlin.math.round(insItem.unit1Value * item.rate)
+        } else {
+            insItem.price = kotlin.math.round(insItem.unit2Value * item.rate)
         }
     }
 
@@ -1072,41 +1003,6 @@ class DiscountRepository @Inject constructor(
         }
     }
 
-    /*   private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
-       suspend fun calculateDiscountPrice(
-           factor: FactorHeaderEntity,
-           discount: DiscountEntity,
-           price: Double
-       ): Double = withContext(Dispatchers.Default) {
-           var discountPrice = 0.0
-
-
-           if (!factor.dueDate.isNullOrBlank() && !factor.createDate.isNullOrBlank()) {
-               val pattern = patternDao.getPattern(factor.patternId!!) ?: return@withContext 0.0
-
-               val dayDiff = pattern.creditDuration!!.toLong() -
-                       dateDiffDays(factor.createDate!!, factor.dueDate!!)
-
-               if (dayDiff > 0) {
-                   val daysPerDiscount = discount.dayCount.toLong()
-                   val fullPeriods = dayDiff / daysPerDiscount // floor division for Long
-                   discountPrice += fullPeriods * discount.priceAmount * price / 100.0
-               }
-           }
-
-           discountPrice
-       }
-
-       private fun dateDiffDays(date1Str: String, date2Str: String): Long {
-           return try {
-               val date1 = LocalDate.parse(date1Str, dateFormatter)
-               val date2 = LocalDate.parse(date2Str, dateFormatter)
-               date2.toEpochDay() - date1.toEpochDay()
-           } catch (e: Exception) {
-               0L
-           }
-       }*/
 
     suspend fun getDiscountByProductKind(discountId: Int, factorId: Int): Double {
         return discountDao.getDiscountByProductKind(discountId, factorId)
@@ -1178,14 +1074,14 @@ class DiscountRepository @Inject constructor(
 
 
     suspend fun getDiscounts(
- /*       applyKind: Int,*/
+        /*       applyKind: Int,*/
         date: String,
         includeDetail: Boolean
     ): List<DiscountEntity> = withContext(Dispatchers.IO) {
 
         if (includeDetail) {
             val discountsWithDetails = discountDao.getDiscountsWithDetails(
-             //   applyKind = applyKind,
+                //   applyKind = applyKind,
                 toDate = date,
                 persianDate = date
             )
@@ -1229,7 +1125,7 @@ class DiscountRepository @Inject constructor(
                     discountProducts = discountDao.getDiscountProducts(item.discount.id)
                     discountProductKinds = discountDao.getDiscountProductKind(item.discount.id)
                     discountProductKindInclusions =
-                    discountDao.getDiscountProductKindInclusion(item.discount.id)
+                        discountDao.getDiscountProductKindInclusion(item.discount.id)
                     discountStairs = discountDao.getDiscountStair(item.discount.id)
                     discountUsers = discountDao.getDiscountUser(item.discount.id)
                 }

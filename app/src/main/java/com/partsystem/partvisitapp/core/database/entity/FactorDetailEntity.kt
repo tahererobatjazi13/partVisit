@@ -28,6 +28,7 @@ import kotlin.math.floor
         Index("productId")
     ]
 )
+
 data class FactorDetailEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
@@ -39,7 +40,6 @@ data class FactorDetailEntity(
     var unit1Value: Double = 0.0,
     var unit2Value: Double = 0.0,
     var price: Double = 0.0,
-    var description: String? = null,
     var packingId: Int? = null,
     var packingValue: Double = 0.0,
     var vat: Double = 0.0,

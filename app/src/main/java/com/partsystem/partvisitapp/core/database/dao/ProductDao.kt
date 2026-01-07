@@ -29,7 +29,7 @@ interface ProductDao {
     suspend fun getCount(): Int
 
     @Query("SELECT * FROM product_table WHERE id = :id")
-     fun getProductByProductId(id: Int): ProductEntity?
+    suspend fun getProductByProductId(id: Int): ProductEntity?
 
     @Query("SELECT * FROM product_table WHERE saleRastehId = :saleRastehId")
     fun getProductsByCategory(saleRastehId: Int): Flow<List<ProductEntity>>

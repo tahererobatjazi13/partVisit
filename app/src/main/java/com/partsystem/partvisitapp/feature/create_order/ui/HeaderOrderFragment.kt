@@ -344,7 +344,6 @@ class HeaderOrderFragment : Fragment() {
                     createUserId = userId,
                     visitorId = visitorId,
                     sabt = 0,
-                    isCanceled = 0,
                 ) ?: FactorHeaderEntity(
                     uniqueId = getGUID(),
                     saleCenterId = saleCenterId,
@@ -358,7 +357,6 @@ class HeaderOrderFragment : Fragment() {
                     createUserId = userId,
                     visitorId = visitorId,
                     sabt = 0,
-                    isCanceled = 0,
                 )
 
                 headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)

@@ -26,6 +26,7 @@ import com.partsystem.partvisitapp.feature.create_order.repository.DiscountRepos
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -454,7 +455,6 @@ class FactorViewModel @Inject constructor(
                 unit1Value = d.unit1Value?.toInt() ?: 0,
                 unit2Value = d.unit2Value?.toInt() ?: 0,
                 price = d.price?.toInt() ?: 0,
-                description = d.description ?: "",
                 packingId = d.packingId,
                 packingValue = d.packingValue ?: 0.0,
                 vat = d.vat?.toInt() ?: 0,
@@ -492,7 +492,6 @@ class FactorViewModel @Inject constructor(
             id = header.id,
             formKind = header.formKind?.toInt() ?: 0,
             centerId = header.centerId?.toInt() ?: 0,
-            code = header.code ?: 0,
             createDate = header.createDate,
             invoiceCategoryId = header.invoiceCategoryId ?: 0,
             patternId = header.patternId ?: 0,
@@ -528,7 +527,6 @@ class FactorViewModel @Inject constructor(
                     "id" to request.id,
                     "formKind" to request.formKind,
                     "centerId" to request.centerId,
-                    "code" to request.code,
                     "createDate" to request.createDate,
                     "invoiceCategoryId" to request.invoiceCategoryId,
                     "patternId" to request.patternId,
@@ -557,7 +555,6 @@ class FactorViewModel @Inject constructor(
                             "unit1Value" to d.unit1Value,
                             "unit2Value" to d.unit2Value,
                             "price" to d.price,
-                            "description" to d.description,
                             "packingId" to d.packingId,
                             "packingValue" to d.packingValue,
                             "vat" to d.vat,
@@ -611,7 +608,7 @@ class FactorViewModel @Inject constructor(
         factorHeader: FactorHeaderEntity,
         factorDetail: FactorDetailEntity
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             // Insert or update factor detail
             // factorDao.insertFactorDetail(factorDetail)
 

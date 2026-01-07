@@ -14,6 +14,7 @@ import com.partsystem.partvisitapp.core.database.entity.DiscountStairsEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountUsersEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
+import com.partsystem.partvisitapp.feature.create_order.model.DiscountEshantyunResult
 
 @Dao
 interface DiscountDao {
@@ -308,5 +309,55 @@ interface DiscountDao {
     """
     )
     suspend fun getDiscountStairByPrice(discountId: Int, price: Double): DiscountStairsEntity?
+
+
+
+    @Query("""
+        SELECT * FROM (
+            SELECT 
+                de.AnbarId,
+                de.ProductId,
+                de.PackingId,
+                de.UnitKind,
+                CASE 
+                    WHEN d.ExecuteKind = 0 THEN de.Value
+                    ELSE CAST(
+                        (
+                            CASE de.SaleUnitKind
+                                WHEN 0 THEN Unit1Value
+                                WHEN 1 THEN Unit2Value
+                                WHEN 2 THEN PackingValue
+                            END
+                        ) / Ratio AS INTEGER
+                    ) * de.Value
+                END AS Value
+            FROM discount_eshantyuns_table de
+            INNER JOIN discounts_table d ON d.Id = de.DiscountId
+            INNER JOIN (
+                SELECT 
+                    SUM(fd.Unit1Value) AS Unit1Value,
+                    SUM(fd.Unit2Value) AS Unit2Value,
+                    SUM(fd.PackingValue) AS PackingValue
+                FROM factor_detail_table fd
+                WHERE fd.FactorId = :factorId
+                  AND (:productIdsSize = 0 OR fd.ProductId IN (:productIds))
+            ) tbl ON de.DiscountId = :discountId
+            AND (
+                (de.SaleUnitKind = 0 AND Unit1Value BETWEEN de.FromValue AND de.ToValue)
+                OR
+                (de.SaleUnitKind = 1 AND Unit2Value BETWEEN de.FromValue AND de.ToValue)
+                OR
+                (de.SaleUnitKind = 2 AND PackingValue BETWEEN de.FromValue AND de.ToValue)
+            )
+        ) tmp
+        WHERE tmp.Value > 0
+        LIMIT 1
+    """)
+    suspend fun getCalculateDiscountEshantyun(
+        factorId: Int,
+        discountId: Int,
+        productIds: List<Int>,
+        productIdsSize: Int = productIds.size
+    ): DiscountEshantyunResult
 
 }

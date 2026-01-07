@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.core.database.dao
 
+import android.database.sqlite.SQLiteDatabase
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
@@ -283,7 +284,6 @@ interface FactorDao {
     @Transaction
     @Query("SELECT * FROM discounts_table WHERE id = :discountId")
     suspend fun getDiscountWithStairs(discountId: Int): DiscountEntity?
-
 
     @Query(
         """

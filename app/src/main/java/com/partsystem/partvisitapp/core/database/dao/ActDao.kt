@@ -70,7 +70,7 @@ interface ActDao {
         AND productId = :productId
         LIMIT 1
     """)
-    fun getActDetail(
+    suspend fun getActDetail(
         actId: Int,
         productId: Int
     ): ActDetailEntity?

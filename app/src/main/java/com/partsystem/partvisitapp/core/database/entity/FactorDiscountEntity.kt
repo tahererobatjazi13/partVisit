@@ -22,7 +22,7 @@ import androidx.room.PrimaryKey
 )
 data class FactorDiscountEntity(
     @PrimaryKey
-    val id: Int,
+    val id: Int=0,
     val factorId: Int,
     val productId: Int,
     var sortCode: Int,
