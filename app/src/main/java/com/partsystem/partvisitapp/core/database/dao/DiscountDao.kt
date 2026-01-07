@@ -58,7 +58,7 @@ interface DiscountDao {
     @Query("DELETE FROM discounts_table")
     suspend fun clearDiscounts()
 
-   //AND ApplyKind = :applyKind
+    //AND ApplyKind = :applyKind
     @Transaction
     @Query(
         """
@@ -70,7 +70,7 @@ interface DiscountDao {
     """
     )
     suspend fun getDiscounts(
-       // applyKind: Int,
+        // applyKind: Int,
         toDate: String,
         persianDate: String
     ): List<DiscountEntity>
@@ -171,7 +171,7 @@ interface DiscountDao {
     """
     )
     suspend fun getDiscountsWithDetails(
-       // applyKind: Int,
+        // applyKind: Int,
         toDate: String,
         persianDate: String
     ): List<DiscountFull>
@@ -186,8 +186,18 @@ interface DiscountDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorDiscount(discount: FactorDiscountEntity)
 
-    @Query("SELECT SUM(Unit1Value) FROM factor_detail_table WHERE FactorId = :factorId AND ProductId IN (:productIds) AND IsGift = 0")
-    suspend fun getSumUnit1ValueByProductIds(factorId: Int, productIds: List<Int>): Double
+    @Query(
+        """
+    SELECT SUM(fd.Unit1Value)
+    FROM factor_detail_table fd
+    WHERE fd.FactorId = :factorId
+      AND fd.ProductId IN (:productIds)
+"""
+    )
+    fun getSumUnit1ValueByProductIds(
+        factorId: Int,
+        productIds: List<Int>
+    ): Double?
 
     @Query("SELECT SUM(Unit1Value) FROM factor_detail_table WHERE FactorId = :factorId AND ProductId = :productId AND IsGift = 0")
     suspend fun getSumUnit1ValueByProduct(factorId: Int, productId: Int): Double
@@ -311,8 +321,8 @@ interface DiscountDao {
     suspend fun getDiscountStairByPrice(discountId: Int, price: Double): DiscountStairsEntity?
 
 
-
-    @Query("""
+    @Query(
+        """
         SELECT * FROM (
             SELECT 
                 de.AnbarId,
@@ -352,7 +362,8 @@ interface DiscountDao {
         ) tmp
         WHERE tmp.Value > 0
         LIMIT 1
-    """)
+    """
+    )
     suspend fun getCalculateDiscountEshantyun(
         factorId: Int,
         discountId: Int,

@@ -856,8 +856,14 @@ class DiscountRepository @Inject constructor(
         discountDao.insertFactorDiscount(discount)
     }
 
-    suspend fun getSumUnit1ValueByProductIds(factorId: Int, productIds: List<Int>): Double {
-        return discountDao.getSumUnit1ValueByProductIds(factorId, productIds) ?: 0.0
+    suspend fun getSumUnit1ValueByProductIds(
+        factorId: Int,
+        productIds: List<Int>
+    ): Double {
+        if (productIds.isEmpty()) return 0.0
+        return discountDao
+            .getSumUnit1ValueByProductIds(factorId, productIds)
+            ?: 0.0
     }
 
     suspend fun getSumUnit1ValueByProduct(factorId: Int, productId: Int): Double {
