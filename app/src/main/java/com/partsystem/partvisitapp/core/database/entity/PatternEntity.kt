@@ -36,31 +36,18 @@ data class PatternEntity(
     val dayCount: Int?,
     val hasAndroid: Boolean,
 ) {
-
     @Ignore
     var patternDetails: List<PatternDetailEntity>? = null
 
-    @Ignore
-    fun getDiscountIds(): ArrayList<Int> {
-        val result = ArrayList<Int>()
+    fun getDiscountIds(): java.util.ArrayList<Int> {
+        val result = java.util.ArrayList<Int>()
         if (patternDetails != null) {
-            for (patternDetails in patternDetails!!) {
-                result.add(patternDetails.discountId)
+            for (patternDetail in patternDetails!!) {
+                if (patternDetail.discountId != null) result.add(patternDetail.discountId)
             }
         }
         return result
     }
-
-
-/*   fun getDiscountIds(): java.util.ArrayList<Int> {
-        val result = java.util.ArrayList<Int>()
-        if (PatternDetail != null) {
-            for (patternDetail in PatternDetail) {
-                if (patternDetail.DiscountId != null) result.add(patternDetail.DiscountId)
-            }
-        }
-        return result
-    }*/
 }
 
 /*

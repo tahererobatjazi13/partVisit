@@ -64,7 +64,7 @@ class OfflineOrderListFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
             offlineOrderListAdapter = OfflineOrderListAdapter(
-                showSyncButton = true,
+                showSyncButton = true,/*factorViewModel,*/
                 onDelete = { item ->
                     selectedFactor = item
 

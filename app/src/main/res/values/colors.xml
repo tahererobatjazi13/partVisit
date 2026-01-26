@@ -9,7 +9,7 @@
     <color name="colorError">#FF5C5C</color>
     <color name="red_E92228">#E92228</color>
     <color name="transparent">#00000000</color>
-    <color name="yellow_EDDD50">#EDDD50</color>
+    <color name="yellow_FFEB3B">#FFEB3B</color>
     <color name="orange_FF5722">#FF5722</color>
     <color name="purple_8F21A2">#8F21A2</color>
     <color name="gray_474747">#474747</color>
@@ -27,6 +27,7 @@
     <color name="green_21BF73">#21BF73</color>
     <color name="green_507C5C">#507C5C</color>
     <color name="green_CFF09E">#CFF09E</color>
+    <color name="green_D1F3D1">#D1F3D1</color>
     <color name="white_f8f8fa">#f8f8fa</color>
     <color name="white_80FFFFFF">#80FFFFFF</color>
     <color name="white">#FFFFFFFF</color>

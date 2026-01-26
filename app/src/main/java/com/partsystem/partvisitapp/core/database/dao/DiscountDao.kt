@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.core.database.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.partsystem.partvisitapp.core.database.entity.DiscountCustomersEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
@@ -64,15 +65,14 @@ interface DiscountDao {
         """
         SELECT * FROM discounts_table 
         WHERE FormType = 1 
-          
           AND (ToDate IS NULL OR ToDate = '' OR ToDate >= :toDate)
-          AND PersianBeginDate <= :persianDate
+          AND PersianBeginDate <= :persianBeginDate
     """
     )
     suspend fun getDiscounts(
         // applyKind: Int,
         toDate: String,
-        persianDate: String
+        persianBeginDate: String
     ): List<DiscountEntity>
 
     @Query("SELECT * FROM discounts_table WHERE Id = :id")
@@ -92,20 +92,23 @@ interface DiscountDao {
         productIds: List<Int>
     ): List<Int>
 
-    // مشابه برای DiscountGroup (در صورت نیاز)
-    @Transaction
-    @Query(
+    /*
+        // مشابه برای DiscountGroup (در صورت نیاز)
+        @Transaction
+        @Query(
+            """
+            SELECT DISTINCT p.Id
+            FROM discount_groups_table AS g
+            INNER JOIN product_table AS p ON p.groupProductId = g.GroupId
+            WHERE g.DiscountId = :discountId AND p.Id IN (:productIds)
         """
-        SELECT DISTINCT p.Id 
-        FROM discount_groups_table AS g 
-        INNER JOIN product_table AS p ON p.groupProductId = g.GroupId 
-        WHERE g.DiscountId = :discountId AND p.Id IN (:productIds)
-    """
-    )
-    suspend fun getProductMatchDiscountGroup(
-        discountId: Int,
-        productIds: List<Int>
-    ): List<Int>
+        )
+        suspend fun getProductMatchDiscountGroup(
+            discountId: Int,
+            productIds: List<Int>
+        ): List<Int>
+    */
+
 
     /*
         @Query(
@@ -167,13 +170,13 @@ interface DiscountDao {
         WHERE FormType = 1 
 
           AND (ToDate IS NULL OR ToDate = '' OR ToDate >= :toDate)
-          AND PersianBeginDate <= :persianDate
+          AND PersianBeginDate <= :persianBeginDate
     """
     )
     suspend fun getDiscountsWithDetails(
         // applyKind: Int,
         toDate: String,
-        persianDate: String
+        persianBeginDate: String
     ): List<DiscountFull>
 
 
@@ -184,7 +187,8 @@ interface DiscountDao {
     suspend fun getFactorDiscountCountByFactorDetailId(factorDetailId: Int): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFactorDiscount(discount: FactorDiscountEntity)
+    suspend fun insertFactorDiscount(discount: FactorDiscountEntity): Long
+
 
     @Query(
         """
@@ -210,6 +214,12 @@ interface DiscountDao {
 
     @Query("SELECT MAX(Id) FROM factor_gift_info_table")
     suspend fun getMaxFactorGiftInfoId(): Int?
+
+    @Query("SELECT MAX(Id) FROM factor_discount_table")
+    suspend fun getMaxFactorDiscountId(): Int?
+
+    @Query("SELECT MAX(Id) FROM factor_detail_table")
+    suspend fun getMaxFactorDetailId(): Int?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorGiftInfo(info: FactorGiftInfoEntity)
@@ -364,6 +374,7 @@ interface DiscountDao {
         LIMIT 1
     """
     )
+
     suspend fun getCalculateDiscountEshantyun(
         factorId: Int,
         discountId: Int,
@@ -371,5 +382,21 @@ interface DiscountDao {
         productIdsSize: Int = productIds.size
     ): DiscountEshantyunResult
 
+    @Query(
+        """
+        SELECT DISTINCT p.id 
+        FROM discount_groups_table AS g 
+        INNER JOIN product_table AS p 
+        ON p.saleGroupId = g.groupId 
+        AND (p.saleGroupDetailId = g.groupDetailId OR g.groupDetailId IS NULL) 
+        AND (p.saleRastehId = g.rastehId OR g.rastehId IS NULL)
+        WHERE g.discountId = :discountId 
+        AND p.id IN (:productIds)
+    """
+    )
+    fun getProductMatchDiscountGroup(discountId: Int, productIds: List<Int>): List<Int>
+
+    @Query("SELECT COUNT(*) FROM factor_discount_table")
+    fun getCount(): LiveData<Int>
 
 }

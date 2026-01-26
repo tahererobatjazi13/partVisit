@@ -3,7 +3,9 @@ package com.partsystem.partvisitapp.core.database.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -145,5 +147,15 @@ interface PatternDao {
 
     @Query("SELECT * FROM pattern_table WHERE Id = :id")
     suspend fun getPattern(id: Int): PatternEntity?
+
+    @Query(
+        """
+        SELECT * FROM pattern_details_table
+        WHERE patternId = :patternId
+    """
+    )
+     fun getPatternDetailById(
+        patternId: Int,
+    ): List<PatternDetailEntity>
 
 }

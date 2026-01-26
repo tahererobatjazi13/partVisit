@@ -9,13 +9,17 @@ import androidx.recyclerview.widget.ListAdapter
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.extensions.gone
+import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemOrderListBinding
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import java.text.DecimalFormat
 
 class OfflineOrderListAdapter(
     private val showSyncButton: Boolean = false,
+//    private val factorViewModel: FactorViewModel,
     private val onDelete: (FactorHeaderUiModel) -> Unit,
     private val onClick: (FactorHeaderUiModel) -> Unit = {}
 ) : ListAdapter<FactorHeaderUiModel, OfflineOrderListAdapter.OfflineOrderListViewHolder>(
@@ -30,6 +34,21 @@ class OfflineOrderListAdapter(
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorHeaderUiModel) = with(binding) {
             customDialog = CustomDialog()
+
+     /*       factorViewModel.getFactorDetailUi(factorId = item.factorId).observeForever { details ->
+
+                val sumPrice = details.sumOf {
+                    it.unit1Rate * it.unit1Value
+                }
+                val sumDiscountPrice = details.sumOf {
+                    it.discountPrice
+                }
+                val sumVat = details.sumOf {
+                    it.vat
+                }
+                tvFinalPrice.text =
+                    "${formatter.format((sumPrice - sumDiscountPrice) + sumVat)} ریال"
+            }*/
 
             tvOrderNumber.text = item.factorId.toString()
             tvCustomerName.text = item.customerName ?: "-"

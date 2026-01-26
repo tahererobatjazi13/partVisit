@@ -15,6 +15,7 @@
     <attr name="colorSurfaceVariant" format="color" />
     <attr name="colorBox" format="color" />
     <attr name="colorRow" format="color" />
+    <attr name="colorItem" format="color" />
     <attr name="colorBasic" format="color" />
     <attr name="colorLine" format="color" />
     <attr name="colorHeader" format="color" />

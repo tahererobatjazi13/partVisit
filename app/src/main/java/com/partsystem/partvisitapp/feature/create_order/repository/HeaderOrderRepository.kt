@@ -97,7 +97,6 @@ class HeaderOrderRepository @Inject constructor(
         return actDao.getActById(actId)
     }
 
-    suspend fun clearAll() = customerDirectionDao.clearCustomerDirection()
 
     suspend fun getCustomerById(customerId: Int): CustomerEntity? {
         return customerDao.getCustomerById(customerId)

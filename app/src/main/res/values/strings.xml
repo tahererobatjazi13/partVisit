@@ -38,6 +38,8 @@
     <string name="label_call_phone">شماره تماس:</string>
     <string name="label_add_customer">افزودن مشتری</string>
     <string name="label_edit_customer">ویرایش مشتری</string>
+    <string name="label_add_product">افزودن محصول</string>
+    <string name="label_edit_product">ویرایش محصول</string>
     <string name="label_customer_search">جستجو مشتری ...</string>
     <string name="label_order_search">جستجو سفارش ...</string>
     <string name="label_phone">تلفن:</string>
@@ -91,6 +93,7 @@
     <string name="label_payment_type">نحوه تسویه:</string>
     <string name="label_cancel">لغو</string>
     <string name="label_register">ثبت</string>
+    <string name="label_complete_order">تکمیل سفارش</string>
     <string name="label_packing_type">نوع بسته بندی: </string>
     <string name="app_price_item">12000ریال</string>
     <string name="label_sync_order">ارسال سفارش</string>
@@ -98,6 +101,7 @@
     <string name="label_please_select">لطفا انتخاب کنید</string>
     <string name="label_server_setting">تنظیمات سرور</string>
     <string name="label_update">آپدیت</string>
+    <string name="label_back">بازگشت</string>
 
 
     <!-- date picker -->
@@ -139,6 +143,7 @@
     <string name="error_timeout">اتصال به سرور با تاخیر مواجه شد</string>
     <string name="error_no_customer">مشتری ای وجود ندارد</string>
     <string name="error_request_fields">لطفا تمام فیلدهارا پر کنید</string>
+    <string name="error_request_amounts">لطفا مقدار وارد کنید</string>
     <string name="error_enter_password">رمز عبور را وارد کنید</string>
     <string name="error_enter_username">نام کاربری را وارد کنید</string>
     <string name="error_no_items_cart">هیچ آیتمی به سبد خرید اضافه نشده</string>

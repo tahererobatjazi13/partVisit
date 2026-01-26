@@ -54,7 +54,6 @@
                     style="@style/ButtonDefault"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/medium_size"
                     android:backgroundTint="@color/purple_8F21A2"
                     android:text="@string/label_edit_order"
                     app:layout_constraintStart_toStartOf="parent"

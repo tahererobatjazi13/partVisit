@@ -317,6 +317,7 @@ class HeaderOrderFragment : Fragment() {
             }
         }
     }
+
     private fun createNewHeader() {
 
         lifecycleScope.launch {
@@ -373,12 +374,13 @@ class HeaderOrderFragment : Fragment() {
     private fun loadCustomerData(customerId: Int, customerName: String) {
         binding.tvCustomerName.text = customerName
         factorViewModel.updateHeader(customerId = customerId)
-        headerOrderViewModel.assignDirection.observe(viewLifecycleOwner) { factor ->
-            factor?.let {
-                factorViewModel.factorHeader.value = factorViewModel.factorHeader.value!!.copy(
-                    distributorId = factor.distributorId,
-                    recipientId = factor.recipientId,
-                )
+        headerOrderViewModel.assignDirection.observe(viewLifecycleOwner) { directions ->
+
+            directions.forEach { item ->
+                if (item.isDistribution) factorViewModel.factorHeader.value!!.distributorId =
+                    item.tafsiliId
+                if (item.isDemands) factorViewModel.factorHeader.value!!.recipientId =
+                    item.tafsiliId
             }
         }
 

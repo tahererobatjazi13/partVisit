@@ -7,10 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
-import com.partsystem.partvisitapp.feature.create_order.CalculateDiscount
-import com.partsystem.partvisitapp.core.utils.formatFloat
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
-import kotlin.math.floor
 
 @Entity(
     tableName = "factor_detail_table",
@@ -23,19 +20,16 @@ import kotlin.math.floor
         )
     ],
     indices = [
-        Index(value = ["factorId", "productId"], unique = true),
         Index("factorId"),
-        Index("productId")
     ]
 )
-
 data class FactorDetailEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val factorId: Int,
-    var productId: Int,
     var sortCode: Int? = null,
     var anbarId: Int? = null,
+    var productId: Int,
     var actId: Int? = null,
     var unit1Value: Double = 0.0,
     var unit2Value: Double = 0.0,
@@ -63,114 +57,6 @@ data class FactorDetailEntity(
     @Transient
     var repository: ProductRepository? = null
 
-    var anbarCode: String? = null
-    var anbarName: String? = null
-    var productCode: String? = null
-    var productName: String? = null
-    var packingCode: Int? = null
-    var packingName: String = ""
-
-    @Ignore
-    fun resolvePacking(): ProductPackingEntity? {
-        if (packing == null && packingId != null) {
-            packing = product?.packings?.firstOrNull { it.packingId == packingId }
-        }
-        return packing
-    }
-
-    @Ignore
-    fun getPackingValueFormatted(): String {
-        val packing = resolvePacking() ?: return ""
-        val unitPerPack = packing.unit1Value
-
-        if (unitPerPack <= 0) return "" // جلوگیری از تقسیم بر صفر
-
-        // محاسبه packingValue و باقی‌مانده حتی اگر packingValue = 0 باشد
-        val fullPacks = floor(unit1Value / unitPerPack)
-        val remain = unit1Value % unitPerPack
-
-        // اگر هیچ‌کدام صفر نیستند یا unit1Value > 0 باشد، نمایش بده
-        if (fullPacks > 0 || remain > 0 || unit1Value > 0) {
-            return "${formatFloat(remain)} : ${fullPacks.toInt()}"
-        }
-
-        return ""
-    }
-
-    @Ignore
-    fun applyProduct(product: ProductWithPacking) {
-        this.product = product
-        this.productId = product.product.id
-        this.productCode = product.product.code
-        this.productName = product.product.name
-        packing = null
-        val defaultPack = product.packings.firstOrNull { it.isDefault == true }
-        if (defaultPack != null) {
-            applyPacking(defaultPack)
-        }
-    }
-
-    @Ignore
-    fun applyPacking(value: ProductPackingEntity?) {
-        if (value == null) {
-            packing = null
-            packingId = null
-            packingCode = null
-            packingName = ""
-            packingValue = 0.0
-            return
-        }
-
-        if (packing == null || packing?.id != value.id) {
-            packing = value
-            packingId = value.packingId
-            packingCode = value.packingCode
-            packingName = value.packingName ?: ""
-        }
-    }
-
-    @Ignore
-    suspend fun setInputUnit1Value(value: Double, anbarId: Int) {
-        val packing = this.packing ?: return
-        val repo = repository ?: return
-        val prod = product ?: return
-
-        unit1Value = value
-        val calculator = CalculateDiscount(repo)
-        val values = calculator.fillProductValues(
-            anbarId = anbarId,
-            product = prod.product,
-            packing = packing,
-            unit1ValueInput = unit1Value,
-            unit2ValueInput = null,
-            packingValueInput = null,
-            isInput = true // مهم: منبع ورودی unit1 است
-        )
-        unit2Value = values.unit2Value
-        packingValue = values.packingValue
-    }
-
-    @Ignore
-    suspend fun setInputPackingValue(value: Double, anbarId: Int) {
-        val packing = this.packing ?: return
-        val repo = repository ?: return
-        val prod = product ?: return
-
-        packingValue = value
-        val calculator = CalculateDiscount(repo)
-        val values = calculator.fillProductValues(
-            anbarId = anbarId,
-            product = prod.product,
-            packing = packing,
-            unit1ValueInput = null,
-            unit2ValueInput = null,
-            packingValueInput = packingValue,
-            isInput = true // مهم: منبع ورودی packing است
-        )
-        unit1Value = values.unit1Value
-        unit2Value = values.unit2Value
-    }
-
     @Ignore
     var totalDiscountPrice: Double = 0.0
 
@@ -190,6 +76,34 @@ data class FactorDetailEntity(
         return Math.round(getPriceAfterDiscount() + vat + toll).toDouble()
     }
 
+    /*  fun calculateProductDiscount(q: Queries, factorDetail: FactorDetailEntity) {
+          factorDetail.totalDiscountPrice = 0.0
+          factorDetail.totalAdditionalPrice = 0.0
+          for (factorDiscount in factorDiscounts) {
+              if (factorDiscount.factorDetailId != null && factorDiscount.factorDetailId.equals(
+                      factorDetail.id
+                  )
+              ) {
+                  val discount: DiscountEntity = factorDiscount.getDiscount(q)
+                  if (discount != null) {
+                      if (discount.kind === DiscountKind.Discount.ordinal) {
+                          factorDetail.totalDiscountPrice += factorDiscount.price
+                      } else if (discount.kind === DiscountKind.Addition.ordinal) {
+                          factorDetail.totalAdditionalPrice += factorDiscount.price
+                      }
+                  }
+              }
+          }
+          val product: Product = factorDetail.getProduct(q)
+
+          if (HasVatAndToll(q)) {
+              factorDetail.Toll =
+                  Math.round(product.TollPercent * factorDetail.getPriceAfterDiscount())
+              factorDetail.Vat = Math.round(product.VatPercent * factorDetail.getPriceAfterDiscount())
+          }
+          q.insertFactorDetail(null, factorDetail)
+      }
+  */
     @Ignore
     fun getDiscountIds(level: Int, factorDetailId: Int?): ArrayList<Int> {
         val result = ArrayList<Int>()
@@ -206,6 +120,4 @@ data class FactorDetailEntity(
         }
         return result
     }
-
-
 }

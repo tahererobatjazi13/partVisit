@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.report_factor.offline
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -78,11 +79,12 @@ class OfflineOrderDetailFragment : Fragment() {
         binding.rvOrderDetail.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            offlineOrderDetailAdapter = OfflineOrderDetailAdapter()
+            offlineOrderDetailAdapter = OfflineOrderDetailAdapter(factorViewModel)
             adapter = offlineOrderDetailAdapter
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupObserver() {
         factorViewModel.getHeaderById(args.factorId)
             .observe(viewLifecycleOwner) { header ->
@@ -107,22 +109,27 @@ class OfflineOrderDetailFragment : Fragment() {
                     binding.svMain.show()
                 }
                 offlineOrderDetailAdapter.submitList(details)
-
                 calculateTotalPrices(details)
             }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun calculateTotalPrices(items: List<FactorDetailUiModel>?) {
         items ?: return
-        val total = items.sumOf {
+        val sumPrice = items.sumOf {
             it.unit1Rate * it.unit1Value
         }
-
+        val sumDiscountPrice = items.sumOf {
+            it.discountPrice
+        }
+        val sumVat = items.sumOf {
+            it.vat
+        }
         with(binding) {
-            tvSumPrice.text = "${formatter.format(total)} ریال"
-            tvFinalPrice.text = "${formatter.format(total)} ریال"
-            tvSumDiscountPrice.text = "0 ریال"
-            tvSumVat.text = "0 ریال"
+            tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
+            tvSumDiscountPrice.text = "${"-"+formatter.format(sumDiscountPrice)} ریال"
+            tvSumVat.text = "${formatter.format(sumVat)} ریال"
+            tvFinalPrice.text = "${formatter.format((sumPrice - sumDiscountPrice) + sumVat)} ریال"
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import kotlinx.coroutines.flow.Flow
@@ -94,7 +95,35 @@ interface ProductDao {
         LIMIT 1
     """
     )
-    suspend fun getProductWithRate(id: Int, actId: Int): ProductWithPacking?
+     fun getProductWithRate(id: Int, actId: Int): ProductWithPacking?
+
+
+
+    @Transaction
+    @Query(
+        """
+        SELECT 
+            p.id AS id,
+            p.Code AS code,
+            p.Name AS name,
+            p.Description AS description,
+            ad.Rate AS actRate,
+            ad.Rate * ad.TollPercent AS toll,
+            ad.Rate * ad.VatPercent AS vat,
+            ad.TollPercent AS actTollPercent,
+            ad.VatPercent AS actVatPercent,
+            p.Unit2Id AS unit2Id,
+            p.ConvertRatio AS convertRatio,
+            p.CalculateUnit2Type AS calculateUnit2Type,
+            ad.RateAfterVatAndToll AS finalRate,
+            a.FileName AS fileName
+        FROM product_table p
+        INNER JOIN act_detail_table ad ON ad.ProductId = p.Id
+        LEFT JOIN product_images_table a ON a.OwnerId = p.Id
+        WHERE p.Id = :id AND ad.ActId = :actId
+        LIMIT 1
+    """
+    )    fun getProductWithRate2(id: Int, actId: Int): Flow<ProductWithPacking>
 
     /*
         @Transaction

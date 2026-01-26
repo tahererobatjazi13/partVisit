@@ -6,6 +6,7 @@ import androidx.lifecycle.liveData
 import com.partsystem.partvisitapp.core.database.dao.MojoodiDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
 import com.partsystem.partvisitapp.core.database.dao.ProductImageDao
+import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
@@ -42,9 +43,12 @@ class ProductRepository @Inject constructor(
     fun getProducts(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>> =
         dao.getProductsWithActDetails(groupProductId, actId)
 
-    suspend fun getProductByActId(id: Int, actId: Int): ProductWithPacking? {
+     fun getProductByActId(id: Int, actId: Int): ProductWithPacking? {
         return dao.getProductWithRate(id, actId)
     }
+
+    fun getProductByActId2(id: Int, actId: Int): Flow<ProductWithPacking> =
+        dao.getProductWithRate2(id, actId)
 
 
     suspend fun fetchAndSaveMojoodi(

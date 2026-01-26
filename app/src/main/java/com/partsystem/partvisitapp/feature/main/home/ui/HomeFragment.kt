@@ -508,7 +508,7 @@ class HomeFragment : Fragment() {
             db.saleCenterDao().clearSaleCenters() // جدول مراکز فروش
             db.discountDao().clearDiscounts() // جدول تخفیف
             db.factorDao().clearFactorHeader() // جدول هدر فاکتور
-            db.factorDao().clearFactorDetails() // جدول جزییلات فاکتور
+            db.factorDao().clearFactorDetails() // جدول جزییات فاکتور
             db.factorDao().clearFactorDiscount() // جدول تخفیفات فاکتور
             db.factorDao().clearFactorGiftInfo() // جدول جایزه فاکتور
 

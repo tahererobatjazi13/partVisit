@@ -10,19 +10,22 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = FactorDetailEntity::class,
-            parentColumns = ["factorId", "productId"],
-            childColumns = ["factorId", "productId"],
+            parentColumns = ["id"],
+            childColumns = ["factorDetailId"],
             onDelete = ForeignKey.CASCADE
         )
-    ],
+    ]/*,
     indices = [
-        Index("factorId"),
-        Index("productId")
-    ]
+        Index("factorDetailId"),
+    ]*/
 )
+
+/*
+@Entity(tableName = "factor_discount_table")
+*/
 data class FactorDiscountEntity(
     @PrimaryKey
-    val id: Int=0,
+    val id: Int = 0,
     val factorId: Int,
     val productId: Int,
     var sortCode: Int,
@@ -31,5 +34,3 @@ data class FactorDiscountEntity(
     val factorDetailId: Int,
     val discountPercent: Double
 )
-
-

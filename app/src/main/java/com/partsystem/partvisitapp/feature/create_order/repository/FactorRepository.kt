@@ -1,16 +1,24 @@
 package com.partsystem.partvisitapp.feature.create_order.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
+import com.google.gson.Gson
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import kotlinx.coroutines.flow.Flow
+import okhttp3.RequestBody
+import org.json.JSONArray
+import org.json.JSONObject
+import retrofit2.Response
 import javax.inject.Inject
 
 class FactorRepository @Inject constructor(
@@ -21,7 +29,6 @@ class FactorRepository @Inject constructor(
 
     suspend fun getAllFactors(): List<FactorHeaderEntity> = factorDao.getAllFactors()
 
-    fun getAllFactorDetail() = factorDao.getAllFactorDetail()
 
 
     suspend fun deleteFactorDetail(productId: Int) =
@@ -44,6 +51,9 @@ class FactorRepository @Inject constructor(
 
     //////////////
 
+     fun getMaxFactorDetailId():  LiveData<Int>{
+        return factorDao.getMaxFactorDetailId()
+    }
 
     // DB ops
     suspend fun saveFactorHeader(header: FactorHeaderEntity): Long {
@@ -60,23 +70,37 @@ class FactorRepository @Inject constructor(
 
     fun getHeaderById(id: Int): LiveData<FactorHeaderEntity> = factorDao.getHeaderById(id)
 
-    suspend fun saveFactorDetail(detail: FactorDetailEntity): Long =
-        factorDao.insertFactorDetail(detail)
-
+    /* suspend fun saveFactorDetail(detail: FactorDetailEntity): Long =
+         factorDao.insertFactorDetail(detail)
+ */
 
     // تعداد آیتم‌های سبد خرید (برای badge)
     fun getFactorItemCount(factorId: Int): LiveData<Int> {
         return factorDao.getFactorItemCount(factorId)
     }
 
+
+
+    fun getFactorDetailByFactorIdAndProductId(factorId: Int, productId: Int): Flow<FactorDetailEntity> {
+        return factorDao.getFactorDetailByFactorIdAndProductId(factorId,productId)
+    }
     suspend fun saveFactorGift(gift: FactorGiftInfoEntity): Long = factorDao.insertFactorGift(gift)
     suspend fun getFactorGifts(factorId: Int) = factorDao.getFactorGifts(factorId)
 
+    suspend fun getFactorDiscounts(factorId: Int, factorDetailId: Int): List<FactorDiscountEntity> =
+        factorDao.getFactorDiscounts(factorId, factorDetailId)
+
+    fun getFactorDiscountsLive(factorId: Int, factorDetailId: Int): Flow<List<FactorDiscountEntity>> =
+        factorDao.getFactorDiscountsLive(factorId, factorDetailId)
+
     suspend fun deleteHeader(factorId: Int) = factorDao.deleteHeader(factorId)
+     fun getCount() = factorDao.getCount()
 
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity? =
         factorDao.getHeaderByLocalId(localId)
 
+    fun getAllFactorDetails(): Flow<List<FactorDetailEntity>> =
+        factorDao.getAllFactorDetails()
 
     fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
         factorDao.getFactorDetails(factorId)
@@ -104,16 +128,25 @@ class FactorRepository @Inject constructor(
         suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
     */
 
+
     suspend fun sendFactorToServer(request: FinalFactorRequestDto) =
         api.sendFactor(listOf(request))
+
+
+
+/*
+    suspend fun sendFactorToServer(json: String): Response<Any> {
+    //    val request = Gson().fromJson(json, Array<FinalFactorRequestDto>::class.java).toList()
+        Log.d("FINAL_request22", json)
+        return api.sendFactor(json)
+    }*/
+
 
     fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
         factorDao.getFactorDetailUi(factorId).asLiveData()
 
     fun getAllHeaderUi(): Flow<List<FactorHeaderUiModel>> =
         factorDao.getFactorHeaderUiList()
-
-
 
     private suspend fun getSumByField(
         factorId: Int,
@@ -144,4 +177,5 @@ class FactorRepository @Inject constructor(
     suspend fun getSumUnit1ValueByFactorId(factorId: Int): Double {
         return factorDao.getSumUnit1ValueByFactorId(factorId)
     }
+
 }

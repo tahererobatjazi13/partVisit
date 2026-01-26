@@ -113,7 +113,9 @@ class GroupProductFragment : Fragment() {
             observeProductsByCategory(category.id)
         }
 
-        productListAdapter = ProductListAdapter(
+        productListAdapter = ProductListAdapter(loadProduct = { productId, actId ->
+            factorViewModel.loadProduct(productId, actId!!)
+        },
             factorViewModel = factorViewModel,
             factorId = args.factorId,
             onProductChanged = { item ->
@@ -135,7 +137,7 @@ class GroupProductFragment : Fragment() {
                 factorViewModel.addOrUpdateFactorDetail(updatedItem)
             },
 
-            onClick = { product ->
+            onClickDetail = { product ->
                 val action = ProductListFragmentDirections
                     .actionProductListFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)

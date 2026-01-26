@@ -29,10 +29,9 @@
             app:textTitleHeader="@string/label_register_order" />
 
         <androidx.core.widget.NestedScrollView
-            android:id="@+id/nested"
+            android:id="@+id/svMain"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginHorizontal="@dimen/medium_size"
             android:fillViewport="true"
             android:paddingBottom="@dimen/small_size"
             app:layout_constraintBottom_toTopOf="@+id/cvFactorDetail"
@@ -52,13 +51,23 @@
                     android:layout_marginTop="@dimen/small_size"
                     android:layout_marginEnd="@dimen/xx_small_size"
                     android:text="@string/label_order_summary"
+                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cvList"
-                    style="@style/RoundedCardViewStyle"
+                <!--     <com.google.android.material.card.MaterialCardView
+                         android:id="@+id/cvList"
+                         style="@style/RoundedCardViewStyle"
+                         android:layout_width="match_parent"
+                         android:layout_height="wrap_content"
+                         android:layout_marginTop="@dimen/small_size"
+                         app:layout_constraintEnd_toEndOf="parent"
+                         app:layout_constraintStart_toStartOf="parent"
+                         app:layout_constraintTop_toBottomOf="@+id/tvTitleOrderDetail">
+     -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/clList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/small_size"
@@ -66,57 +75,43 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tvTitleOrderDetail">
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/clList"
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/ivTopDots"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:visibility="gone"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvTitleOrderDetail">
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:srcCompat="@drawable/ic_top_dots" />
 
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/ivTopDots"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:srcCompat="@drawable/ic_top_dots" />
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvOrder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/ivTopDots"
+                        tools:itemCount="3"
+                        tools:listitem="@layout/item_order_detail" />
 
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rvOrder"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:clipToPadding="false"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ivTopDots"
-                            tools:itemCount="3"
-                            tools:listitem="@layout/item_order" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/ivBottomDots"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/rvOrder"
-                            app:srcCompat="@drawable/ic_bottom_dots" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </com.google.android.material.card.MaterialCardView>
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/ivBottomDots"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/rvOrder"
+                        app:srcCompat="@drawable/ic_bottom_dots" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <!--
+                                </com.google.android.material.card.MaterialCardView>
+                -->
 
                 <!-- line info -->
-                <com.partsystem.partvisitapp.core.utils.componenet.Info
-                    android:id="@+id/info"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/_100sdp"
-                    android:translationZ="2dp"
-                    android:visibility="gone"
-                    app:layout_constraintEnd_toEndOf="@+id/cvList"
-                    app:layout_constraintStart_toStartOf="@+id/cvList"
-                    app:layout_constraintTop_toBottomOf="@+id/cvList"
-                    app:message="@string/msg_no_data" />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -133,12 +128,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/hfOrder" />
 
+        <com.partsystem.partvisitapp.core.utils.componenet.Info
+            android:id="@+id/info"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_100sdp"
+            android:translationZ="2dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/cvFactorDetail"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hfOrder"
+            app:message="@string/msg_no_data" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cvFactorDetail"
             style="@style/RoundedCardViewStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="@dimen/small_size"
+            android:layout_margin="@dimen/small_size"
+            app:cardBackgroundColor="?attr/colorBox"
             app:layout_constraintBottom_toTopOf="@+id/clBottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -158,7 +166,7 @@
                     android:layout_gravity="end|center_vertical"
                     android:gravity="end|center_vertical"
                     android:layoutDirection="rtl"
-                    android:text="@string/label_register"
+                    android:text="@string/label_complete_order"
                     android:textColor="@color/colorPrimary" />
 
                 <com.google.android.material.textview.MaterialTextView
@@ -170,55 +178,54 @@
                     android:visibility="gone" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/clTotalOrder"
+                    android:id="@+id/clSumPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTitleTotalOrder"
+                        android:id="@+id/tvTitleSumPrice"
                         style="@style/MediumTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_total_order"
+                        android:text="@string/label_sum_price"
                         android:textColor="@color/gray_474747"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTotalOrder"
+                        android:id="@+id/tvSumPrice"
                         style="@style/MediumBoldTextStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:text="10000 ریال"
-                        android:textColor="@color/colorPrimary"
+                        android:text="@string/app_price_item"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvTitleTotalOrder"
+                        app:layout_constraintEnd_toStartOf="@+id/tvTitleSumPrice"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/clTotalDiscount"
+                    android:id="@+id/clSumDiscountPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/x_small_size">
+                    android:layout_marginTop="@dimen/xx_small_size">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTitleTotalDiscount"
+                        android:id="@+id/tvTitleSumDiscountPrice"
                         style="@style/MediumTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_discount_order"
-                        android:textColor="@color/red_E92228"
+                        android:text="@string/label_sum_discount_price"
+                        android:textColor="@color/gray_474747"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTotalDiscount"
+                        android:id="@+id/tvSumDiscountPrice"
                         style="@style/MediumBoldTextStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -226,39 +233,71 @@
                         android:text="@string/app_price_item"
                         android:textColor="@color/red_E92228"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvTitleTotalDiscount"
+                        app:layout_constraintEnd_toStartOf="@+id/tvTitleSumDiscountPrice"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/clTotalPrice"
+                    android:id="@+id/clSumVat"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/x_small_size">
+                    android:layout_marginTop="@dimen/xx_small_size">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTitleTotalPrice"
+                        android:id="@+id/tvTitleSumVat"
                         style="@style/MediumTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_total_price"
-                        android:textColor="@color/orange_FF5722"
+                        android:text="@string/label_sum_vat"
+                        android:textColor="@color/gray_474747"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvTotalPrice"
+                        android:id="@+id/tvSumVat"
                         style="@style/MediumBoldTextStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:text="10000 ریال"
-                        android:textColor="@color/orange_FF5722"
+                        android:text="@string/app_price_item"
+                        android:textColor="@color/purple_8F21A2"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvTitleTotalPrice"
+                        app:layout_constraintEnd_toStartOf="@+id/tvTitleSumVat"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/clFinalPrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/xx_small_size">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvTitleFinalPrice"
+                        style="@style/MediumTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_final_factor"
+                        android:textColor="@color/gray_474747"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvFinalPrice"
+                        style="@style/MediumBoldTextStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:text="@string/app_price_item"
+                        android:textColor="@color/green_21BF73"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/tvTitleFinalPrice"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -298,7 +337,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/colorPrimary"
-                android:text="@string/label_send_order"
+                android:text="@string/label_register_order"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/btnDraftOrder"
                 app:layout_constraintHorizontal_weight="1"

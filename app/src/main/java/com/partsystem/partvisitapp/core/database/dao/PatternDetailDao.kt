@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 
 @Dao
 interface PatternDetailDao {

@@ -2,7 +2,6 @@ package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 
 
 @Entity(tableName = "factor_header_table")
@@ -42,7 +41,7 @@ data class FactorHeaderEntity(
 
 [
 {
-    "uniqueId": "F6EA69AA-040E-471D-A767-3CB93F90062A",
+    "uniqueId": "F6EA69AA-020E-471D-A767-3CB93F90062A",
     "id": 10,
     "formKind":17,
     "centerId": 1,

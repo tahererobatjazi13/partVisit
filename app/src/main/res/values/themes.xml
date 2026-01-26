@@ -21,6 +21,7 @@
         <item name="colorBackSurface">@color/gray_f4f4f4</item>
         <item name="colorBox">@color/blue_200063F5</item>
         <item name="colorRow">@color/gray_dark</item>
+        <item name="colorItem">@color/green_D1F3D1</item>
 
     </style>
 

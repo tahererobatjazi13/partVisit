@@ -97,7 +97,7 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
     private val _patterns = MutableLiveData<List<PatternEntity>>()
     val patterns: LiveData<List<PatternEntity>> = _patterns
 
-    private val _assignDirection = MutableLiveData<FactorHeaderEntity>()
+/*    private val _assignDirection = MutableLiveData<FactorHeaderEntity>()
     val assignDirection: LiveData<FactorHeaderEntity> get() = _assignDirection
 
     fun loadAssignDirectionCustomerByCustomerId(customerId: Int) {
@@ -111,8 +111,18 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
                 _assignDirection.postValue(data)
             }
         }
-    }
+    }*/
 
+
+    private val _assignDirection = MutableLiveData<List<AssignDirectionCustomerEntity>>()
+    val assignDirection: LiveData<List<AssignDirectionCustomerEntity>> get() = _assignDirection
+
+    fun loadAssignDirectionCustomerByCustomerId(customerId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = repository.getAssignDirectionCustomerByCustomerId(customerId)
+            _assignDirection.postValue(result)
+        }
+    }
     fun loadPatterns(
         customer: Int,
         centerId: Int?,

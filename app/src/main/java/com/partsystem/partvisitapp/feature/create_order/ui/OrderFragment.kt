@@ -1,7 +1,7 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,11 +16,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.utils.SnackBarType
+import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
+import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.isInternetAvailable
 import com.partsystem.partvisitapp.databinding.FragmentOrderBinding
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
@@ -36,6 +42,7 @@ class OrderFragment : Fragment() {
     private val formatter = DecimalFormat("#,###,###,###")
     private var currentCartItems: List<FactorDetailEntity> = emptyList()
     private val args: OrderFragmentArgs by navArgs()
+    private var customDialog: CustomDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,13 +54,11 @@ class OrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        init()
         setupClicks()
         initAdapter()
         setupObserver()
-    }
+        customDialog = CustomDialog()
 
-    private fun init() {
     }
 
     /**
@@ -69,9 +74,11 @@ class OrderFragment : Fragment() {
                 lifecycleScope.launch {
                     //   factorViewModel.saveToLocal()
                 }
+               factorViewModel.resetHeader()
+              factorViewModel.enteredProductPage = false
                 navigateToHomeClearOrder()
-            }
 
+            }
 
             btnSendOrder.setOnClickListener {
                 factorViewModel.sendFactor(args.factorId) { success ->
@@ -83,12 +90,56 @@ class OrderFragment : Fragment() {
                         ).show()
                         navigateToHomeClearOrder()
                     } else {
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.error_sending_order,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        CustomSnackBar.make(
+                            requireView(),
+                            getString(R.string.error_sending_order),
+                            SnackBarType.Error.value
+                        )?.show()
+                        //  navigateToHomeClearOrder()
+
+                            customDialog?.showDialog(
+                                activity,
+                            getString(R.string.error_sending_order),
+                                true,
+                               getString(R.string.label_retry),
+                               getString(R.string.label_back),
+                                true,
+                                true
+                            )
+                        
+                    }
+                }
+            }
+            customDialog?.apply {
+                setOnClickNegativeButton {      navigateToHomeClearOrder()
+                    hideProgress()
+               }
+                setOnClickPositiveButton {
+                    factorViewModel.sendFactor(args.factorId) { success ->
+                        if (success) {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.msg_order_successfully_sent,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            navigateToHomeClearOrder()
+                        } else {
+                            CustomSnackBar.make(
+                                requireView(),
+                                getString(R.string.error_sending_order),
+                                SnackBarType.Error.value
+                            )?.show()
+
+//                            customDialog!!.showDialog(
+//                                requireContext(),
+//                                requireContext().getString(R.string.msg_sure_send_order),
+//                                true,
+//                                requireContext().getString(R.string.label_retry),
+//                                requireContext().getString(R.string.label_back),
+//                                true,
+//                                true
+//                            )
+                        }
                     }
                 }
             }
@@ -121,15 +172,8 @@ class OrderFragment : Fragment() {
         )
     }
 
-
     private fun initAdapter() {
-
-        orderAdapter = OrderAdapter(loadProduct = { productId, actId ->
-            factorViewModel.loadProduct(productId, actId!!)
-        },
-            onQuantityChange = { item, quantity ->
-                //  cartViewModel.updateQuantity(item.productId, quantity)
-            },
+        orderAdapter = OrderAdapter(
             onDelete = { item ->
                 factorViewModel.deleteFactorDetail(item)
             }
@@ -140,20 +184,19 @@ class OrderFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = orderAdapter
         }
-
     }
 
     private fun setupObserver() {
-        factorViewModel.getFactorDetails(factorId = args.factorId)
+        factorViewModel.getFactorDetailUi(factorId = args.factorId)
             .observe(viewLifecycleOwner) { details ->
 
                 if (details.isNullOrEmpty()) {
                     binding.info.show()
                     binding.info.message(requireContext().getString(R.string.msg_no_data))
-                    binding.cvList.hide()
+                    binding.svMain.hide()
                 } else {
                     binding.info.gone()
-                    binding.cvList.show()
+                    binding.svMain.show()
                 }
                 orderAdapter.submitList(details)
 
@@ -161,15 +204,32 @@ class OrderFragment : Fragment() {
             }
     }
 
-    private fun calculateTotalPrices(items: List<FactorDetailEntity>?) {
+    @SuppressLint("SetTextI18n")
+    private fun calculateTotalPrices(items: List<FactorDetailUiModel>?) {
         items ?: return
-        val total = items.sumOf {
-            it.price!!.toInt() * it.unit1Value
+        val sumPrice = items.sumOf {
+            it.unit1Rate * it.unit1Value
+        }
+        val sumDiscountPrice = items.sumOf {
+            it.discountPrice
+        }
+        val sumVat = items.sumOf {
+            it.vat
         }
         with(binding) {
-            tvTotalOrder.text = "${formatter.format(total)} ریال"
-            tvTotalDiscount.text = "0 ریال"
-            tvTotalPrice.text = "${formatter.format(total)} ریال"
+            tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
+            tvSumDiscountPrice.text = "${"-" + formatter.format(sumDiscountPrice)} ریال"
+            tvSumVat.text = "${formatter.format(sumVat)} ریال"
+            tvFinalPrice.text = "${formatter.format((sumPrice - sumDiscountPrice) + sumVat)} ریال"
+        }
+        factorViewModel.updateHeader(finalPrice = (sumPrice - sumDiscountPrice) + sumVat)
+
+        lifecycleScope.launch {
+            val updatedHeader =
+                factorViewModel.factorHeader.value?.copy(finalPrice = (sumPrice - sumDiscountPrice) + sumVat)
+            updatedHeader?.let {
+                factorViewModel.updateFactorHeader(it)
+            }
         }
     }
 

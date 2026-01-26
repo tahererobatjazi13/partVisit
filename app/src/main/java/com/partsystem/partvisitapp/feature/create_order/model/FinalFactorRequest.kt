@@ -1,5 +1,7 @@
 package com.partsystem.partvisitapp.feature.create_order.model
 
+import androidx.room.PrimaryKey
+
 
 data class FinalFactorRequestDto(
     val uniqueId: String?,
@@ -7,63 +9,64 @@ data class FinalFactorRequestDto(
     val formKind: Int,
     val centerId: Int,
     val createDate: String?,
+    val persianDate: String?,
     val invoiceCategoryId: Int?,
     val patternId: Int?,
     val dueDate: String?,
+    val deliveryDate: String?,
+    val createTime: String?,
     val customerId: Int?,
+    val directionDetailId: Int?,
     val visitorId: Int?,
+    val distributorId: Int?,
     val description: String?,
     val sabt: Int,
     val createUserId: Int?,
     val saleCenterId: Int?,
     val actId: Int?,
+    val recipientId: Int?,
     val settlementKind: Int?,
-    val deliveryDate: String?,
-    val createTime: String?,
-    val directionDetailId: Int?,
     val latitude: Int,
     val longitude: Int,
+    val defaultAnbarId: Int,
     val factorDetails: List<FinalFactorDetailDto>,
     val factorGiftInfos: List<FinalFactorGiftDto>
 )
 
 
 data class FinalFactorDetailDto(
-    val factorId: Int?,
     val id: Int?,
+    val factorId: Int?,
     val sortCode: Int,
     val anbarId: Int,
     val productId: Int?,
     val actId: Int?,
-    val unit1Value: Int,
-    val unit2Value: Int,
-    val price: Int,
+    val unit1Value: Double,
+    val unit2Value: Double,
+    val price: Double,
     val packingId: Int?,
     val packingValue: Double,
-    val vat: Int,
-    val productSerial: Int,
+    val vat: Double,
+    val productSerial: Int?,
     val isGift: Int,
     val returnCauseId: Int,
     val isCanceled: Int,
     val isModified: Int,
-    val unit1Rate: Int,
+    val unit1Rate: Double,
     val factorDiscounts: List<FinalFactorDiscountDto>
 )
 
 data class FinalFactorDiscountDto(
-    val id: Int?,
     val sortCode: Int,
-    val discountId: Int?,
+    val discountId: Int,
     val price: Double,
-    val factorDetailId: Int?,
+    val factorDetailId: Int,
     val discountPercent: Double
 )
 
 data class FinalFactorGiftDto(
-    val id: Int?,
-    val factorId: Int?,
-    val discountId: Int?,
-    val productId: Int?,
+    val productId: Int,
+    val discountId: Int,
     val price: Double,
 )
 

@@ -29,6 +29,7 @@ class OnlineOrderDetailAdapter :
 
         @SuppressLint("SetTextI18n")
         fun bind(item: ReportFactorDto) = with(binding) {
+            binding.clDelete.gone()
 
             if (bindingAdapterPosition % 2 == 0) {
                 binding.root.setBackgroundColor(
@@ -49,23 +50,23 @@ class OnlineOrderDetailAdapter :
             if (item.discountPrice != null && item.discountPrice > 0) {
                 tvDiscountPrice.show()
                 tvPriceAfterDiscount.show()
-                tvPrice.show()
+                tvSumPrice.show()
 
                 tvDiscountPrice.text = formatter.format(item.discountPrice) + " تخفیف"
                 tvPriceAfterDiscount.text =
                     formatter.format(item.priceAfterDiscount) + " م.بعداز تخفیف"
                 // قیمت اصلی → خط بخورد
-                tvPrice.paintFlags = tvPrice.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                tvPrice.setTextColor(Color.GRAY)
-                tvPrice.text = formatter.format(item.price) + " ریال"
+                tvSumPrice.paintFlags = tvSumPrice.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                tvSumPrice.setTextColor(Color.GRAY)
+                tvSumPrice.text = formatter.format(item.price) + " ریال"
 
             } else {
 
-                tvPrice.show()
+                tvSumPrice.show()
                 tvDiscountPrice.gone()
                 tvPriceAfterDiscount.gone()
-                tvPrice.paintFlags = tvPrice.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                tvPrice.text = formatter.format(item.price) + " ریال"
+                tvSumPrice.paintFlags = tvSumPrice.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                tvSumPrice.text = formatter.format(item.price) + " ریال"
             }
 
             if (item.vat != null && item.vat > 0) {
@@ -79,7 +80,6 @@ class OnlineOrderDetailAdapter :
                 tvVat.gone()
                 tvPriceAfterVat.gone()
             }
-
 
             if (bindingAdapterPosition < itemCount - 1) {
                 view.show()

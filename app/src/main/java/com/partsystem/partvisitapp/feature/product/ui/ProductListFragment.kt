@@ -16,13 +16,16 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentProductListBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
+import com.partsystem.partvisitapp.feature.product.dialog.AddEditProductDialog
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -124,6 +127,9 @@ class ProductListFragment : Fragment() {
 
     private fun initAdapter() {
         productListAdapter = ProductListAdapter(
+            loadProduct = { productId, actId ->
+                factorViewModel.loadProduct(productId, actId!!)
+            },
             factorViewModel = factorViewModel,
             factorId = args.factorId,
             onProductChanged = { item ->
@@ -144,11 +150,188 @@ class ProductListFragment : Fragment() {
                 val updatedItem = item.copy(factorId = validFactorId.toInt())
                 factorViewModel.addOrUpdateFactorDetail(updatedItem)
             },
-
-            onClick = { product ->
+            onClickDetail = { product ->
                 val action = ProductListFragmentDirections
                     .actionProductListFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
+            },
+            onClickDialog = { product ->
+                var productRate = 0.0
+                var productIdExistingDetail = 0
+                var maxId = 0
+
+                factorViewModel.getProductByActId(
+                    product.product.id,
+                    factorViewModel.factorHeader.value?.actId!!
+                ).observeForever { product ->
+                    productRate = product.rate
+                }
+
+
+                factorViewModel.getCount()
+                    .observe(viewLifecycleOwner) { count ->
+                        if (count > 0) {
+                            factorViewModel.getMaxFactorDetailId()
+                                .observe(viewLifecycleOwner) { maxFactorDetailId ->
+                                    maxId = maxFactorDetailId
+                                }
+                        } else maxId = 1
+
+                    }
+
+                /* val sortedFactorDetails: LiveData<List<FactorDetailEntity>> =
+                      factorViewModel.getAllFactorDetails()
+                  var sortCode = 0
+                  sortedFactorDetails.observe(requireActivity()) { factorDetails ->
+                      if (factorDetails.isNotEmpty()) {
+                          val maxSortCode = factorDetails.maxOfOrNull { it.sortCode }
+                          sortCode = maxSortCode + 1
+                      } else {
+                          sortCode = 1
+                      }
+                  }*/
+                /*  val existingDetail = factorViewModel.getFactorDetailByFactorIdAndProductId(
+                        factorViewModel.factorHeader.value?.id!!,
+                        product.product.id
+                    )*/
+                factorViewModel.getFactorDetailByFactorIdAndProductId(
+                    factorViewModel.factorHeader.value?.id!!,
+                    product.product.id
+                ).observeForever { product ->
+                    if (product != null)
+                        productIdExistingDetail = product.id
+                }
+
+                val dialog =
+                    AddEditProductDialog(product) { finalUnit1, finalPackingValue, packingId, detailId, productId ->
+                        Log.d("productIdDetailId", detailId.toString())
+                        Log.d("productIdExistingDetail", productIdExistingDetail.toString())
+                        Log.d("productIdproductId", productId.toString())
+                        Log.d(
+                            "productIdfactorId",
+                            factorViewModel.factorHeader.value?.id!!.toString()
+                        )
+                        if (productIdExistingDetail != 0) {
+                            if (productIdExistingDetail == detailId) {
+                                Log.d("uuuuuuuuuuuu1", "true")
+                                Log.d("uuuuuuuuuuuu2", detailId.toString())
+
+                                val detail = FactorDetailEntity(
+                                    id = detailId,
+                                    factorId = factorViewModel.factorHeader.value?.id!!,
+                                    sortCode = 1,
+                                    anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
+                                    productId = product.product.id,
+                                    actId = factorViewModel.factorHeader.value?.actId,
+                                    unit1Value = finalUnit1,
+                                    packingValue = finalPackingValue,
+                                    unit2Value = 0.0,
+                                    price = Math.round(productRate * finalUnit1).toDouble(),
+                                    packingId = packingId,
+                                    vat = 0.0,
+                                    unit1Rate = productRate,
+                                )
+                                Log.d("productIddetailId==", detail.toString())
+
+                                factorViewModel.productInputCache[product.product.id] =
+                                    Pair(finalUnit1, finalPackingValue)
+
+                                detail.toll =
+                                    Math.round(product.tollPercent * detail.getPriceAfterDiscount())
+                                        .toDouble()
+                                detail.vat =
+                                    Math.round(product.vatPercent * detail.getPriceAfterDiscount())
+                                        .toDouble()
+
+                                val validFactorId =
+                                    factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+                                /*    if (validFactorId <= 0) {
+                                        Log.e("ProductList", "Invalid factorId: cannot save detail")
+                                        return@ProductListAdapter
+                                    }*/
+
+                                factorViewModel.updateHeader(hasDetail = true)
+
+                                lifecycleScope.launch {
+                                    val updatedHeader =
+                                        factorViewModel.factorHeader.value?.copy(hasDetail = true)
+                                    updatedHeader?.let {
+                                        factorViewModel.updateFactorHeader(it)
+                                    }
+                                }
+                                val updatedItem = detail.copy(factorId = validFactorId.toInt())
+                                factorViewModel.addOrUpdateFactorDetail(updatedItem)
+
+                                // onProductChanged(detail)
+
+                                // factorViewModel.loadProduct(product.product.id,factorViewModel.factorHeader.value?.actId!!)
+                                factorViewModel.onProductConfirmed(
+                                    DiscountApplyKind.ProductLevel.ordinal,
+                                    factorViewModel.factorHeader.value,
+                                    detail
+                                )
+                            }
+
+                        } else {
+
+                            val detail = FactorDetailEntity(
+                                id = maxId + 1,
+                                factorId = factorViewModel.factorHeader.value?.id!!,
+                                sortCode = 1,
+                                anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
+                                productId = product.product.id,
+                                actId = factorViewModel.factorHeader.value?.actId,
+                                unit1Value = finalUnit1,
+                                packingValue = finalPackingValue,
+                                unit2Value = 0.0,
+                                price = Math.round(productRate * finalUnit1).toDouble(),
+                                packingId = packingId,
+                                vat = 0.0,
+                                unit1Rate = productRate,
+                            )
+                            Log.d("productIddetailmaxId", detail.toString())
+
+                            factorViewModel.productInputCache[product.product.id] =
+                                Pair(finalUnit1, finalPackingValue)
+
+                            detail.toll =
+                                Math.round(product.tollPercent * detail.getPriceAfterDiscount())
+                                    .toDouble()
+                            detail.vat =
+                                Math.round(product.vatPercent * detail.getPriceAfterDiscount())
+                                    .toDouble()
+
+                            val validFactorId =
+                                factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+                            /*    if (validFactorId <= 0) {
+                                    Log.e("ProductList", "Invalid factorId: cannot save detail")
+                                    return@ProductListAdapter
+                                }*/
+
+                            factorViewModel.updateHeader(hasDetail = true)
+
+                            lifecycleScope.launch {
+                                val updatedHeader =
+                                    factorViewModel.factorHeader.value?.copy(hasDetail = true)
+                                updatedHeader?.let {
+                                    factorViewModel.updateFactorHeader(it)
+                                }
+                            }
+                            val updatedItem = detail.copy(factorId = validFactorId.toInt())
+                            factorViewModel.addOrUpdateFactorDetail(updatedItem)
+
+                            // onProductChanged(detail)
+
+                            // factorViewModel.loadProduct(product.product.id,factorViewModel.factorHeader.value?.actId!!)
+                            factorViewModel.onProductConfirmed(
+                                DiscountApplyKind.ProductLevel.ordinal,
+                                factorViewModel.factorHeader.value,
+                                detail
+                            )
+
+                        }
+                    }
+                dialog.show(childFragmentManager, "AddRawProductDialog")
             }
         )
     }
@@ -162,8 +345,7 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartData() {
-        val validFactorId =
-            factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
         if (validFactorId <= 0) return
 
         factorViewModel.getFactorDetails(validFactorId.toInt())
@@ -263,15 +445,15 @@ class ProductListFragment : Fragment() {
     private fun observeCartBadge() {
         if (args.fromFactor) {
 
-        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-        if (validFactorId <= 0) return
+            val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+            if (validFactorId <= 0) return
 
-        factorViewModel.getFactorItemCount(validFactorId.toInt())
-            .observe(viewLifecycleOwner) { count ->
-                binding.hfProduct.isShowBadge = count > 0
-                binding.hfProduct.textBadge = count.toString()
-            }
-    }
+            factorViewModel.getFactorItemCount(validFactorId.toInt())
+                .observe(viewLifecycleOwner) { count ->
+                    binding.hfProduct.isShowBadge = count > 0
+                    binding.hfProduct.textBadge = count.toString()
+                }
+        }
     }
 
     override fun onDestroyView() {
