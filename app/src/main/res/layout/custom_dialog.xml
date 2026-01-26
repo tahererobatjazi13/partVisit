@@ -6,6 +6,18 @@
     android:background="@drawable/background_dialog">
 
     <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        style="@style/SmallBoldTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/medium_size"
+        android:gravity="start"
+        android:textColor="@color/red_E92228"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvMessage"
         style="@style/MediumTextStyle"
         android:layout_width="match_parent"
@@ -14,10 +26,11 @@
         android:gravity="start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
+        android:layoutDirection="ltr"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,6 +49,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvNo"
+
                 style="@style/SmallBoldTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -46,10 +60,11 @@
                 android:paddingVertical="@dimen/x_small_size"
                 android:text="@string/label_no"
                 android:textColor="@color/red_E92228"
-                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -74,10 +89,10 @@
                 android:paddingVertical="@dimen/x_small_size"
                 android:text="@string/label_ok"
                 android:textColor="@color/green_21BF73"
-                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

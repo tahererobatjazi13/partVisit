@@ -1,6 +1,5 @@
 package com.partsystem.partvisitapp.feature.create_order.model
 
-import androidx.room.PrimaryKey
 
 
 data class FinalFactorRequestDto(
@@ -26,8 +25,8 @@ data class FinalFactorRequestDto(
     val actId: Int?,
     val recipientId: Int?,
     val settlementKind: Int?,
-    val latitude: Int,
-    val longitude: Int,
+    val latitude: Double,
+    val longitude: Double,
     val defaultAnbarId: Int,
     val factorDetails: List<FinalFactorDetailDto>,
     val factorGiftInfos: List<FinalFactorGiftDto>
@@ -52,6 +51,7 @@ data class FinalFactorDetailDto(
     val returnCauseId: Int,
     val isCanceled: Int,
     val isModified: Int,
+    val description: String,
     val unit1Rate: Double,
     val factorDiscounts: List<FinalFactorDiscountDto>
 )

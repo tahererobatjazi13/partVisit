@@ -48,29 +48,18 @@
                     style="@style/MediumBoldTextStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/small_size"
-                    android:layout_marginEnd="@dimen/xx_small_size"
+                    android:layout_marginHorizontal="@dimen/small_size"
+                    android:layout_marginTop="@dimen/xxx_small_size"
                     android:text="@string/label_order_summary"
-                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!--     <com.google.android.material.card.MaterialCardView
-                         android:id="@+id/cvList"
-                         style="@style/RoundedCardViewStyle"
-                         android:layout_width="match_parent"
-                         android:layout_height="wrap_content"
-                         android:layout_marginTop="@dimen/small_size"
-                         app:layout_constraintEnd_toEndOf="parent"
-                         app:layout_constraintStart_toStartOf="parent"
-                         app:layout_constraintTop_toBottomOf="@+id/tvTitleOrderDetail">
-     -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/clList"
+                    android:layout_marginTop="@dimen/xx_small_size"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/small_size"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tvTitleOrderDetail">
@@ -105,29 +94,14 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/rvOrder"
                         app:srcCompat="@drawable/ic_bottom_dots" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
-                <!--
-                                </com.google.android.material.card.MaterialCardView>
-                -->
-
-                <!-- line info -->
-
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.core.widget.NestedScrollView>
-        <!-- line retry -->
-        <com.partsystem.partvisitapp.core.utils.componenet.TryAgain
-            android:id="@+id/tryAgain"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:translationZ="@dimen/_20sdp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/hfOrder" />
 
+        <!-- line info -->
         <com.partsystem.partvisitapp.core.utils.componenet.Info
             android:id="@+id/info"
             android:layout_width="match_parent"
@@ -317,47 +291,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <Button
-                android:id="@+id/btnDraftOrder"
-                style="@style/ButtonDefault"
-                android:layout_width="0dp"
+            <com.partsystem.partvisitapp.core.utils.componenet.BottomMain
+                android:id="@+id/bmbSendOrder"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/medium_size"
-                android:backgroundTint="@color/green_21BF73"
-                android:text="@string/label_draft_order"
+                app:backColorBtnOne="@color/colorPrimary"
+                app:badgeTextColorBtnOne="?attr/colorOnPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_weight="1"
-                app:layout_constraintStart_toEndOf="@id/btnSendOrder"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Button
-                android:id="@+id/btnSendOrder"
-                style="@style/ButtonDefault"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorPrimary"
-                android:text="@string/label_register_order"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/btnDraftOrder"
-                app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:textBtnOne="@string/label_send_order" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <com.partsystem.partvisitapp.core.utils.componenet.BottomMain
-            android:id="@+id/btnCreateOrder"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/big_size"
-            android:visibility="gone"
-            app:backColorBtnOne="@color/colorPrimary"
-            app:badgeTextColorBtnOne="?attr/colorOnPrimary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:textBtnOne="@string/label_send_order" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

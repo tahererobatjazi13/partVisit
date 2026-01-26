@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.core.network
 
 
+import com.partsystem.partvisitapp.feature.create_order.model.ApiResponse
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
 import com.partsystem.partvisitapp.feature.main.home.model.GroupProductDto
 import com.partsystem.partvisitapp.feature.login.model.LoginResponse
@@ -112,9 +113,9 @@ interface ApiService {
 
 
     @POST("InsertFactor")
-    suspend fun sendFactor(
-        @Body request: List<FinalFactorRequestDto>
-    ): Response<Any>
+    suspend fun sendFactorToServer(
+        @Body factors: List<FinalFactorRequestDto>
+    ): Response<ApiResponse>
 
     @GET("Mojoodi")
     suspend fun getMojoodi(

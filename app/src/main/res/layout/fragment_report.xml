@@ -21,6 +21,7 @@
     <!-- line info -->
     <com.partsystem.partvisitapp.core.utils.componenet.Info
         android:id="@+id/info"
+        android:visibility="visible"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:translationZ="2dp"

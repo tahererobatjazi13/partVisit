@@ -307,6 +307,7 @@ class HomeFragment : Fragment() {
                             } else {
                                 customDialogForceUpdate?.showDialog(
                                     activity,
+                                    "",
                                     getString(R.string.error_receiving_product_pattern_act_mandatory),
                                     true,
                                     getString(R.string.label_no),
@@ -345,6 +346,7 @@ class HomeFragment : Fragment() {
                     7 -> {/* خروج از حساب کاربری */
                         customDialog?.showDialog(
                             activity,
+                            "",
                             getString(R.string.msg_log_out),
                             true,
                             getString(R.string.label_no),

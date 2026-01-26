@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,8 +12,8 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
+import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
@@ -26,6 +27,7 @@ import com.partsystem.partvisitapp.feature.create_order.repository.DiscountRepos
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
@@ -33,6 +35,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+
     private val factorRepository: FactorRepository,
     private val discountRepository: DiscountRepository,
     val productRepository: ProductRepository,
@@ -76,7 +80,7 @@ class FactorViewModel @Inject constructor(
     }
 
     fun deleteFactor(factorId: Int) = viewModelScope.launch {
-        factorRepository.deleteHeader(factorId)
+        factorRepository.deleteFactor(factorId)
     }
 
     // اضافه کردن تخفیف
@@ -456,6 +460,7 @@ class FactorViewModel @Inject constructor(
         }
         return result
     }
+
     /*
         private suspend fun buildFinalFactorRequest(factorId: Int): FinalFactorRequestDto {
             val header = factorRepository.getHeaderByLocalId(factorId.toLong())
@@ -491,8 +496,140 @@ class FactorViewModel @Inject constructor(
             )
         }
     */
+    private val _sendFactorResult =
+        MutableLiveData<NetworkResult<Unit>>()
 
-    private suspend fun buildFinalFactorRequest(factorId: Int): FinalFactorRequestDto {
+    val sendFactorResult: LiveData<NetworkResult<Unit>> =
+        _sendFactorResult
+
+
+    fun sendFactor(factorId: Int, sabt: Int) {
+        viewModelScope.launch {
+
+            _sendFactorResult.value = NetworkResult.Loading
+
+            val request = buildFinalFactorRequest(
+                factorId, sabt
+            )
+            val body = listOf(request)
+            Log.d("FINAL_json", body.toString())
+
+            when (val result = factorRepository.sendFactorToServer(body)) {
+
+                is NetworkResult.Success -> {
+                    factorRepository.deleteFactor(factorId)
+                    _sendFactorResult.value = NetworkResult.Success(Unit)
+                }
+
+                is NetworkResult.Error -> {
+                    _sendFactorResult.value = NetworkResult.Error(result.message)
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    /*
+        fun sendFactor(factorId: Int, onResult: (Boolean) -> Unit) {
+            Log.d("FINAL_factorId", factorId.toString())
+
+            viewModelScope.launch {
+                try {
+                    val request = buildFinalFactorRequest(factorId)
+
+                    // فقط یک FinalFactorRequestDto آماده می‌کنیم
+                    val finalFactorRequestDto = FinalFactorRequestDto(
+                        uniqueId = request.uniqueId,
+                        id = request.id,
+                        formKind = request.formKind,
+                        centerId = request.centerId,
+                        createDate = request.createDate,
+                        persianDate = request.persianDate,
+                        invoiceCategoryId = request.invoiceCategoryId,
+                        patternId = request.patternId,
+                        dueDate = request.dueDate,
+                        deliveryDate = request.deliveryDate,
+                        createTime = request.createTime,
+                        customerId = request.customerId,
+                        directionDetailId = request.directionDetailId,
+                        visitorId = request.visitorId,
+                        distributorId = request.distributorId,
+                        description = request.description,
+                        sabt = request.sabt,
+                        createUserId = request.createUserId,
+                        saleCenterId = request.saleCenterId,
+                        actId = request.actId,
+                        recipientId = request.recipientId,
+                        settlementKind = request.settlementKind,
+                        latitude = request.latitude,
+                        longitude = request.longitude,
+                        defaultAnbarId = request.defaultAnbarId,
+                        factorDetails = request.factorDetails.map { d ->
+                            FinalFactorDetailDto(
+                                id = d.id,
+                                factorId = d.factorId,
+                                sortCode = d.sortCode,
+                                anbarId = d.anbarId,
+                                productId = d.productId,
+                                actId = d.actId,
+                                unit1Value = d.unit1Value,
+                                unit2Value = d.unit2Value,
+                                price = d.price,
+                                packingId = d.packingId,
+                                packingValue = d.packingValue,
+                                vat = d.vat,
+                                productSerial = d.productSerial,
+                                isGift = d.isGift,
+                                returnCauseId = d.returnCauseId,
+                                isCanceled = d.isCanceled,
+                                isModified = d.isModified,
+                                description = d.description,
+                                unit1Rate = d.unit1Rate,
+                                factorDiscounts = d.factorDiscounts.map { dis ->
+                                    FinalFactorDiscountDto(
+                                        sortCode = dis.sortCode,
+                                        discountId = dis.discountId,
+                                        price = dis.price,
+                                        factorDetailId = dis.factorDetailId,
+                                        discountPercent = dis.discountPercent
+                                    )
+                                }
+                            )
+                        },
+                        factorGiftInfos = request.factorGiftInfos.map { g ->
+                            FinalFactorGiftDto(
+                                productId = g.productId,
+                                discountId = g.discountId,
+                                price = g.price
+                            )
+                        }
+                    )
+
+                    val body = listOf(finalFactorRequestDto)
+
+                    val json = Gson().toJson(body)
+                    Log.d("FINAL_JSON", json)
+
+                    val response = factorRepository.sendFactorToServer(body)
+
+                    if (response.isSuccessful && response.body()?.isSuccess == true) {
+                        factorRepository.deleteFactor(factorId)
+                        onResult(true)
+                    } else {
+                        Log.e("SERVER_ERROR", response.body()?.message ?: "Unknown error")
+                        onResult(false)
+                    }
+                } catch (e: Exception) {
+                    Log.e("FINAL_ERROR", e.toString())
+                    onResult(false)
+                }
+            }
+
+        }
+    */
+
+    private suspend fun buildFinalFactorRequest(factorId: Int, sabt: Int): FinalFactorRequestDto {
         val header = factorRepository.getHeaderByLocalId(factorId.toLong())
             ?: throw IllegalStateException("Header not found")
 
@@ -509,7 +646,6 @@ class FactorViewModel @Inject constructor(
                 header.id,
                 d.id
             ) // اطمینان از اینکه این متد suspend است
-
 
             FinalFactorDetailDto(
                 id = d.id,
@@ -529,6 +665,7 @@ class FactorViewModel @Inject constructor(
                 returnCauseId = d.returnCauseId,
                 isCanceled = d.isCanceled,
                 isModified = d.isModified,
+                description = d.description,
                 unit1Rate = d.unit1Rate,
                 factorDiscounts = discounts.map { dis ->
                     FinalFactorDiscountDto(
@@ -555,8 +692,8 @@ class FactorViewModel @Inject constructor(
         return FinalFactorRequestDto(
             id = header.id,
             uniqueId = header.uniqueId,
-            formKind = header.formKind?.toInt() ?: 0,
-            centerId = header.centerId?.toInt() ?: 0,
+            formKind = header.formKind ?: 0,
+            centerId = header.centerId ?: 0,
             createDate = header.createDate,
             persianDate = header.persianDate,
             invoiceCategoryId = header.invoiceCategoryId ?: 0,
@@ -564,193 +701,23 @@ class FactorViewModel @Inject constructor(
             dueDate = header.dueDate,
             deliveryDate = header.deliveryDate,
             createTime = header.createTime,
-            customerId = header.customerId ?: 0,
+            customerId = header.customerId,
             directionDetailId = header.directionDetailId ?: 0,
             visitorId = header.visitorId ?: 0,
-            distributorId = header.distributorId ?: 0,
-            description = header.description ?: "",
-            sabt = 1,
+            distributorId = header.distributorId,
+            description = header.description,
+            sabt = sabt,
             createUserId = header.createUserId ?: 0,
             saleCenterId = header.saleCenterId ?: 0,
             actId = header.actId ?: 0,
-            recipientId = header.recipientId ?: 0,
-            settlementKind = header.settlementKind ?: 0,
-            latitude = header.latitude?.toInt() ?: 0,
-            longitude = header.longitude?.toInt() ?: 0,
-            defaultAnbarId = header.defaultAnbarId?.toInt() ?: 0,
+            recipientId = header.recipientId,
+            settlementKind = header.settlementKind,
+            latitude = header.latitude ?: 0.0,
+            longitude = header.longitude ?: 0.0,
+            defaultAnbarId = header.defaultAnbarId ?: 0,
             factorDetails = finalDetails,
             factorGiftInfos = finalGifts
         )
-
-    }
-
-    fun sendFactor(factorId: Int, onResult: (Boolean) -> Unit) {
-        Log.d("FINAL_factorId", factorId.toString())
-
-        viewModelScope.launch {
-            try {
-                val request = buildFinalFactorRequest(factorId)
-/*
-
-                // تبدیل به LinkedHashMap برای حفظ ترتیب
-                val map = linkedMapOf<String, Any?>(
-                    "uniqueId" to request.uniqueId,
-                    "id" to request.id,
-                    "formKind" to request.formKind,
-                    "centerId" to request.centerId,
-                    "createDate" to request.createDate,
-                    "invoiceCategoryId" to request.invoiceCategoryId,
-                    "patternId" to request.patternId,
-                    "dueDate" to request.dueDate,
-                    "customerId" to request.customerId,
-                    "visitorId" to request.visitorId,
-                    "description" to request.description,
-                    "sabt" to request.sabt,
-                    "createUserId" to request.createUserId,
-                    "saleCenterId" to request.saleCenterId,
-                    "actId" to request.actId,
-                    "settlementKind" to request.settlementKind,
-                    "deliveryDate" to request.deliveryDate,
-                    "createTime" to request.createTime,
-                    "directionDetailId" to request.directionDetailId,
-                    "latitude" to request.latitude,
-                    "longitude" to request.longitude,
-                    "factorDetails" to request.factorDetails.map { d ->
-                        linkedMapOf(
-                            "factorId" to d.factorId,
-                            "id" to d.id,
-                            "sortCode" to d.sortCode,
-                            "anbarId" to d.anbarId,
-                            "productId" to d.productId,
-                            "actId" to d.actId,
-                            "unit1Value" to d.unit1Value,
-                            "unit2Value" to d.unit2Value,
-                            "price" to d.price,
-                            "packingId" to d.packingId,
-                            "packingValue" to d.packingValue,
-                            "vat" to d.vat,
-                            "productSerial" to d.productSerial,
-                            "isGift" to d.isGift,
-                            "returnCauseId" to d.returnCauseId,
-                            "isCanceled" to d.isCanceled,
-                            "isModified" to d.isModified,
-                            "unit1Rate" to d.unit1Rate,
-                            "factorDiscounts" to d.factorDiscounts.map { dis ->
-                                linkedMapOf(
-                                    "sortCode" to dis.sortCode,
-                                    "discountId" to dis.discountId,
-                                    "price" to dis.price,
-                                    "factorDetailId" to dis.factorDetailId,
-                                    "discountPercent" to dis.discountPercent
-                                )
-                            }
-                        )
-                    },
-                    "factorGiftInfos" to request.factorGiftInfos.map { g ->
-                        linkedMapOf(
-                            "productId" to g.productId,
-                            "discountId" to g.discountId,
-                            "price" to g.price,
-                        )
-                    }
-                )
-*/
-
-
-
-                                // فقط یک FinalFactorRequestDto آماده می‌کنیم
-                                val finalFactorRequestDto = FinalFactorRequestDto(
-                                    uniqueId = request.uniqueId,
-                                    id = request.id,
-                                    formKind = request.formKind,
-                                    centerId = request.centerId,
-                                    createDate = request.createDate,
-                                    persianDate = request.persianDate,
-                                    invoiceCategoryId = request.invoiceCategoryId,
-                                    patternId = request.patternId,
-                                    dueDate = request.dueDate,
-                                    deliveryDate = request.deliveryDate,
-                                    createTime = request.createTime,
-                                    customerId = request.customerId,
-                                    directionDetailId = request.directionDetailId,
-                                    visitorId = request.visitorId,
-                                    distributorId = request.distributorId,
-                                    description = request.description,
-                                    sabt = request.sabt,
-                                    createUserId = request.createUserId,
-                                    saleCenterId = request.saleCenterId,
-                                    actId = request.actId,
-                                    recipientId = request.recipientId,
-                                    settlementKind = request.settlementKind,
-                                    latitude = request.latitude,
-                                    longitude = request.longitude,
-                                    defaultAnbarId = request.defaultAnbarId,
-                                    factorDetails = request.factorDetails.map { d ->
-                                        FinalFactorDetailDto(
-                                            id = d.id,
-                                            factorId = d.factorId,
-                                            sortCode = d.sortCode,
-                                            anbarId = d.anbarId,
-                                            productId = d.productId,
-                                            actId = d.actId,
-                                            unit1Value = d.unit1Value,
-                                            unit2Value = d.unit2Value,
-                                            price = d.price,
-                                            packingId = d.packingId,
-                                            packingValue = d.packingValue,
-                                            vat = d.vat,
-                                            productSerial = d.productSerial,
-                                            isGift = d.isGift,
-                                            returnCauseId = d.returnCauseId,
-                                            isCanceled = d.isCanceled,
-                                            isModified = d.isModified,
-                                            unit1Rate = d.unit1Rate,
-                                            factorDiscounts = d.factorDiscounts.map { dis ->
-                                                FinalFactorDiscountDto(
-                                                    sortCode = dis.sortCode,
-                                                    discountId = dis.discountId,
-                                                    price = dis.price,
-                                                    factorDetailId = dis.factorDetailId,
-                                                    discountPercent = dis.discountPercent
-                                                )
-                                            }
-                                        )
-                                    },
-                                    factorGiftInfos = request.factorGiftInfos.map { g ->
-                                        FinalFactorGiftDto(
-                                            productId = g.productId,
-                                            discountId = g.discountId,
-                                            price = g.price
-                                        )
-                                    }
-                                )
-
-
-            /*    val json = Gson().toJson(listOf(map))
-                Log.d("FINAL_JSON", json)*/
-
-                      // تبدیل به JSON
-                val json = Gson().toJson(listOf(finalFactorRequestDto))
-                Log.d("FINAL_JSON", json)
-
-                // ارسال به سرور
-                val response =  factorRepository.sendFactorToServer(finalFactorRequestDto)
-
-                onResult(response.isSuccessful)
-
-               /* // ارسال به سرور
-                val response = factorRepository.sendFactorToServer(listOf(map))
-                onResult(response.isSuccessful)*/
-
-
-                /*    val response = factorRepository.sendFactorToServer(finalFactorRequestDto)
-    onResult(response.isSuccessful)*/
-            } catch (e: Exception) {
-                Log.e("FINAL_ERROR", e.toString())
-                onResult(false)
-            }
-        }
-
     }
 
     fun onProductConfirmed(
@@ -782,7 +749,11 @@ class FactorViewModel @Inject constructor(
         return factorRepository.getCount()
     }
 
-    fun getFactorDetailByFactorIdAndProductId(factorId: Int, productId: Int): LiveData<FactorDetailEntity> {
-        return factorRepository.getFactorDetailByFactorIdAndProductId(factorId, productId).asLiveData()
+    fun getFactorDetailByFactorIdAndProductId(
+        factorId: Int,
+        productId: Int
+    ): LiveData<FactorDetailEntity> {
+        return factorRepository.getFactorDetailByFactorIdAndProductId(factorId, productId)
+            .asLiveData()
     }
 }

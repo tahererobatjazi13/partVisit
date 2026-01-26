@@ -4,8 +4,10 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.view.ViewGroup
 import android.view.Window
 import com.partsystem.partvisitapp.core.utils.extensions.gone
+import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.CustomDialogBinding
 
 class CustomDialog {
@@ -51,6 +53,7 @@ class CustomDialog {
 
     fun showDialog(
         context: Context?,
+        title: String?,
         message: String?,
         cancelable: Boolean,
         textNegative: String?,
@@ -67,7 +70,20 @@ class CustomDialog {
         binding = CustomDialogBinding.inflate(mDialog!!.layoutInflater)
         mDialog!!.setContentView(binding!!.root)
 
+        mDialog!!.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        mDialog!!.window?.decorView?.setPadding(32, 0, 32, 0)
+
         // Binding views using ViewBinding
+        if (title.isNullOrBlank()) {
+            binding!!.tvTitle.gone()
+        } else {
+            binding!!.tvTitle.text = title
+            binding!!.tvTitle.show()
+        }
         binding!!.tvMessage.text = message
         binding!!.tvNo.text = textNegative
         binding!!.tvOk.text = textPositive

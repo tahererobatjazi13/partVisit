@@ -42,6 +42,7 @@ data class FactorDetailEntity(
     var returnCauseId: Int = 0,
     var isCanceled: Int = 0,
     var isModified: Int = 0,
+    var description: String = "",
     var unit1Rate: Double = 0.0,
 ) {
     @Ignore

@@ -86,6 +86,7 @@ class OfflineOrderListFragment : Fragment() {
 
                     customDialogDelete?.showDialog(
                         requireActivity(),
+                        "",
                         getString(R.string.msg_sure_delete_orders),
                         true,
                         getString(R.string.label_no),
@@ -146,6 +147,7 @@ class OfflineOrderListFragment : Fragment() {
             btnSyncAllOrder.setOnClickBtnOneListener {
                 customDialogSend?.showDialog(
                     activity,
+                    "",
                     getString(R.string.msg_sure_send_orders),
                     true,
                     getString(R.string.label_no),
@@ -154,21 +156,6 @@ class OfflineOrderListFragment : Fragment() {
                     true
                 )
             }
-        }
-
-        customDialogDelete?.apply {
-            customDialogDelete?.setOnClickNegativeButton {
-                selectedFactor = null
-                customDialogDelete?.hideProgress()
-            }
-            customDialogDelete?.setOnClickPositiveButton {
-                selectedFactor?.let {
-                    factorViewModel.deleteFactor(it.factorId)
-                    selectedFactor = null
-                }
-                customDialogDelete?.hideProgress()
-            }
-
         }
     }
 

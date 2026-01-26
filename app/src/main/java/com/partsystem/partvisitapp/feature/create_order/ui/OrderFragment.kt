@@ -15,18 +15,14 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
-import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
-import com.partsystem.partvisitapp.core.utils.SnackBarType
+import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
-import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.core.utils.isInternetAvailable
 import com.partsystem.partvisitapp.databinding.FragmentOrderBinding
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
@@ -40,7 +36,7 @@ class OrderFragment : Fragment() {
     private val factorViewModel: FactorViewModel by hiltNavGraphViewModels(R.id.nav_graph)
 
     private val formatter = DecimalFormat("#,###,###,###")
-    private var currentCartItems: List<FactorDetailEntity> = emptyList()
+    private var currentCartItems: List<FactorDetailUiModel> = emptyList()
     private val args: OrderFragmentArgs by navArgs()
     private var customDialog: CustomDialog? = null
 
@@ -57,8 +53,8 @@ class OrderFragment : Fragment() {
         setupClicks()
         initAdapter()
         setupObserver()
+        observeSendFactor()
         customDialog = CustomDialog()
-
     }
 
     /**
@@ -70,106 +66,94 @@ class OrderFragment : Fragment() {
                 findNavController().navigateUp()
             }
 
-            btnDraftOrder.setOnClickListener {
-                lifecycleScope.launch {
-                    //   factorViewModel.saveToLocal()
-                }
-               factorViewModel.resetHeader()
-              factorViewModel.enteredProductPage = false
-                navigateToHomeClearOrder()
-
-            }
-
-            btnSendOrder.setOnClickListener {
-                factorViewModel.sendFactor(args.factorId) { success ->
-                    if (success) {
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.msg_order_successfully_sent,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        navigateToHomeClearOrder()
-                    } else {
-                        CustomSnackBar.make(
-                            requireView(),
-                            getString(R.string.error_sending_order),
-                            SnackBarType.Error.value
-                        )?.show()
-                        //  navigateToHomeClearOrder()
-
-                            customDialog?.showDialog(
-                                activity,
-                            getString(R.string.error_sending_order),
-                                true,
-                               getString(R.string.label_retry),
-                               getString(R.string.label_back),
-                                true,
-                                true
-                            )
-                        
-                    }
-                }
-            }
-            customDialog?.apply {
-                setOnClickNegativeButton {      navigateToHomeClearOrder()
-                    hideProgress()
-               }
-                setOnClickPositiveButton {
-                    factorViewModel.sendFactor(args.factorId) { success ->
-                        if (success) {
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.msg_order_successfully_sent,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            navigateToHomeClearOrder()
-                        } else {
-                            CustomSnackBar.make(
-                                requireView(),
-                                getString(R.string.error_sending_order),
-                                SnackBarType.Error.value
-                            )?.show()
-
-//                            customDialog!!.showDialog(
-//                                requireContext(),
-//                                requireContext().getString(R.string.msg_sure_send_order),
-//                                true,
-//                                requireContext().getString(R.string.label_retry),
-//                                requireContext().getString(R.string.label_back),
-//                                true,
-//                                true
-//                            )
-                        }
-                    }
-                }
-            }
-
-            btnCreateOrder.setOnClickBtnOneListener {
+            bmbSendOrder.setOnClickBtnOneListener {
                 if (currentCartItems.isEmpty()) {
                     Toast.makeText(
                         requireContext(),
-                        R.string.error_no_items_cart,
+                        R.string.error_no_row_for_order,
                         Toast.LENGTH_SHORT
                     ).show()
-
                     return@setOnClickBtnOneListener
-                } else {
+                }
 
-                    navigateToHomeClearOrder()
+                if (binding.cbSabt.isChecked) {
+                    // تکمیل سفارش → ارسال به سرور
+                    factorViewModel.sendFactor(
+                        factorId = args.factorId,
+                        sabt = 1
+                    )
+                } else {
+                    // تیک نزده → هشدار
+                    showWarningDialog()
                 }
             }
         }
     }
 
-    private fun navigateToHomeClearOrder() {
+    private fun showWarningDialog() {
+        customDialog = CustomDialog().apply {
+
+            setOnClickNegativeButton { hideProgress() }
+            setOnClickPositiveButton {
+                factorViewModel.resetHeader()
+                factorViewModel.enteredProductPage = false
+                navigateToReportFactor()
+                hideProgress()
+            }
+        }
+
+        customDialog?.showDialog(
+            activity,
+            getString(R.string.error_order_not_completed),
+            getString(R.string.error_save_order_draft),
+            true,
+            getString(R.string.label_close),
+            getString(R.string.label_confirm),
+            true,
+            true
+        )
+    }
+
+
+    private fun navigateToReportFactor() {
         val navController = findNavController()
         navController.navigate(
-            R.id.homeFragment,
+            R.id.reportFactorFragment,
             null,
             NavOptions.Builder()
-                .setPopUpTo(navController.graph.startDestinationId, true)
+                .setPopUpTo(R.id.homeFragment, false)
                 .build()
         )
+    }
+
+
+    private fun observeSendFactor() {
+        factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { result ->
+            when (result) {
+
+                is NetworkResult.Loading -> binding.bmbSendOrder.checkShowPbOne(true)
+
+                is NetworkResult.Success -> {
+
+                    binding.bmbSendOrder.checkShowPbOne(false)
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.msg_order_successfully_sent,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navigateToReportFactor()
+                }
+
+                is NetworkResult.Error -> {
+                    binding.bmbSendOrder.checkShowPbOne(false)
+                    Toast.makeText(
+                        requireContext(),
+                        result.message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     private fun initAdapter() {
@@ -189,6 +173,7 @@ class OrderFragment : Fragment() {
     private fun setupObserver() {
         factorViewModel.getFactorDetailUi(factorId = args.factorId)
             .observe(viewLifecycleOwner) { details ->
+                currentCartItems = details ?: emptyList()
 
                 if (details.isNullOrEmpty()) {
                     binding.info.show()

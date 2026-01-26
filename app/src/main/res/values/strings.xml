@@ -160,5 +160,11 @@
     <string name="error_updating_information">خطا در بروزرسانی اطلاعات</string>
     <string name="error_receiving_product_pattern_act_mandatory">دریافت اطلاعات محصول، طرح و مصوبه اجباری است.</string>
     <string name="error_click_sync_button_download_information">ابتدا دکمه سینک بالای صفحه را بزنید تا اطلاعات دانلود شود</string>
+    <string name="error_no_row_for_order">برای سفارش مورد نظر ردیفی وجود ندارد</string>
+    <string name="error_order_not_completed">سفارش تکمیل نشده است.</string>
+    <string name="error_save_order_draft">
+    این سفارش به صورت پیش نویس در تبلت شما ذخیره می شود
+    لطفا در اولین فرصت نسبت به ارسال آن به سرور اقدام نمایید
+    و تا قبل از ارسال به سرور از حساب کاربری خود خارج نشوید.</string>
 
 </resources>

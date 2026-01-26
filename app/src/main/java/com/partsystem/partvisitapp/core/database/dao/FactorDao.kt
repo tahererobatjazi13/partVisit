@@ -90,7 +90,7 @@ interface FactorDao {
        */
 
     @Query("DELETE FROM factor_header_table WHERE id = :factorId")
-    suspend fun deleteHeader(factorId: Int)
+    suspend fun deleteFactor(factorId: Int)
 
 
     // Detail

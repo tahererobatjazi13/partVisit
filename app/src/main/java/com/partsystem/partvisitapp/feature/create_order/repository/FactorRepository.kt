@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.repository
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
@@ -10,10 +11,16 @@ import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.network.ApiService
+import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.ErrorHandler
+import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
+import com.partsystem.partvisitapp.feature.create_order.model.ApiResponse
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
+import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import okhttp3.RequestBody
 import org.json.JSONArray
@@ -22,6 +29,7 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class FactorRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val api: ApiService,
     private val factorDao: FactorDao,
 ) {
@@ -93,7 +101,7 @@ class FactorRepository @Inject constructor(
     fun getFactorDiscountsLive(factorId: Int, factorDetailId: Int): Flow<List<FactorDiscountEntity>> =
         factorDao.getFactorDiscountsLive(factorId, factorDetailId)
 
-    suspend fun deleteHeader(factorId: Int) = factorDao.deleteHeader(factorId)
+    suspend fun deleteFactor(factorId: Int) = factorDao.deleteFactor(factorId)
      fun getCount() = factorDao.getCount()
 
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity? =
@@ -129,17 +137,41 @@ class FactorRepository @Inject constructor(
     */
 
 
-    suspend fun sendFactorToServer(request: FinalFactorRequestDto) =
-        api.sendFactor(listOf(request))
+    suspend fun sendFactorToServer(
+        factors: List<FinalFactorRequestDto>
+    ): NetworkResult<ApiResponse> {
+
+        return try {
+            val response = api.sendFactorToServer(factors)
+            val body = response.body()
+
+            if (response.isSuccessful && body != null) {
+                NetworkResult.Success(body)
+            } else {
+                val errorMessage =
+                    ErrorHandler.getHttpErrorMessage(
+                        context,
+                        response.code(),
+                        response.message()
+                    )
+                NetworkResult.Error(errorMessage)
+            }
+
+        } catch (ex: Exception) {
+            val errorMsg = getExceptionMessage(context, ex)
+            NetworkResult.Error(errorMsg)
+        }
+    }
 
 
 
-/*
-    suspend fun sendFactorToServer(json: String): Response<Any> {
-    //    val request = Gson().fromJson(json, Array<FinalFactorRequestDto>::class.java).toList()
-        Log.d("FINAL_request22", json)
-        return api.sendFactor(json)
-    }*/
+
+    /*
+        suspend fun sendFactorToServer(json: String): Response<Any> {
+        //    val request = Gson().fromJson(json, Array<FinalFactorRequestDto>::class.java).toList()
+            Log.d("FINAL_request22", json)
+            return api.sendFactor(json)
+        }*/
 
 
     fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =

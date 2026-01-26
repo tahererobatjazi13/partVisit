@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +39,15 @@ class OnlineOrderDetailAdapter :
             } else {
                 binding.root.setBackgroundColor(
                     itemView.context.getColorFromAttr(R.attr.colorRow)
+                )
+            }
+
+            if (item.isGift) {
+                binding.root.setBackgroundColor(
+                    ContextCompat.getColor(
+                        binding.root.context,
+                        R.color.yellow_FFEB3B
+                    )
                 )
             }
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"

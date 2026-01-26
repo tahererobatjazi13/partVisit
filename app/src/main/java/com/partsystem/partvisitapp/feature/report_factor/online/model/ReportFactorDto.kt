@@ -34,7 +34,8 @@ data class ReportFactorDto(
     val priceAfterDiscount: Double?,
     val vat: Double?,
     val rate1: Double?,
-    val priceAfterVat: Double?
+    val priceAfterVat: Double?,
+    val isGift: Boolean
 )
 
 fun ReportFactorDto.getPackingValueFormatted(): String {
