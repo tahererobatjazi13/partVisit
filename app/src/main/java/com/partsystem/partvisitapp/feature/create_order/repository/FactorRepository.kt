@@ -142,6 +142,8 @@ class FactorRepository @Inject constructor(
     ): NetworkResult<ApiResponse> {
 
         return try {
+            Log.d("FINAL_json2", factors.toString())
+
             val response = api.sendFactorToServer(factors)
             val body = response.body()
 
