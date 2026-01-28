@@ -126,31 +126,34 @@ class OrderFragment : Fragment() {
         )
     }
 
-
     private fun observeSendFactor() {
-        factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { result ->
-            when (result) {
+        factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { event ->
 
-                is NetworkResult.Loading -> binding.bmbSendOrder.checkShowPbOne(true)
+            event.getContentIfNotHandled()?.let { result ->
 
-                is NetworkResult.Success -> {
+                when (result) {
 
-                    binding.bmbSendOrder.checkShowPbOne(false)
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.msg_order_successfully_sent,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    navigateToReportFactor()
-                }
+                    is NetworkResult.Loading -> binding.bmbSendOrder.checkShowPbOne(true)
 
-                is NetworkResult.Error -> {
-                    binding.bmbSendOrder.checkShowPbOne(false)
-                    Toast.makeText(
-                        requireContext(),
-                        result.message,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    is NetworkResult.Success -> {
+
+                        binding.bmbSendOrder.checkShowPbOne(false)
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.msg_order_successfully_sent,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        navigateToHomeClearOrder()
+                    }
+
+                    is NetworkResult.Error -> {
+                        binding.bmbSendOrder.checkShowPbOne(false)
+                        Toast.makeText(
+                            requireContext(),
+                            result.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
@@ -216,6 +219,17 @@ class OrderFragment : Fragment() {
                 factorViewModel.updateFactorHeader(it)
             }
         }
+    }
+
+    private fun navigateToHomeClearOrder() {
+        val navController = findNavController()
+        navController.navigate(
+            R.id.homeFragment,
+            null,
+            NavOptions.Builder()
+                .setPopUpTo(navController.graph.startDestinationId, true)
+                .build()
+        )
     }
 
     override fun onDestroyView() {

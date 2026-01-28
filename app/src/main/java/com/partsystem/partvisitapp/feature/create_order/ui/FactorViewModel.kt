@@ -14,6 +14,7 @@ import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.Event
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
@@ -270,31 +271,46 @@ class FactorViewModel @Inject constructor(
     private val _filteredHeaders = MutableLiveData<List<FactorHeaderUiModel>>()
     val filteredHeaders: LiveData<List<FactorHeaderUiModel>> = _filteredHeaders
 
+    private var lastQuery: String = ""
+
+
     init {
         viewModelScope.launch {
-            factorRepository.getAllHeaderUi().collectLatest { list ->
-                _allHeaders.value = list
-                _filteredHeaders.value = list
+            factorRepository.getAllHeaderUi().collectLatest { dbList ->
+
+                val uiList = dbList.map {
+                    FactorHeaderUiModel(
+                        factorId = it.factorId,
+                        customerName = it.customerName,
+                        patternName = it.patternName,
+                        persianDate = it.persianDate,
+                        createTime = it.createTime,
+                        finalPrice = it.finalPrice,
+                        hasDetail = it.hasDetail,
+                        isSending = false
+                    )
+                }
+
+                _allHeaders.value = uiList
+                applyFilter(lastQuery)
             }
         }
     }
 
     fun filterHeaders(query: String) {
-        val q = query
-            .trim()
-            .toEnglishDigits()
+        lastQuery = query
+        applyFilter(query)
+    }
 
+    private fun applyFilter(query: String) {
         val list = _allHeaders.value ?: emptyList()
 
         _filteredHeaders.value =
-            if (q.isEmpty()) {
-                list
-            } else {
-                list.filter { item ->
-                    item.factorId.toString().contains(q) ||
-                            item.customerName?.contains(q, ignoreCase = true) == true ||
-                            item.patternName?.contains(q, ignoreCase = true) == true
-                }
+            if (query.isBlank()) list
+            else list.filter {
+                it.customerName?.contains(query, true) == true ||
+                        it.patternName?.contains(query, true) == true ||
+                        it.factorId.toString().contains(query)
             }
     }
 
@@ -496,33 +512,54 @@ class FactorViewModel @Inject constructor(
             )
         }
     */
-    private val _sendFactorResult =
-        MutableLiveData<NetworkResult<Unit>>()
+    private fun updateSendingState(factorId: Int, sending: Boolean) {
+        val updated = _allHeaders.value?.map {
+            if (it.factorId == factorId)
+                it.copy(isSending = sending)
+            else it
+        } ?: return
 
-    val sendFactorResult: LiveData<NetworkResult<Unit>> =
+        _allHeaders.value = updated
+        applyFilter(lastQuery)
+    }
+
+    private val _sendFactorResult =
+        MutableLiveData<Event<NetworkResult<Int>>>()
+
+    val sendFactorResult: LiveData<Event<NetworkResult<Int>>> =
         _sendFactorResult
 
+    /*    private val _sendFactorResult =
+            MutableLiveData<NetworkResult<Unit>>()
+
+        val sendFactorResult: LiveData<NetworkResult<Unit>> =
+            _sendFactorResult*/
 
     fun sendFactor(factorId: Int, sabt: Int) {
         viewModelScope.launch {
 
-            _sendFactorResult.value = NetworkResult.Loading
+            updateSendingState(factorId, true)
+            _sendFactorResult.value =
+                Event(NetworkResult.Loading)
 
-            val request = buildFinalFactorRequest(
-                factorId, sabt
-            )
+            val request = buildFinalFactorRequest(factorId, sabt)
             val body = listOf(request)
-            Log.d("FINAL_json", body.toString())
+            Log.d("FINAL_json1", body.toString())
 
             when (val result = factorRepository.sendFactorToServer(body)) {
 
                 is NetworkResult.Success -> {
                     factorRepository.deleteFactor(factorId)
-                    _sendFactorResult.value = NetworkResult.Success(Unit)
+                    _sendFactorResult.value =
+                        Event(NetworkResult.Success(factorId))
+                    Log.d("FINAL_json2", "ok")
+
                 }
 
                 is NetworkResult.Error -> {
-                    _sendFactorResult.value = NetworkResult.Error(result.message)
+                    updateSendingState(factorId, false)
+                    _sendFactorResult.value =
+                        Event(NetworkResult.Error(result.message))
                 }
 
                 else -> {}

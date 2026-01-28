@@ -6,9 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import com.partsystem.partvisitapp.R
-import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.extensions.gone
+import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemOrderListBinding
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
@@ -17,19 +16,26 @@ import java.text.DecimalFormat
 class OfflineOrderListAdapter(
     private val showSyncButton: Boolean = false,
     private val onDelete: (FactorHeaderUiModel) -> Unit,
+    private val onSync: (FactorHeaderUiModel) -> Unit,
     private val onClick: (FactorHeaderUiModel) -> Unit = {}
 ) : ListAdapter<FactorHeaderUiModel, OfflineOrderListAdapter.OfflineOrderListViewHolder>(
     OfflineOrderListDiffCallback()
 ) {
     private val formatter = DecimalFormat("#,###")
-    private var customDialog: CustomDialog? = null
 
     inner class OfflineOrderListViewHolder(private val binding: ItemOrderListBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorHeaderUiModel) = with(binding) {
-            customDialog = CustomDialog()
+
+            if (item.isSending) {
+                tvSyncOrder.hide()
+                pbSyncOrder.show()
+            } else {
+                pbSyncOrder.gone()
+                tvSyncOrder.show()
+            }
 
             tvOrderNumber.text = item.factorId.toString()
             tvCustomerName.text = item.customerName ?: "-"
@@ -37,27 +43,23 @@ class OfflineOrderListAdapter(
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
             ivDelete.show()
+
             root.setOnClickListener { onClick(item) }
+
             if (showSyncButton && item.hasDetail) {
-                tvSyncOrder.show()
+                clSyncOrder.show()
             } else {
-                tvSyncOrder.gone()
+                clSyncOrder.gone()
             }
+
             ivDelete.setOnClickListener {
                 onDelete(item)
             }
-            val context = binding.root.context
-            tvSyncOrder.setOnClickListener {
-                customDialog!!.showDialog(
-                    context,
-                    "",
-                    context.getString(R.string.msg_sure_send_order),
-                    true,
-                    context.getString(R.string.label_no),
-                    context.getString(R.string.label_ok),
-                    true,
-                    true
-                )
+
+            clSyncOrder.setOnClickListener {
+                if (!item.isSending) {
+                    onSync(item)
+                }
             }
         }
     }

@@ -11,6 +11,7 @@ import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.feature.create_order.model.VwFactorDetail
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderDbModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import kotlinx.coroutines.flow.Flow
 
@@ -187,6 +188,8 @@ interface FactorDao {
     fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailUiModel>>
 
 
+
+
     @Query(
         """
     SELECT 
@@ -210,7 +213,33 @@ interface FactorDao {
     ORDER BY fh.id DESC
     """
     )
-    fun getFactorHeaderUiList(): Flow<List<FactorHeaderUiModel>>
+    fun getFactorHeaderDbList(): Flow<List<FactorHeaderDbModel>>
+
+//
+//    @Query(
+//        """
+//    SELECT
+//        fh.id AS factorId,
+//        fh.customerId,
+//        c.name AS customerName,
+//        fh.patternId,
+//        p.name AS patternName,
+//        fh.persianDate,
+//        fh.createTime,
+//        fh.finalPrice,
+//        CASE
+//            WHEN COUNT(fd.factorId) > 0 THEN 1
+//            ELSE 0
+//        END AS hasDetail
+//    FROM factor_header_table fh
+//    LEFT JOIN customer_table c ON fh.customerId = c.id
+//    LEFT JOIN pattern_table p ON fh.patternId = p.id
+//    LEFT JOIN factor_detail_table fd ON fd.factorId = fh.id
+//    GROUP BY fh.id
+//    ORDER BY fh.id DESC
+//    """
+//    )
+//    fun getFactorHeaderUiList(): Flow<List<FactorHeaderDbModel>>
 
     // Discounts
 

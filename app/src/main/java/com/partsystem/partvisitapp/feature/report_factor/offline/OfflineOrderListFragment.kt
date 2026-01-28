@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
@@ -49,11 +51,16 @@ class OfflineOrderListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        init()
         setupClicks()
         initAdapter()
         observeData()
         setupClearIcon()
+        observeSendFactor()
         setupSearch()
+    }
+
+    private fun init() {
         customDialogSend = CustomDialog()
         customDialogDelete = CustomDialog()
     }
@@ -64,38 +71,12 @@ class OfflineOrderListFragment : Fragment() {
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
             offlineOrderListAdapter = OfflineOrderListAdapter(
-                showSyncButton = true,/*factorViewModel,*/
-                onDelete = { item ->
+                showSyncButton = true,
+                onDelete = { item -> showDeleteDialog(item) },
+                onSync = { item ->
                     selectedFactor = item
-
-                    customDialogDelete = CustomDialog().apply {
-
-                        setOnClickNegativeButton {
-                            selectedFactor = null
-                            hideProgress()
-                        }
-
-                        setOnClickPositiveButton {
-                            selectedFactor?.let {
-                                factorViewModel.deleteFactor(it.factorId)
-                            }
-                            selectedFactor = null
-                            hideProgress()
-                        }
-                    }
-
-                    customDialogDelete?.showDialog(
-                        requireActivity(),
-                        "",
-                        getString(R.string.msg_sure_delete_orders),
-                        true,
-                        getString(R.string.label_no),
-                        getString(R.string.label_ok),
-                        true,
-                        true
-                    )
+                    showSendDialog(item)
                 }
-
 
             ) { factors ->
                 if (factors.hasDetail) {
@@ -121,6 +102,66 @@ class OfflineOrderListFragment : Fragment() {
         }
     }
 
+    private fun showDeleteDialog(item: FactorHeaderUiModel) {
+        selectedFactor = item
+
+        customDialogDelete = CustomDialog().apply {
+
+            setOnClickNegativeButton {
+                selectedFactor = null
+                hideProgress()
+            }
+
+            setOnClickPositiveButton {
+                selectedFactor?.let {
+                    factorViewModel.deleteFactor(it.factorId)
+                }
+                selectedFactor = null
+                hideProgress()
+            }
+        }
+
+        customDialogDelete?.showDialog(
+            requireActivity(),
+            "",
+            getString(R.string.msg_sure_delete_orders),
+            true,
+            getString(R.string.label_no),
+            getString(R.string.label_ok),
+            true,
+            true
+        )
+    }
+
+    private fun showSendDialog(item: FactorHeaderUiModel) {
+        customDialogSend = CustomDialog().apply {
+
+            setOnClickNegativeButton {
+                selectedFactor = null
+                hideProgress()
+            }
+
+            setOnClickPositiveButton {
+                factorViewModel.sendFactor(
+                    factorId = item.factorId,
+                    sabt = 1
+                )
+            }
+        }
+
+        customDialogSend?.showDialog(
+            requireActivity(),
+            "",
+            getString(R.string.msg_sure_send_order),
+            true,
+            getString(R.string.label_no),
+            getString(R.string.label_ok),
+            true,
+            true
+        )
+    }
+
+
     private fun observeData() {
         factorViewModel.filteredHeaders.observe(viewLifecycleOwner) { headers ->
             if (headers.isNullOrEmpty()) {
@@ -139,6 +180,98 @@ class OfflineOrderListFragment : Fragment() {
         }
     }
 
+    private fun observeSendFactor() {
+        factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { event ->
+
+            event.getContentIfNotHandled()?.let { result ->
+
+                when (result) {
+
+                    is NetworkResult.Loading -> Unit
+
+                    is NetworkResult.Success -> {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.msg_order_successfully_sent,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                    is NetworkResult.Error -> {
+                        Toast.makeText(
+                            requireContext(),
+                            result.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+        private fun observeSendFactor() {
+            factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { result ->
+                when (result) {
+
+                    is NetworkResult.Loading -> Unit
+
+                    is NetworkResult.Success -> {
+                        val factorId = result.data
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.msg_order_successfully_sent,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                    is NetworkResult.Error -> {
+                        Toast.makeText(
+                            requireContext(),
+                            result.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    */
+
+
+    /*
+        private fun observeSendFactor() {
+            factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { result ->
+                when (result) {
+
+                    is NetworkResult.Loading -> {
+                        customDialogSend?.showProgress()
+                    }
+
+                    is NetworkResult.Success -> {
+                        customDialogSend?.hideProgress()
+                        selectedFactor = null
+
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.msg_order_successfully_sent,
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        observeData()                }
+
+                    is NetworkResult.Error -> {
+                        customDialogSend?.hideProgress()
+
+                        Toast.makeText(
+                            requireContext(),
+                            result.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    */
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupClicks() {

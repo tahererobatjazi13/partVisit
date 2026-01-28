@@ -219,7 +219,7 @@ class ProductListFragment : Fragment() {
                                 val detail = FactorDetailEntity(
                                     id = detailId,
                                     factorId = factorViewModel.factorHeader.value?.id!!,
-                                    sortCode = 1,
+                                    sortCode = detailId+1,
                                     anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
                                     productId = product.product.id,
                                     actId = factorViewModel.factorHeader.value?.actId,

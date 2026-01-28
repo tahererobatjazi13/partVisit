@@ -60,7 +60,6 @@
                     style="@style/XSmallBoldTextStyle"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginEnd="@dimen/xx_small_size"
                     android:background="@drawable/bg_rounded_rectangle"
                     android:backgroundTint="@color/blue_283167"
                     android:drawableEnd="@drawable/ic_sync_small"
@@ -224,10 +223,10 @@
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/ivDelete"
-                android:visibility="gone"
                 android:layout_width="@dimen/_20sdp"
                 android:layout_height="@dimen/_20sdp"
                 android:scaleType="fitCenter"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
