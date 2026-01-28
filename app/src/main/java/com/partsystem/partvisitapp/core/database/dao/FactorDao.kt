@@ -263,7 +263,7 @@ interface FactorDao {
 
     // Gift
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFactorGift(discount: FactorGiftInfoEntity): Long
+    suspend fun insertFactorGift(gifts: FactorGiftInfoEntity): Long
 
 
     @Query("SELECT * FROM factor_gift_info_table WHERE factorId = :factorId")

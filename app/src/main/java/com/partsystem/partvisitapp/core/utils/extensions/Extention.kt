@@ -135,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "send order in offline"
+git commit -m "gift"
 git push -u origin master
 git push
 */

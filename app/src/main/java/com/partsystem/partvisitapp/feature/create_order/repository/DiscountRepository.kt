@@ -540,7 +540,7 @@ class DiscountRepository @Inject constructor(
                     factorId = factor.id,
                     productId = productId,
                     actId = factor.actId,
-                    sortCode = lastSortCode,
+                    sortCode = lastSortCode + 1,
                     anbarId = anbarId,
                     isGift = 1,
                     unit1Value = 0.0,
@@ -611,9 +611,10 @@ class DiscountRepository @Inject constructor(
 
                 factorDao.insertFactorDetail(detail)
 
-
                 // 4. ساخت تخفیف مرتبط با هدیه
+                val maxFactorDiscountId = getMaxFactorDiscountId()
                 val detailDiscount = FactorDiscountEntity(
+                    id = maxFactorDiscountId + 1,
                     factorId = factor.id,
                     discountId = discount.id,
                     productId = detail.productId,
@@ -622,14 +623,15 @@ class DiscountRepository @Inject constructor(
                     price = detail.price,
                     discountPercent = 0.0
                 )
+
                 factorDao.insertFactorDiscount(detailDiscount)
 
                 // مرحله 4: ایجاد FactorGiftInfo برای توزیع هدیه بین محصولات اصلی
                 // 5. ساخت لیست FactorGiftInfo
                 val gifts = mutableListOf<FactorGiftInfoEntity>()
-                if (productIds.isNotEmpty()) {
+               //if (productIds.isNotEmpty()) {
                     val allValue = getSumUnit1ValueByProductIds(factor.id, productIds)
-                    if (allValue > 0) {
+                 // if (allValue > 0) {
                         val allDetails = getFactorDetailProductIds(factor.id, productIds)
                         var maxFactorGiftInfoId = getMaxFactorGiftInfoId()
                         for (itemDetail in allDetails) {
@@ -640,10 +642,10 @@ class DiscountRepository @Inject constructor(
                                 productId = itemDetail.productId,
                                 price = kotlin.math.round(detail.price * itemDetail.unit1Value / allValue)
                             )
-                            gifts.add(giftInfo)
+                            factorDao.insertFactorGift(giftInfo)
                         }
-                    }
-                }
+               // }
+              //  }
 
                 // factorDao.insertFactorWithDiscountAndGifts(detail, detailDiscount, gifts)
 
