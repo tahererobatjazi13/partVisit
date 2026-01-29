@@ -12,13 +12,13 @@ interface ProductImageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertImages(images: List<ProductImageEntity>)
 
-    @Query("SELECT * FROM product_images_table WHERE ownerId = :ownerId")
+    @Query("SELECT * FROM ProductImage WHERE ownerId = :ownerId")
     fun getImagesByProductId(ownerId: Int): LiveData<List<ProductImageEntity>>
 
-    @Query("DELETE FROM product_images_table")
+    @Query("DELETE FROM ProductImage")
     suspend fun clearProductImage()
 
-    @Query("SELECT * FROM product_images_table")
+    @Query("SELECT * FROM ProductImage")
     suspend fun getAllImagesOnce(): List<ProductImageEntity>
 
 }

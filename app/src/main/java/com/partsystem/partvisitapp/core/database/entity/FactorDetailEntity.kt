@@ -10,7 +10,7 @@ import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 
 @Entity(
-    tableName = "factor_detail_table",
+    tableName = "FactorDetail",
     foreignKeys = [
         ForeignKey(
             entity = FactorHeaderEntity::class,

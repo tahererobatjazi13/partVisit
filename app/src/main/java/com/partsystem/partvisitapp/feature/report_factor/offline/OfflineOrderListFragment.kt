@@ -18,6 +18,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.OrderType
+import com.partsystem.partvisitapp.core.utils.SnackBarType
+import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -168,14 +170,14 @@ class OfflineOrderListFragment : Fragment() {
                 binding.info.show()
                 binding.info.message(getString(R.string.msg_no_data))
                 binding.rvOrderList.hide()
-                binding.btnSyncAllOrder.gone()
+                //  binding.btnSyncAllOrder.gone()
             } else {
                 binding.info.gone()
                 binding.rvOrderList.show()
                 offlineOrderListAdapter.setData(headers)
 
-                binding.btnSyncAllOrder.visibility =
-                    if (headers.size > 2) View.VISIBLE else View.GONE
+                /*  binding.btnSyncAllOrder.visibility =
+                      if (headers.size > 2) View.VISIBLE else View.GONE*/
             }
         }
     }
@@ -190,9 +192,13 @@ class OfflineOrderListFragment : Fragment() {
                     is NetworkResult.Loading -> Unit
 
                     is NetworkResult.Success -> {
+
+                        val message =
+                            result.message ?: getString(R.string.msg_order_successfully_sent)
+
                         Toast.makeText(
                             requireContext(),
-                            R.string.msg_order_successfully_sent,
+                            message,
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -323,11 +329,11 @@ class OfflineOrderListFragment : Fragment() {
                 if (query.isEmpty()) searchIcon else clearIcon,
                 null
             )
-            binding.btnSyncAllOrder.visibility =
+            /*binding.btnSyncAllOrder.visibility =
                 if (query.isNullOrEmpty() && offlineOrderListAdapter.itemCount > 2)
                     View.VISIBLE
                 else
-                    View.GONE
+                    View.GONE*/
             factorViewModel.filterHeaders(query)
         }
     }

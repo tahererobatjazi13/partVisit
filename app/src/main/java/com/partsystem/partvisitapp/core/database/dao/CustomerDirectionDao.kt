@@ -11,13 +11,13 @@ interface CustomerDirectionDao {
     suspend fun insertAll(data: List<CustomerDirectionEntity>)
 
 
-    @Query("SELECT * FROM customer_direction_table WHERE customerId = :customerId")
+    @Query("SELECT * FROM CustomerDirection WHERE customerId = :customerId")
      fun getCustomerDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>>
 
-    @Query("DELETE FROM customer_direction_table WHERE customerId = :customerId")
+    @Query("DELETE FROM CustomerDirection WHERE customerId = :customerId")
     suspend fun deleteByCustomerId(customerId: Int)
 
-    @Query("DELETE FROM customer_direction_table")
+    @Query("DELETE FROM CustomerDirection")
     suspend fun clearCustomerDirection()
 
 

@@ -13,9 +13,9 @@ interface PatternDetailDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<PatternDetailEntity>)
 
-    @Query("SELECT * FROM pattern_details_table")
+    @Query("SELECT * FROM PatternDetail")
     suspend fun getAll(): List<PatternDetailEntity>
 
-    @Query("DELETE FROM pattern_details_table")
+    @Query("DELETE FROM PatternDetail")
     suspend fun clearPatternDetails()
 }

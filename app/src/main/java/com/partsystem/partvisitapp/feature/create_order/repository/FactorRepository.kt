@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import com.google.gson.Gson
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
@@ -16,17 +15,10 @@ import com.partsystem.partvisitapp.core.utils.ErrorHandler
 import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
 import com.partsystem.partvisitapp.feature.create_order.model.ApiResponse
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
-import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
-import com.partsystem.partvisitapp.feature.login.model.LoginResponse
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderDbModel
-import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
-import okhttp3.RequestBody
-import org.json.JSONArray
-import org.json.JSONObject
-import retrofit2.Response
 import javax.inject.Inject
 
 class FactorRepository @Inject constructor(
@@ -37,7 +29,6 @@ class FactorRepository @Inject constructor(
 
 
     suspend fun getAllFactors(): List<FactorHeaderEntity> = factorDao.getAllFactors()
-
 
     suspend fun deleteFactorDetail(productId: Int) =
         factorDao.deleteFactorDetail(productId)
@@ -122,8 +113,17 @@ class FactorRepository @Inject constructor(
 
     // اضافه یا ویرایش آیتم سبد
     suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
-        factorDao.upsert(detail)
+        factorDao.upsertFactorDetail(detail)
     }
+
+  /*  suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
+        factorDao.upsertFactorDetail(detail)
+    }
+*/
+    suspend fun getMaxSortCode(factorId: Int): Int {
+        return factorDao.getMaxSortCode(factorId)
+    }
+
 
     // حذف آیتم وقتی مقدار صفر شد
     suspend fun deleteFactorDetail(
@@ -137,11 +137,6 @@ class FactorRepository @Inject constructor(
     suspend fun clearFactor(factorId: Int) {
         factorDao.clearFactor(factorId)
     }
-    /*
-        // Network
-        suspend fun sendFactor(request: FinalFactorRequest) = api.sendFactor(request)
-    */
-
 
     suspend fun sendFactorToServer(
         factors: List<FinalFactorRequestDto>
@@ -154,7 +149,8 @@ class FactorRepository @Inject constructor(
             val body = response.body()
 
             if (response.isSuccessful && body != null) {
-                NetworkResult.Success(body)
+                // ✅ پیام سرور را همراه با داده‌ها برگردان
+                NetworkResult.Success(body, body.message)
             } else {
                 val errorMessage =
                     ErrorHandler.getHttpErrorMessage(
@@ -170,15 +166,6 @@ class FactorRepository @Inject constructor(
             NetworkResult.Error(errorMsg)
         }
     }
-
-
-    /*
-        suspend fun sendFactorToServer(json: String): Response<Any> {
-        //    val request = Gson().fromJson(json, Array<FinalFactorRequestDto>::class.java).toList()
-            Log.d("FINAL_request22", json)
-            return api.sendFactor(json)
-        }*/
-
 
     fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
         factorDao.getFactorDetailUi(factorId).asLiveData()
@@ -207,7 +194,6 @@ class FactorRepository @Inject constructor(
 
     suspend fun getSumUnit1ValueByProductIds(factorId: Int, productIds: List<Int>) =
         getSumByField(factorId, productIds) { it.unit1Value }
-
 
     /**
      * معادل q.getSumUnitValueFactor(factorId) در جاوا

@@ -1,6 +1,5 @@
 package com.partsystem.partvisitapp.core.database.dao
 
-import android.database.sqlite.SQLiteDatabase
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
@@ -12,7 +11,6 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.feature.create_order.model.VwFactorDetail
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderDbModel
-import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,10 +23,10 @@ interface FactorDao {
     @Delete
     fun deleteFactor(factor: FactorHeaderEntity)
 
-    @Query("SELECT * FROM factor_header_table WHERE id = :id")
+    @Query("SELECT * FROM FactorHeader WHERE id = :id")
     fun getFactorById(id: Int): FactorHeaderEntity?
 
-    @Query("SELECT * FROM factor_header_table")
+    @Query("SELECT * FROM FactorHeader")
     suspend fun getAllFactors(): List<FactorHeaderEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -40,22 +38,22 @@ interface FactorDao {
     @Update
     suspend fun updateFactorDetail(item: FactorDetailEntity)
 
-    @Query("SELECT * FROM factor_detail_table")
+    @Query("SELECT * FROM FactorDetail")
     fun getAllFactorDetail(): LiveData<List<FactorDetailEntity>>
 
-    @Query("DELETE FROM factor_detail_table WHERE productId = :productId")
+    @Query("DELETE FROM FactorDetail WHERE productId = :productId")
     suspend fun deleteFactorDetail(productId: Int)
 
-    @Query("DELETE FROM factor_header_table")
+    @Query("DELETE FROM FactorHeader")
     suspend fun clearFactorHeader()
 
-    @Query("DELETE FROM factor_detail_table")
+    @Query("DELETE FROM FactorDetail")
     suspend fun clearFactorDetails()
 
-    @Query("DELETE FROM factor_discount_table")
+    @Query("DELETE FROM FactorDiscount")
     suspend fun clearFactorDiscount()
 
-    @Query("DELETE FROM factor_gift_info_table")
+    @Query("DELETE FROM FactorGiftInfo")
     suspend fun clearFactorGiftInfo()
 
 
@@ -66,10 +64,10 @@ interface FactorDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorHeader(header: FactorHeaderEntity): Long
 
-    @Query("SELECT * FROM factor_header_table WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM FactorHeader WHERE id = :id LIMIT 1")
     fun getHeaderById(id: Int): LiveData<FactorHeaderEntity>
 
-    @Query("SELECT * FROM factor_header_table WHERE id = :localId LIMIT 1")
+    @Query("SELECT * FROM FactorHeader WHERE id = :localId LIMIT 1")
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity?
 
 
@@ -79,26 +77,26 @@ interface FactorDao {
     @Update
     suspend fun updateHeader(header: FactorHeaderEntity)
 
-    @Query("SELECT * FROM factor_header_table WHERE uniqueId = :uniqueId LIMIT 1")
+    @Query("SELECT * FROM FactorHeader WHERE uniqueId = :uniqueId LIMIT 1")
     suspend fun getHeaderByUniqueId(uniqueId: String): FactorHeaderEntity?
 
 
-    @Query("SELECT * FROM factor_header_table ORDER BY id DESC ")
+    @Query("SELECT * FROM FactorHeader ORDER BY id DESC ")
     fun getAllHeaders(): Flow<List<FactorHeaderEntity>>
 
     /*   @Query("DELETE FROM factor_header_table WHERE uniqueId = :uniqueId")
        suspend fun deleteHeaderByUniqueId(uniqueId: String)
        */
 
-    @Query("DELETE FROM factor_header_table WHERE id = :factorId")
+    @Query("DELETE FROM FactorHeader WHERE id = :factorId")
     suspend fun deleteFactor(factorId: Int)
 
 
     // Detail
 
 
-    @Query("SELECT MAX(Id) FROM factor_detail_table")
-     fun getMaxFactorDetailId():  LiveData<Int>
+    @Query("SELECT MAX(Id) FROM FactorDetail")
+    fun getMaxFactorDetailId(): LiveData<Int>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorDetail(detail: FactorDetailEntity): Long
@@ -107,37 +105,95 @@ interface FactorDao {
     @Delete
     suspend fun deleteDetail(detail: FactorDetailEntity)
 
-    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
+    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
     suspend fun getDetailsForHeader(factorId: String): List<FactorDetailEntity>
 
-    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId AND productId = :productId")
-    fun getFactorDetailByFactorIdAndProductId(factorId: Int, productId: Int): Flow<FactorDetailEntity>
+    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId AND productId = :productId")
+    fun getFactorDetailByFactorIdAndProductId(
+        factorId: Int,
+        productId: Int
+    ): Flow<FactorDetailEntity>
 
 
-    @Query("SELECT * FROM factor_discount_table WHERE productId = :productId AND factorDetailId = :factorDetailId LIMIT 1")
-    suspend fun getFactorDiscountByProductIdAndFactorDetailId(productId: Int, factorDetailId: Int): FactorDiscountEntity?
+    @Query("SELECT * FROM FactorDiscount WHERE productId = :productId AND factorDetailId = :factorDetailId LIMIT 1")
+    suspend fun getFactorDiscountByProductIdAndFactorDetailId(
+        productId: Int,
+        factorDetailId: Int
+    ): FactorDiscountEntity?
 
     @Query(
         """
-    SELECT COUNT(*) FROM factor_detail_table 
+    SELECT COUNT(*) FROM FactorDetail 
     WHERE factorId = :factorId
     """
     )
     fun getFactorItemCount(factorId: Int): LiveData<Int>
 
 
-    @Query("SELECT * FROM factor_detail_table ")
-    fun getAllFactorDetails( ): Flow<List<FactorDetailEntity>>
+    @Query("SELECT * FROM FactorDetail ")
+    fun getAllFactorDetails(): Flow<List<FactorDetailEntity>>
 
-    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
+    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
     fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>>
 
+/*
     @Upsert
     suspend fun upsert(detail: FactorDetailEntity)
+*/
+
+   /* @Query("SELECT IFNULL(MAX(SortCode), 0) FROM factor_detail_table WHERE FactorId = :factorId")
+    suspend fun getMaxSortCode(factorId: Int): Int
+*/
+
+    // 🔑 دریافت بعدین sortCode برای فاکتور جاری
+        @Query("SELECT IFNULL(MAX(sortCode), 0) FROM FactorDetail WHERE factorId = :factorId")
+        suspend fun getMaxSortCode(factorId: Int): Int
+
+        // 🔑 Upsert ترانزکشنی (اگر وجود داشت آپدیت، در غیر اینصورت اینزرت با sortCode جدید)
+        @Transaction
+        suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
+            // چک کردن وجود ردیف با همان فاکتور و محصول
+            val existing = getDetailByFactorAndProduct(
+                detail.factorId,
+                detail.productId
+            )
+
+            if (existing != null) {
+                // آپدیت ردیف موجود (بدون تغییر sortCode)
+                update(
+                    detail.copy(
+                        id = existing.id,
+                        sortCode = existing.sortCode // حفظ sortCode قبلی
+                    )
+                )
+            } else {
+                // اینزرت ردیف جدید با sortCode بعدی
+                val nextSortCode = getMaxSortCode(detail.factorId) + 1
+                insert(detail.copy(id = 0, sortCode = nextSortCode)) // id=0 برای اتوژنریت
+            }
+        }
+
+        @Insert(onConflict = OnConflictStrategy.REPLACE)
+        suspend fun insert(detail: FactorDetailEntity): Long
+
+        @Update
+        suspend fun update(detail: FactorDetailEntity)
+
+        @Query("""
+        SELECT * FROM FactorDetail 
+        WHERE factorId = :factorId AND productId = :productId 
+        LIMIT 1
+    """)
+        suspend fun getDetailByFactorAndProduct(
+            factorId: Int,
+            productId: Int
+        ): FactorDetailEntity?
+
+
 
     @Query(
         """
-    DELETE FROM factor_detail_table
+    DELETE FROM FactorDetail
     WHERE factorId = :factorId AND productId = :productId
     """
     )
@@ -148,7 +204,7 @@ interface FactorDao {
 
     @Query(
         """
-    DELETE FROM factor_detail_table 
+    DELETE FROM FactorDetail 
     WHERE factorId = :factorId
     """
     )
@@ -173,21 +229,19 @@ interface FactorDao {
         fd.vat,
         fdi.price
         
-    FROM factor_detail_table fd
-    LEFT JOIN product_table p 
+    FROM FactorDetail fd
+    LEFT JOIN Product p 
         ON fd.productId = p.id
-    LEFT JOIN product_packing_table pp 
+    LEFT JOIN ProductPacking pp 
         ON fd.packingId = pp.packingCode
        AND fd.productId = pp.productId
-        LEFT JOIN factor_discount_table fdi 
+        LEFT JOIN FactorDiscount fdi 
         ON fd.id = fdi.factorDetailId
     WHERE fd.factorId = :factorId
     ORDER BY fd.sortCode
 """
     )
     fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailUiModel>>
-
-
 
 
     @Query(
@@ -205,10 +259,10 @@ interface FactorDao {
             WHEN COUNT(fd.factorId) > 0 THEN 1 
             ELSE 0 
         END AS hasDetail
-    FROM factor_header_table fh
-    LEFT JOIN customer_table c ON fh.customerId = c.id
-    LEFT JOIN pattern_table p ON fh.patternId = p.id
-    LEFT JOIN factor_detail_table fd ON fd.factorId = fh.id
+    FROM FactorHeader fh
+    LEFT JOIN Customer c ON fh.customerId = c.id
+    LEFT JOIN Pattern p ON fh.patternId = p.id
+    LEFT JOIN FactorDetail fd ON fd.factorId = fh.id
     GROUP BY fh.id
     ORDER BY fh.id DESC
     """
@@ -243,12 +297,11 @@ interface FactorDao {
 
     // Discounts
 
-  /*  @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFactorDiscount(discount: FactorDiscountEntity): Long
-*/
+    /*  @Insert(onConflict = OnConflictStrategy.REPLACE)
+      suspend fun insertFactorDiscount(discount: FactorDiscountEntity): Long
+  */
     @Upsert
     suspend fun insertFactorDiscount(discount: FactorDiscountEntity)
-
 
 
 //      @Query("SELECT * FROM factor_discount_table WHERE FactorId = :factorId")
@@ -266,27 +319,27 @@ interface FactorDao {
     suspend fun insertFactorGift(gifts: FactorGiftInfoEntity): Long
 
 
-    @Query("SELECT * FROM factor_gift_info_table WHERE factorId = :factorId")
+    @Query("SELECT * FROM FactorGiftInfo WHERE factorId = :factorId")
     suspend fun getFactorGifts(factorId: Int): List<FactorGiftInfoEntity>
 
     //@Query("SELECT SUM(Unit1Value) FROM factor_detail_table WHERE FactorId = :factorId AND ProductId = :productId AND IsGift = 0")
 
-    @Query("SELECT * FROM factor_discount_table WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
+    @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
     suspend fun getFactorDiscounts(factorId: Int, factorDetailId: Int): List<FactorDiscountEntity>
 
-    @Query("SELECT * FROM factor_discount_table WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
+    @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
     fun getFactorDiscountsLive(factorId: Int, factorDetailId: Int): Flow<List<FactorDiscountEntity>>
     /*
         @Query("DELETE FROM factor_gift_info_table WHERE id = :headerId")
         suspend fun deleteHeader(headerId: Long)*/
 
-    @Query("SELECT COUNT(*) FROM factor_detail_table")
-     fun getCount(): LiveData<Int>
+    @Query("SELECT COUNT(*) FROM FactorDetail")
+    fun getCount(): LiveData<Int>
 
     @Query(
         """
         SELECT SUM(Price) 
-        FROM factor_detail_table 
+        FROM FactorDetail 
         WHERE FactorId = :factorId 
           AND IsGift = 0 
           AND ProductId IN (:productIds)
@@ -298,7 +351,7 @@ interface FactorDao {
     @Query(
         """
         SELECT * 
-        FROM factor_detail_table 
+        FROM FactorDetail 
         WHERE FactorId = :factorId 
           AND IsGift = 0
     """
@@ -308,7 +361,7 @@ interface FactorDao {
     @Query(
         """
         SELECT * 
-        FROM factor_detail_table 
+        FROM FactorDetail 
         WHERE FactorId = :factorId 
           AND IsGift = 0 
           AND ProductId IN (:productIds)
@@ -322,7 +375,7 @@ interface FactorDao {
     @Query(
         """
         SELECT IFNULL(SUM(Unit1Value), 0.0)
-        FROM factor_detail_table
+        FROM FactorDetail
         WHERE FactorId = :factorId
           AND IsGift = 0
     """
@@ -330,27 +383,27 @@ interface FactorDao {
     suspend fun getSumUnit1ValueByFactorId(factorId: Int): Double
 
 
-    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId")
+    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
     suspend fun getDetailsByFactorId(factorId: Int): List<FactorDetailEntity>
 
-    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId AND id = :detailId")
+    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId AND id = :detailId")
     suspend fun getDetailById(factorId: Int, detailId: Int): FactorDetailEntity?
 
-    @Query("SELECT * FROM factor_detail_table WHERE factorId = :factorId AND productId IN (:productIds)")
+    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId AND productId IN (:productIds)")
     suspend fun getDetailsByFactorAndProducts(
         factorId: Int,
         productIds: List<Int>
     ): List<FactorDetailEntity>
 
     @Transaction
-    @Query("SELECT * FROM discounts_table WHERE id = :discountId")
+    @Query("SELECT * FROM Discount WHERE id = :discountId")
     suspend fun getDiscountWithStairs(discountId: Int): DiscountEntity?
 
     @Query(
         """
         SELECT pd.actId
-        FROM pattern_details_table AS pd
-        INNER JOIN act_table AS a ON a.id = pd.actId
+        FROM PatternDetail AS pd
+        INNER JOIN Act AS a ON a.id = pd.actId
         WHERE pd.patternId = :patternId
           AND a.kind = :kind
           AND pd.isDefault = 1
@@ -359,7 +412,7 @@ interface FactorDao {
     )
     suspend fun getPatternDetailActId(patternId: Int, kind: Int): Int?
 
-    @Query("SELECT * FROM discount_eshantyuns_table WHERE discountId = :discountId")
+    @Query("SELECT * FROM DiscountEshantyun WHERE discountId = :discountId")
     suspend fun getEshantyunsByDiscountId(discountId: Int): List<DiscountEshantyunsEntity>
 
 
@@ -376,7 +429,7 @@ interface FactorDao {
             PackingId,
             PackingValue,
             IsGift
-        FROM factor_detail_table
+        FROM FactorDetail
         WHERE FactorId = :factorId
         AND ProductId IN (:productIds)
         ORDER BY SortCode ASC
@@ -386,7 +439,6 @@ interface FactorDao {
         factorId: Int,
         productIds: List<Int>
     ): List<VwFactorDetail>
-
 
     @Query(
         """
@@ -401,17 +453,17 @@ interface FactorDao {
         PackingId,
         PackingValue,
         IsGift
-    FROM factor_detail_table
+    FROM FactorDetail
     WHERE FactorId = :factorId
+       AND productId = :productId    AND IsGift = 0 
+
     ORDER BY SortCode ASC
 """
     )
     suspend fun getFactorDetail(
-        factorId: Int
+        factorId: Int,
+        productId: Int
     ): List<VwFactorDetail>
-
-    @Query("SELECT IFNULL(MAX(SortCode), 0) FROM factor_detail_table WHERE FactorId = :factorId")
-    suspend fun getMaxSortCode(factorId: Int): Int
 
 
     @Transaction

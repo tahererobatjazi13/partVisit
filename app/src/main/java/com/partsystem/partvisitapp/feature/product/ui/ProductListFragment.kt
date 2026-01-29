@@ -167,7 +167,6 @@ class ProductListFragment : Fragment() {
                     productRate = product.rate
                 }
 
-
                 factorViewModel.getCount()
                     .observe(viewLifecycleOwner) { count ->
                         if (count > 0) {
@@ -176,31 +175,23 @@ class ProductListFragment : Fragment() {
                                     maxId = maxFactorDetailId
                                 }
                         } else maxId = 1
-
                     }
 
-                /* val sortedFactorDetails: LiveData<List<FactorDetailEntity>> =
-                      factorViewModel.getAllFactorDetails()
-                  var sortCode = 0
-                  sortedFactorDetails.observe(requireActivity()) { factorDetails ->
-                      if (factorDetails.isNotEmpty()) {
-                          val maxSortCode = factorDetails.maxOfOrNull { it.sortCode }
-                          sortCode = maxSortCode + 1
-                      } else {
-                          sortCode = 1
-                      }
-                  }*/
-                /*  val existingDetail = factorViewModel.getFactorDetailByFactorIdAndProductId(
-                        factorViewModel.factorHeader.value?.id!!,
-                        product.product.id
-                    )*/
-                factorViewModel.getFactorDetailByFactorIdAndProductId(
+            /*    factorViewModel.getFactorDetailByFactorIdAndProductId(
                     factorViewModel.factorHeader.value?.id!!,
                     product.product.id
                 ).observeForever { product ->
                     if (product != null)
                         productIdExistingDetail = product.id
                 }
+*/
+
+                // چک کردن وجود ردیف با همان فاکتور و محصول
+                val existing = factorViewModel.getFactorDetailByFactorIdAndProductId(
+                    factorViewModel.factorHeader.value?.id!!,
+                    product.product.id
+                )
+
 
                 val dialog =
                     AddEditProductDialog(product) { finalUnit1, finalPackingValue, packingId, detailId, productId ->
@@ -219,7 +210,7 @@ class ProductListFragment : Fragment() {
                                 val detail = FactorDetailEntity(
                                     id = detailId,
                                     factorId = factorViewModel.factorHeader.value?.id!!,
-                                    sortCode = detailId+1,
+                                    sortCode = detailId + 1,
                                     anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
                                     productId = product.product.id,
                                     actId = factorViewModel.factorHeader.value?.actId,

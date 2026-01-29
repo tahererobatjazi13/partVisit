@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "factor_header_table")
+@Entity(tableName = "FactorHeader")
 data class FactorHeaderEntity(
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0,
@@ -38,9 +38,7 @@ data class FactorHeaderEntity(
 )
 
 /*
-
-[
-{
+[{
     "uniqueId": "F6EA69AA-020E-471D-A767-3CB93F90062A",
     "id": 10,
     "formKind":17,

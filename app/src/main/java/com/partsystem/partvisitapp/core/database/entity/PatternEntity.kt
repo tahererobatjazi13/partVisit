@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "pattern_table")
+@Entity(tableName = "Pattern")
 data class PatternEntity(
     @PrimaryKey val id: Int,
     val code: Int,
@@ -50,8 +50,7 @@ data class PatternEntity(
     }
 }
 
-/*
-{
+/*{
     "id": 26,
     "code": 19,
     "name": "مشهد - هتل رستوران",

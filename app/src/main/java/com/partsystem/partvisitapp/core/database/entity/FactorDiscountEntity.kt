@@ -2,11 +2,10 @@ package com.partsystem.partvisitapp.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "factor_discount_table",
+    tableName = "FactorDiscount",
     foreignKeys = [
         ForeignKey(
             entity = FactorDetailEntity::class,
@@ -14,15 +13,9 @@ import androidx.room.PrimaryKey
             childColumns = ["factorDetailId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]/*,
-    indices = [
-        Index("factorDetailId"),
-    ]*/
+    ]
 )
 
-/*
-@Entity(tableName = "factor_discount_table")
-*/
 data class FactorDiscountEntity(
     @PrimaryKey
     val id: Int = 0,

@@ -17,7 +17,7 @@ interface SaleCenterDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUsers(users: List<SaleCenterUserEntity>)
 
-    @Query("SELECT * FROM sale_center_table WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM SaleCenter WHERE id = :id LIMIT 1")
     suspend fun getSaleCenter(id: Int): SaleCenterEntity?
 
     @Transaction
@@ -27,34 +27,34 @@ interface SaleCenterDao {
         insertUsers(users)
     }
 
-    @Query("SELECT * FROM sale_center_table")
+    @Query("SELECT * FROM SaleCenter")
     suspend fun getAllCenters(): List<SaleCenterEntity>
 
-    @Query("SELECT * FROM sale_center_anbar_table WHERE saleCenterId = :centerId")
+    @Query("SELECT * FROM SaleCenterAnbar WHERE saleCenterId = :centerId")
     suspend fun getAnbars(centerId: Int): List<SaleCenterAnbarEntity>
 
-    @Query("SELECT * FROM sale_center_user_table WHERE saleCenterId = :centerId")
+    @Query("SELECT * FROM SaleCenterUser WHERE saleCenterId = :centerId")
     suspend fun getUsers(centerId: Int): List<SaleCenterUserEntity>
 
-    @Query("DELETE FROM sale_center_table")
+    @Query("DELETE FROM SaleCenter")
     suspend fun clearSaleCenters()
 
-    @Query("DELETE FROM sale_center_anbar_table")
+    @Query("DELETE FROM SaleCenterAnbar")
     suspend fun clearAnbars()
 
-    @Query("DELETE FROM sale_center_user_table")
+    @Query("DELETE FROM SaleCenterUser")
     suspend fun clearUsers()
 
     @Query("""
     SELECT DISTINCT sc.*
-    FROM sale_center_table AS sc
-    LEFT JOIN invoice_category_center_table AS icc ON icc.CenterId = sc.id
+    FROM SaleCenter AS sc
+    LEFT JOIN InvoiceCategoryCenter AS icc ON icc.CenterId = sc.id
     WHERE icc.InvoiceCategoryId IS NULL 
        OR icc.InvoiceCategoryId = :invoiceCategoryId
 """)
     fun getSaleCenters(invoiceCategoryId: Int): List<SaleCenterEntity>
 
 
-    @Query("SELECT anbarId FROM sale_center_anbar_table WHERE saleCenterId = :saleCenterId LIMIT 1")
+    @Query("SELECT anbarId FROM SaleCenterAnbar WHERE saleCenterId = :saleCenterId LIMIT 1")
     suspend fun getActiveSaleCenterAnbar(saleCenterId: Int): Int?
 }

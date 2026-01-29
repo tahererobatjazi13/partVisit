@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "visit_schedule_table")
+@Entity(tableName = "VisitSchedule")
 data class VisitScheduleEntity(
     @PrimaryKey val id: Int,
     val kind: Int,
@@ -16,8 +16,8 @@ data class VisitScheduleEntity(
     val fromHour: String,
     val toHour: String
 )
-/*
-{
+
+/*{
     "id": 1,
     "kind": 0,
     "mainCode": 1,

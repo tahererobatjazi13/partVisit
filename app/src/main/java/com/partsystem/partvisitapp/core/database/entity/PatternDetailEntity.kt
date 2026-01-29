@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "pattern_details_table")
+@Entity(tableName = "PatternDetail")
 data class PatternDetailEntity(
     @PrimaryKey
     val id: Int,
@@ -24,8 +24,8 @@ data class PatternDetailEntity(
     val tafsiliGroupId: Int?,
     val tafsiliGroupDetailId: Int?
 )
-/*
-{
+
+/*{
     "id": 7272,
     "actId": 99,
     "productId": 8,

@@ -8,13 +8,11 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
-import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.utils.Event
-import com.partsystem.partvisitapp.core.utils.SaleRateKind
 import com.partsystem.partvisitapp.feature.create_order.repository.HeaderOrderRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +25,6 @@ import javax.inject.Inject
 class HeaderOrderViewModel @Inject constructor(
     private val repository: HeaderOrderRepository
 ) : ViewModel() {
-
 
     private val _currentFactor = MutableLiveData<FactorHeaderEntity>()
     val currentFactor: LiveData<FactorHeaderEntity> get() = _currentFactor
@@ -61,26 +58,19 @@ class HeaderOrderViewModel @Inject constructor(
         return repository.getInvoiceCategory(userId).asLiveData()
     }
 
-  /*  fun getPattern(): LiveData<List<PatternEntity>> {
-        return repository.getPattern().asLiveData()
-    }
-*/
+    /*  fun getPattern(): LiveData<List<PatternEntity>> {
+          return repository.getPattern().asLiveData()
+      }
+  */
     fun getAct(): LiveData<List<ActEntity>> {
         return repository.getAct().asLiveData()
     }
 
-
     private val _pattern = MutableLiveData<PatternEntity?>()
     val pattern: LiveData<PatternEntity?> get() = _pattern
 
-/*    fun loadPatternById(id: Int) {
-        viewModelScope.launch {
-            val result = repository.getPatternById(id)
-            _pattern.postValue(result)
-        }
-    }*/
 // در HeaderOrderViewModel
-private val _selectedPattern = MutableLiveData<PatternEntity?>()
+    private val _selectedPattern = MutableLiveData<PatternEntity?>()
     val selectedPattern: LiveData<PatternEntity?> = _selectedPattern
 
     fun loadPatternById(id: Int) {
@@ -97,23 +87,6 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
     private val _patterns = MutableLiveData<List<PatternEntity>>()
     val patterns: LiveData<List<PatternEntity>> = _patterns
 
-/*    private val _assignDirection = MutableLiveData<FactorHeaderEntity>()
-    val assignDirection: LiveData<FactorHeaderEntity> get() = _assignDirection
-
-    fun loadAssignDirectionCustomerByCustomerId(customerId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val directions = repository.getAssignDirectionCustomerByCustomerId(customerId)
-            _assignDirection.value?.let { data ->
-                directions.forEach { item ->
-                    if (item.isDistribution) data.distributorId = item.tafsiliId
-                    if (item.isDemands) data.recipientId = item.tafsiliId
-                }
-                _assignDirection.postValue(data)
-            }
-        }
-    }*/
-
-
     private val _assignDirection = MutableLiveData<List<AssignDirectionCustomerEntity>>()
     val assignDirection: LiveData<List<AssignDirectionCustomerEntity>> get() = _assignDirection
 
@@ -123,6 +96,7 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
             _assignDirection.postValue(result)
         }
     }
+
     fun loadPatterns(
         customer: Int,
         centerId: Int?,
@@ -150,6 +124,7 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
             _saleCenters.postValue(centers)
         }
     }
+
     private val _validationEvent = MutableLiveData<Event<Unit>>()
     val validationEvent: LiveData<Event<Unit>> get() = _validationEvent
 
@@ -159,10 +134,10 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
 
     fun validateHeader(saleCenterId: Int?, factor: FactorHeaderEntity) {
         viewModelScope.launch {
-   /*         val sc = saleCenterId?.let { repository.getSaleCenter(it) }
-            val rateKind = sc?.saleRateKind ?: SaleRateKind.None
+            /*         val sc = saleCenterId?.let { repository.getSaleCenter(it) }
+                     val rateKind = sc?.saleRateKind ?: SaleRateKind.None
 
-            if (*//*rateKind == SaleRateKind.Pattern && *//*factor.patternId == null) {
+                     if (*//*rateKind == SaleRateKind.Pattern && *//*factor.patternId == null) {
                 _errorMessageRes.value = R.string.error_selecting_pattern_mandatory
                 return@launch
             }
@@ -200,6 +175,7 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
             _productActId.postValue(result)
         }
     }
+
     private val _addedAct = MutableLiveData<ActEntity?>()
     val addedAct: LiveData<ActEntity?> get() = _addedAct
 
@@ -209,8 +185,6 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
             _addedAct.postValue(act)
         }
     }
-
-
 
     private val _defaultAnbarId = MutableStateFlow<Int?>(null)
     val defaultAnbarId: StateFlow<Int?> get() = _defaultAnbarId
@@ -222,21 +196,5 @@ private val _selectedPattern = MutableLiveData<PatternEntity?>()
             _defaultAnbarId.value = anbarId
         }
     }
-/*
-    fun createFactor(saleCenterId: Int, formKind: FactorFormKind, date: String) {
-        viewModelScope.launch {
-            val defaultAnbarId = repository.getActiveSaleCenterAnbar(saleCenterId)
-
-            val factor = FactorEntity(
-                saleCenterId = saleCenterId,
-                defaultAnbarId = defaultAnbarId,
-                formKind = formKind
-            )
-
-            val newId = factorRepository.insertFactor(factor)
-            println("New Factor inserted with ID: $newId")
-        }
-    }
-*/
 
 }

@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "application_setting_table")
+@Entity(tableName = "ApplicationSetting")
 data class ApplicationSettingEntity(
     @PrimaryKey val id: Int,
     val moduleId: Int,
@@ -15,8 +15,8 @@ data class ApplicationSettingEntity(
     val defaultValue: String?,
     val value: String?
 )
-/*
-{
+
+/*{
     "id": 420,
     "moduleId": 0,
     "code": 12,

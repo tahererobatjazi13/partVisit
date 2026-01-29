@@ -629,25 +629,27 @@ class DiscountRepository @Inject constructor(
                 // مرحله 4: ایجاد FactorGiftInfo برای توزیع هدیه بین محصولات اصلی
                 // 5. ساخت لیست FactorGiftInfo
                 val gifts = mutableListOf<FactorGiftInfoEntity>()
-               //if (productIds.isNotEmpty()) {
-                    val allValue = getSumUnit1ValueByProductIds(factor.id, productIds)
-                 // if (allValue > 0) {
-                        val allDetails = getFactorDetailProductIds(factor.id, productIds)
-                        var maxFactorGiftInfoId = getMaxFactorGiftInfoId()
-                        for (itemDetail in allDetails) {
-                            val giftInfo = FactorGiftInfoEntity(
-                                id = ++maxFactorGiftInfoId,
-                                factorId = factor.id,
-                                discountId = discount.id,
-                                productId = itemDetail.productId,
-                                price = kotlin.math.round(detail.price * itemDetail.unit1Value / allValue)
-                            )
-                            factorDao.insertFactorGift(giftInfo)
-                        }
-               // }
-              //  }
 
-                // factorDao.insertFactorWithDiscountAndGifts(detail, detailDiscount, gifts)
+                val allValue = getSumUnit1Value(factor.id, productId, productIds)
+                Log.d("EshantyunallValue", allValue.toString())
+
+                // if (allValue > 0) {
+                val allDetails = getFactorDetailProductIds(factor.id, detail.productId, productIds)
+                var maxFactorGiftInfoId = getMaxFactorGiftInfoId()
+                for (itemDetail in allDetails) {
+                    val giftInfo = FactorGiftInfoEntity(
+                        id = ++maxFactorGiftInfoId,
+                        factorId = factor.id,
+                        discountId = discount.id,
+                        productId = itemDetail.productId,
+                        price = kotlin.math.round(detail.price * itemDetail.unit1Value / allValue)
+                    )
+                    factorDao.insertFactorGift(giftInfo)
+                }
+
+                //  }
+
+                //  factorDao.insertFactorWithDiscountAndGifts(detail, detailDiscount, gifts)
 
                 // پس از ایجاد هدیه، تخفیف اصلی مبلغی ندارد
                 // factorDiscount.price = 0.0
@@ -1036,6 +1038,16 @@ class DiscountRepository @Inject constructor(
             ?: 0.0
     }
 
+    suspend fun getSumUnit1Value(
+        factorId: Int,
+        productId: Int,
+        productIds: List<Int>? = null
+    ): Double {
+        val ids = productIds ?: emptyList()
+        val filterFlag = if (ids.isEmpty()) 0 else 1
+        return discountDao.sumUnit1Value(factorId, productId, ids, filterFlag) ?: 0.0
+    }
+
     suspend fun getSumUnit1ValueByProduct(factorId: Int, productId: Int): Double {
         return discountDao.getSumUnit1ValueByProduct(factorId, productId) ?: 0.0
     }
@@ -1162,9 +1174,8 @@ class DiscountRepository @Inject constructor(
     }
 
     private suspend fun fillByAct(insItem: FactorDetailEntity) {
-
         val actId = insItem.actId ?: return
-        val productId = insItem.productId ?: return
+        val productId = insItem.productId
 
         val item = actDao.getActDetail(actId, productId) ?: return
 
@@ -1175,13 +1186,13 @@ class DiscountRepository @Inject constructor(
         }
     }
 
-
     suspend fun getFactorDetailProductIds(
         factorId: Int,
+        productId: Int,
         productIds: List<Int>?
     ): List<VwFactorDetail> {
         return if (productIds.isNullOrEmpty()) {
-            factorDao.getFactorDetail(factorId)
+            factorDao.getFactorDetail(factorId, productId)
         } else {
             factorDao.getFactorDetailByProductIds(factorId, productIds)
         }

@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "discount_stairs_table",
+    tableName = "DiscountStair",
     foreignKeys = [
         ForeignKey(
             entity = DiscountEntity::class,

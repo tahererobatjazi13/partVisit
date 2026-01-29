@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "product_packing_table")
+@Entity(tableName = "ProductPacking")
 data class ProductPackingEntity(
     @PrimaryKey val id: Int,
     val productId: Int,
@@ -26,8 +26,8 @@ data class ProductPackingEntity(
     val unit2Code: Int,
     val unit2Name: String?
 )
-/*
-{
+
+/*{
     "id": 1,
     "productId": 227,
     "packingId": 161,

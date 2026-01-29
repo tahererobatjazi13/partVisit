@@ -12,13 +12,13 @@ interface AssignDirectionCustomerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<AssignDirectionCustomerEntity>)
 
-    @Query("SELECT * FROM assign_direction_customer_table WHERE tafsiliId = :visitorId")
+    @Query("SELECT * FROM AssignDirectionCustomer WHERE tafsiliId = :visitorId")
     suspend fun getByVisitor(visitorId: Int): List<AssignDirectionCustomerEntity>
 
-    @Query("DELETE FROM assign_direction_customer_table")
+    @Query("DELETE FROM AssignDirectionCustomer")
     suspend fun clearAssignDirectionCustomer()
 
-    @Query("SELECT * FROM assign_direction_customer_table WHERE CustomerId = :customerId")
+    @Query("SELECT * FROM AssignDirectionCustomer WHERE CustomerId = :customerId")
     suspend fun getAssignDirectionCustomerByCustomerId(customerId: Int): List<AssignDirectionCustomerEntity>
 
 }

@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "customer_table")
+@Entity(tableName = "Customer")
 data class CustomerEntity(
     @PrimaryKey val id: Int,
     val code: Int,
@@ -23,8 +23,8 @@ data class CustomerEntity(
     val tafsiliPhone2: String?,
     val tafsiliMobile: String?,
 )
-/*
-{
+
+/*{
     "id": 1547,
     "code": 4501032,
     "name": "کسائیان نائینی -  فرشاد",

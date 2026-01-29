@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "assign_direction_customer_table")
+@Entity(tableName = "AssignDirectionCustomer")
 data class AssignDirectionCustomerEntity(
     val id: Int,
     val assignDirectionId: Int,
@@ -24,9 +24,8 @@ data class AssignDirectionCustomerEntity(
     val tafsiliCode: Int,
     val tafsiliName: String?
 )
-/*
 
-{
+/*{
     "id": 25365,
     "assignDirectionId": 106,
     "tafsiliId": 2471,

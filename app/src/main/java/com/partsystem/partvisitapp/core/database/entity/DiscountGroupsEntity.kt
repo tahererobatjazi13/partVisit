@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "discount_groups_table",
+    tableName = "DiscountGroup",
     foreignKeys = [
         ForeignKey(
             entity = DiscountEntity::class,
@@ -20,7 +20,6 @@ import androidx.room.PrimaryKey
 data class DiscountGroupsEntity(
     @PrimaryKey
     val id: Int,
-
     val discountId: Int,
     val kind: Int,
     val groupId: Int,

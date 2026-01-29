@@ -14,12 +14,12 @@ interface VisitScheduleDao {
     suspend fun insertVisitScheduleDetails(details: List<VisitScheduleDetailEntity>)
 
     @Transaction
-    @Query("SELECT * FROM visit_schedule_table WHERE visitorId = :visitorId")
+    @Query("SELECT * FROM VisitSchedule WHERE visitorId = :visitorId")
     suspend fun getScheduleByVisitor(visitorId: Int): List<VisitScheduleEntity>
 
-    @Query("DELETE FROM visit_schedule_table")
+    @Query("DELETE FROM VisitSchedule")
     suspend fun clearVisitSchedule()
 
-    @Query("DELETE FROM visit_schedule_detail_table")
+    @Query("DELETE FROM VisitScheduleDetail")
     suspend fun clearVisitScheduleDetails()
 }

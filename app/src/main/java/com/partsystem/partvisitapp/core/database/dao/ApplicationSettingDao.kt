@@ -12,12 +12,12 @@ interface ApplicationSettingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(settings: List<ApplicationSettingEntity>)
 
-    @Query("SELECT * FROM application_setting_table")
+    @Query("SELECT * FROM ApplicationSetting")
     suspend fun getAll(): List<ApplicationSettingEntity>
 
-    @Query("DELETE FROM application_setting_table")
+    @Query("DELETE FROM ApplicationSetting")
     suspend fun clearApplicationSetting()
 
-    @Query("SELECT * FROM application_setting_table WHERE name = :name LIMIT 1")
+    @Query("SELECT * FROM ApplicationSetting WHERE name = :name LIMIT 1")
     suspend fun getSettingByName(name: String): ApplicationSettingEntity?
 }

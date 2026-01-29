@@ -17,21 +17,21 @@ interface PatternDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: PatternEntity)
 
-    @Query("SELECT * FROM pattern_table")
+    @Query("SELECT * FROM Pattern")
     fun getAllPatterns(): Flow<List<PatternEntity>>
 
-    @Query("SELECT * FROM pattern_table WHERE id = :id")
+    @Query("SELECT * FROM Pattern WHERE id = :id")
     suspend fun getById(id: Int): PatternEntity?
 
-    @Query("DELETE FROM pattern_table")
+    @Query("DELETE FROM Pattern")
     suspend fun clearPatterns()
 
     // 1) فیلتر مشتری و CustomerFilterKind
     @Query(
         """
         SELECT DISTINCT p.id
-        FROM pattern_table p
-        LEFT JOIN pattern_details_table pd 
+        FROM Pattern p
+        LEFT JOIN PatternDetail pd 
               ON pd.kind = 1 AND pd.patternId = p.id
         LEFT JOIN (
             SELECT 
@@ -39,15 +39,15 @@ interface PatternDao {
                 SUM(CASE WHEN customerFilterKind = 2 THEN 1 ELSE 0 END) AS CD,
                 SUM(CASE WHEN customerFilterKind = 3 THEN 1 ELSE 0 END) AS CP,
                 patternId
-            FROM pattern_details_table
+            FROM PatternDetail
             WHERE customerFilterKind != 0
             GROUP BY patternId
         ) AS pd2 ON pd2.patternId = p.id
-        LEFT JOIN pattern_details_table pdCK 
+        LEFT JOIN PatternDetail pdCK 
               ON pdCK.customerFilterKind = 1 AND pdCK.patternId = p.id
-        LEFT JOIN pattern_details_table pdCD 
+        LEFT JOIN PatternDetail pdCD 
               ON pdCD.customerFilterKind = 2 AND pdCD.patternId = p.id
-        LEFT JOIN pattern_details_table pdCP 
+        LEFT JOIN PatternDetail pdCP 
               ON pdCP.customerFilterKind = 3 AND pdCP.patternId = p.id
         WHERE 
             (p.customerInclusionKind = 0 
@@ -82,8 +82,8 @@ interface PatternDao {
     @Query(
         """
         SELECT DISTINCT p.id
-        FROM pattern_table p
-        LEFT JOIN pattern_details_table pd
+        FROM Pattern p
+        LEFT JOIN PatternDetail pd
             ON pd.kind = 3 AND pd.patternId = p.id
         WHERE 
             (p.centerInclusionKind = 0 OR pd.centerId = :centerId)
@@ -107,8 +107,8 @@ interface PatternDao {
     @Query(
         """
         SELECT DISTINCT p.id
-        FROM pattern_table p
-        LEFT JOIN pattern_details_table pd
+        FROM Pattern p
+        LEFT JOIN PatternDetail pd
             ON pd.kind = 4 AND pd.patternId = p.id
         WHERE 
             (p.groupInclusionKind = 0 OR pd.invoiceCategoryId = :invoiceCategoryId)
@@ -131,7 +131,7 @@ interface PatternDao {
     @Query(
         """
         SELECT *
-        FROM pattern_table
+        FROM Pattern
         WHERE id IN (:ids)
           AND :date BETWEEN fromPersianDate AND toPersianDate
     """
@@ -139,18 +139,18 @@ interface PatternDao {
     fun getPatternsFinal(ids: List<Int>, date: String): List<PatternEntity>
 
 
-    @Query("SELECT * FROM pattern_table WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM Pattern WHERE id = :id LIMIT 1")
     fun getPatternById(id: Int): LiveData<PatternEntity>
 
-    @Query("SELECT * FROM pattern_table WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM Pattern WHERE id = :id LIMIT 1")
     suspend fun getPatternByIdSuspend(id: Int): PatternEntity
 
-    @Query("SELECT * FROM pattern_table WHERE Id = :id")
+    @Query("SELECT * FROM Pattern WHERE Id = :id")
     suspend fun getPattern(id: Int): PatternEntity?
 
     @Query(
         """
-        SELECT * FROM pattern_details_table
+        SELECT * FROM PatternDetail
         WHERE patternId = :patternId
     """
     )

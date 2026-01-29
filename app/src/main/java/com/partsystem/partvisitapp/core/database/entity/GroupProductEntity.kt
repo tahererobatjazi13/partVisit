@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "group_product_table")
+@Entity(tableName = "GroupProduct")
 data class GroupProductEntity(
     @PrimaryKey val id: Int,
     val parentId: Int?,

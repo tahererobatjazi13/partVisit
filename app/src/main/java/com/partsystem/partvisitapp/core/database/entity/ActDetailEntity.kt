@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "act_detail_table"
+    tableName = "ActDetail"
 )
 data class ActDetailEntity(
     @PrimaryKey val id: Int,
@@ -23,8 +23,7 @@ data class ActDetailEntity(
     var tollPercent: Float? = null
 )
 
-/*
-{
+/*{
     "id": 4305,
     "actId": 67,
     "productId": 319,

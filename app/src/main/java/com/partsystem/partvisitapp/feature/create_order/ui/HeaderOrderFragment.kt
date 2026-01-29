@@ -996,20 +996,23 @@ class HeaderOrderFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        if (!isEditMode) {
-            val navController = findNavController()
-            val isGoingToHome = navController.currentDestination?.id == R.id.homeFragment
-            val isGoingToAnyNonOrderScreen = navController.currentDestination?.id !in listOf(
-                R.id.headerOrderFragment,
-                R.id.productListFragment,
-                R.id.groupProductFragment,
-                R.id.orderFragment
-            )
-            if (isGoingToHome || isGoingToAnyNonOrderScreen) {
-                factorViewModel.resetHeader()
-                factorViewModel.enteredProductPage = false
-            }
+
+        val navController = findNavController()
+        val nextDestinationId = navController.currentDestination?.id
+
+        val orderFlowDestinations = listOf(
+            R.id.headerOrderFragment,
+            R.id.productListFragment,
+            R.id.groupProductFragment,
+            R.id.offlineOrderDetailFragment
+        )
+        // ریست کن
+        if (nextDestinationId !in orderFlowDestinations) {
+            factorViewModel.resetHeader()
+            factorViewModel.enteredProductPage = false
+            factorViewModel.currentFactorId.value = null
         }
+
         _binding = null
     }
 }

@@ -19,38 +19,38 @@ interface ActDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertActDetails(list: List<ActDetailEntity>)
 
-    @Query("SELECT * FROM act_table ORDER BY Code ASC")
+    @Query("SELECT * FROM Act ORDER BY Code ASC")
     fun getActs(): Flow<List<ActEntity>>
 
     @Transaction
-    @Query("SELECT * FROM act_table")
+    @Query("SELECT * FROM Act")
     suspend fun getActWithDetails(): List<ActWithDetails>
     
 
-    @Query("DELETE FROM act_table")
+    @Query("DELETE FROM Act")
     suspend fun clearAct()
 
-    @Query("DELETE FROM act_detail_table")
+    @Query("DELETE FROM ActDetail")
     suspend fun clearActDetails()
 
     @Query("""
         SELECT a.* 
-        FROM act_table AS a
-        INNER JOIN pattern_details_table AS pd ON pd.actId = a.id
+        FROM Act AS a
+        INNER JOIN PatternDetail AS pd ON pd.actId = a.id
         WHERE pd.patternId = :patternId
           AND a.kind = :kind
         ORDER BY pd.isDefault DESC, a.code ASC
     """)
     suspend fun getActsByPatternId(patternId: Int, kind: Int): List<ActEntity>
 
-    @Query("SELECT * FROM act_table WHERE id = :actId LIMIT 1")
+    @Query("SELECT * FROM Act WHERE id = :actId LIMIT 1")
     suspend fun getActById(actId: Int): ActEntity?
 
     @Query(
         """
         SELECT pd.actId
-        FROM pattern_details_table pd
-        INNER JOIN act_table a 
+        FROM PatternDetail pd
+        INNER JOIN Act a 
             ON a.id = pd.actId 
             AND pd.isDefault = 1
         WHERE pd.patternId = :patternId
@@ -65,7 +65,7 @@ interface ActDao {
 
 
     @Query("""
-        SELECT * FROM act_detail_table
+        SELECT * FROM ActDetail
         WHERE actId = :actId
         AND productId = :productId
         LIMIT 1

@@ -53,17 +53,17 @@ interface DiscountDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDiscountCustomers(customers: List<DiscountCustomersEntity>)
 
-    @Query("SELECT * FROM discounts_table")
+    @Query("SELECT * FROM Discount")
     suspend fun getAllDiscounts(): List<DiscountEntity>
 
-    @Query("DELETE FROM discounts_table")
+    @Query("DELETE FROM Discount")
     suspend fun clearDiscounts()
 
     //AND ApplyKind = :applyKind
     @Transaction
     @Query(
         """
-        SELECT * FROM discounts_table 
+        SELECT * FROM Discount 
         WHERE FormType = 1 
           AND (ToDate IS NULL OR ToDate = '' OR ToDate >= :toDate)
           AND PersianBeginDate <= :persianBeginDate
@@ -75,15 +75,15 @@ interface DiscountDao {
         persianBeginDate: String
     ): List<DiscountEntity>
 
-    @Query("SELECT * FROM discounts_table WHERE Id = :id")
+    @Query("SELECT * FROM Discount WHERE Id = :id")
     suspend fun getDiscount(id: Int): DiscountEntity?
 
     @Transaction
     @Query(
         """
         SELECT DISTINCT p.Id 
-        FROM discount_product_kind_inclusion_table AS g 
-        INNER JOIN product_table AS p ON p.ProductKindId = g.ProductKindId 
+        FROM DiscountProductKindInclusion AS g 
+        INNER JOIN Product AS p ON p.ProductKindId = g.ProductKindId 
         WHERE g.DiscountId = :discountId AND p.Id IN (:productIds)
     """
     )
@@ -130,35 +130,35 @@ interface DiscountDao {
 
 
     @Transaction
-    @Query("SELECT * FROM discount_eshantyuns_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM DiscountEshantyun WHERE DiscountId = :discountId")
     suspend fun getDiscountEshantyun(discountId: Int): List<DiscountEshantyunsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_gift_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM DiscountGift WHERE DiscountId = :discountId")
     suspend fun getDiscountGift(discountId: Int): List<DiscountGiftsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_groups_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM discountgroup WHERE DiscountId = :discountId")
     suspend fun getDiscountGroup(discountId: Int): List<DiscountGroupsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_stairs_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM DiscountStair WHERE DiscountId = :discountId")
     suspend fun getDiscountStair(discountId: Int): List<DiscountStairsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_products_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM discountproduct WHERE DiscountId = :discountId")
     suspend fun getDiscountProducts(discountId: Int): List<DiscountProductsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_product_kind_inclusion_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM DiscountProductKindInclusion WHERE DiscountId = :discountId")
     suspend fun getDiscountProductKindInclusion(discountId: Int): List<DiscountProductKindInclusionsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_product_kind_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM DiscountProductKind WHERE DiscountId = :discountId")
     suspend fun getDiscountProductKind(discountId: Int): List<DiscountProductKindsEntity>
 
     @Transaction
-    @Query("SELECT * FROM discount_user_table WHERE DiscountId = :discountId")
+    @Query("SELECT * FROM DiscountUser WHERE DiscountId = :discountId")
     suspend fun getDiscountUser(discountId: Int): List<DiscountUsersEntity>
 
 
@@ -166,7 +166,7 @@ interface DiscountDao {
     @Transaction
     @Query(
         """
-        SELECT * FROM discounts_table 
+        SELECT * FROM discount 
         WHERE FormType = 1 
 
           AND (ToDate IS NULL OR ToDate = '' OR ToDate >= :toDate)
@@ -180,10 +180,10 @@ interface DiscountDao {
     ): List<DiscountFull>
 
 
-    @Query("SELECT COUNT(*) FROM factor_discount_table WHERE id = :factorId")
+    @Query("SELECT COUNT(*) FROM FactorDiscount WHERE id = :factorId")
     suspend fun getFactorDiscountCountByFactorId(factorId: Int): Int
 
-    @Query("SELECT COUNT(*) FROM factor_discount_table WHERE FactorDetailId = :factorDetailId")
+    @Query("SELECT COUNT(*) FROM FactorDiscount WHERE FactorDetailId = :factorDetailId")
     suspend fun getFactorDiscountCountByFactorDetailId(factorDetailId: Int): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -193,7 +193,7 @@ interface DiscountDao {
     @Query(
         """
     SELECT SUM(fd.Unit1Value)
-    FROM factor_detail_table fd
+    FROM FactorDetail fd
     WHERE fd.FactorId = :factorId
       AND fd.ProductId IN (:productIds)
 """
@@ -203,22 +203,40 @@ interface DiscountDao {
         productIds: List<Int>
     ): Double?
 
-    @Query("SELECT SUM(Unit1Value) FROM factor_detail_table WHERE FactorId = :factorId AND ProductId = :productId AND IsGift = 0")
+
+
+
+    // Sum Unit1Value
+    @Query("""
+        SELECT SUM(Unit1Value) 
+        FROM FactorDetail 
+        WHERE FactorId = :factorId    AND productId = :productId
+          AND IsGift = 0
+          AND (:filterByProductIds = 0 OR ProductId IN (:productIds))
+    """)
+    suspend fun sumUnit1Value(
+        factorId: Int,
+        productId: Int,
+        productIds: List<Int>,
+        filterByProductIds: Int
+    ): Double?
+
+    @Query("SELECT SUM(Unit1Value) FROM FactorDetail WHERE FactorId = :factorId AND ProductId = :productId AND IsGift = 0")
     suspend fun getSumUnit1ValueByProduct(factorId: Int, productId: Int): Double
 
-    @Query("SELECT ProductId FROM factor_detail_table WHERE FactorId = :factorId AND IsGift = 0")
+    @Query("SELECT ProductId FROM FactorDetail WHERE FactorId = :factorId AND IsGift = 0")
     suspend fun getFactorProductIds(factorId: Int): List<Int>
 
-    @Query("SELECT DiscountId FROM factor_discount_table WHERE id = :factorId AND FactorDetailId = :factorDetailId")
+    @Query("SELECT DiscountId FROM FactorDiscount WHERE id = :factorId AND FactorDetailId = :factorDetailId")
     suspend fun getAppliedDiscountIds(factorId: Int, factorDetailId: Int): List<Int>
 
-    @Query("SELECT MAX(Id) FROM factor_gift_info_table")
+    @Query("SELECT MAX(Id) FROM FactorGiftInfo")
     suspend fun getMaxFactorGiftInfoId(): Int?
 
-    @Query("SELECT MAX(Id) FROM factor_discount_table")
+    @Query("SELECT MAX(Id) FROM FactorDiscount")
     suspend fun getMaxFactorDiscountId(): Int?
 
-    @Query("SELECT MAX(Id) FROM factor_detail_table")
+    @Query("SELECT MAX(Id) FROM FactorDetail")
     suspend fun getMaxFactorDetailId(): Int?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -230,9 +248,9 @@ interface DiscountDao {
     SELECT IFNULL(SUM(Price), 0)
     FROM (
         SELECT SUM(fd.Price) * dpk.DiscountPercent / 100.0 AS Price
-        FROM factor_detail_table fd
-        INNER JOIN product_table p ON p.Id = fd.ProductId
-        INNER JOIN discount_product_kind_table dpk ON dpk.DiscountId = :discountId
+        FROM FactorDetail fd
+        INNER JOIN Product p ON p.Id = fd.ProductId
+        INNER JOIN discountproductkind dpk ON dpk.DiscountId = :discountId
         WHERE fd.FactorId = :factorId
           AND p.ProductKindId IS NOT NULL
         GROUP BY dpk.FromProductKind, dpk.ToProductKind, dpk.MinPrice, dpk.DiscountPercent
@@ -247,7 +265,7 @@ interface DiscountDao {
 
     @Query(
         """
-        SELECT * FROM discount_gift_table
+        SELECT * FROM DiscountGift
         WHERE DiscountID = :discountId
           AND :allPrice BETWEEN FromPrice AND ToPrice
         LIMIT 1
@@ -286,14 +304,14 @@ interface DiscountDao {
                             AS INTEGER) * ds.Price / 100.0
                     END
             END AS Price
-        FROM discount_stairs_table ds
-        INNER JOIN discounts_table d ON ds.DiscountId = d.Id
+        FROM DiscountStair ds
+        INNER JOIN Discount  d ON ds.DiscountId = d.Id
         INNER JOIN (
             SELECT 
                 SUM(fd.Unit1Value) AS Unit1Value,
                 SUM(fd.Unit2Value) AS Unit2Value,
                 SUM(fd.PackingValue) AS PackingValue
-            FROM factor_detail_table fd
+            FROM FactorDetail fd
             WHERE fd.FactorId = :factorId
               AND fd.IsGift = 0
               AND (:factorDetailId IS NULL OR fd.Id = :factorDetailId)
@@ -322,7 +340,7 @@ interface DiscountDao {
      */
     @Query(
         """
-        SELECT * FROM discount_stairs_table
+        SELECT * FROM DiscountStair
         WHERE DiscountId = :discountId
           AND :price BETWEEN FromPrice AND ToPrice
         LIMIT 1
@@ -351,14 +369,14 @@ interface DiscountDao {
                         ) / Ratio AS INTEGER
                     ) * de.Value
                 END AS Value
-            FROM discount_eshantyuns_table de
-            INNER JOIN discounts_table d ON d.Id = de.DiscountId
+            FROM DiscountEshantyun de
+            INNER JOIN Discount d ON d.Id = de.DiscountId
             INNER JOIN (
                 SELECT 
                     SUM(fd.Unit1Value) AS Unit1Value,
                     SUM(fd.Unit2Value) AS Unit2Value,
                     SUM(fd.PackingValue) AS PackingValue
-                FROM factor_detail_table fd
+                FROM FactorDetail fd
                 WHERE fd.FactorId = :factorId
                   AND (:productIdsSize = 0 OR fd.ProductId IN (:productIds))
             ) tbl ON de.DiscountId = :discountId
@@ -385,8 +403,8 @@ interface DiscountDao {
     @Query(
         """
         SELECT DISTINCT p.id 
-        FROM discount_groups_table AS g 
-        INNER JOIN product_table AS p 
+        FROM DiscountGroup AS g 
+        INNER JOIN Product AS p 
         ON p.saleGroupId = g.groupId 
         AND (p.saleGroupDetailId = g.groupDetailId OR g.groupDetailId IS NULL) 
         AND (p.saleRastehId = g.rastehId OR g.rastehId IS NULL)
@@ -396,7 +414,7 @@ interface DiscountDao {
     )
     fun getProductMatchDiscountGroup(discountId: Int, productIds: List<Int>): List<Int>
 
-    @Query("SELECT COUNT(*) FROM factor_discount_table")
+    @Query("SELECT COUNT(*) FROM FactorDiscount")
     fun getCount(): LiveData<Int>
 
 }

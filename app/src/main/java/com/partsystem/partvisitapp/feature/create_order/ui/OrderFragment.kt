@@ -127,6 +127,7 @@ class OrderFragment : Fragment() {
     }
 
     private fun observeSendFactor() {
+
         factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { event ->
 
             event.getContentIfNotHandled()?.let { result ->
@@ -136,11 +137,14 @@ class OrderFragment : Fragment() {
                     is NetworkResult.Loading -> binding.bmbSendOrder.checkShowPbOne(true)
 
                     is NetworkResult.Success -> {
-
                         binding.bmbSendOrder.checkShowPbOne(false)
+
+                        val message =
+                            result.message ?: getString(R.string.msg_order_successfully_sent)
+
                         Toast.makeText(
                             requireContext(),
-                            R.string.msg_order_successfully_sent,
+                            message,
                             Toast.LENGTH_SHORT
                         ).show()
                         navigateToHomeClearOrder()
@@ -157,6 +161,7 @@ class OrderFragment : Fragment() {
                 }
             }
         }
+
     }
 
     private fun initAdapter() {

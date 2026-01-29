@@ -16,12 +16,12 @@ interface VatDao {
     suspend fun insertVatDetails(details: List<VatDetailEntity>)
 
     @Transaction
-    @Query("SELECT * FROM vat_table")
+    @Query("SELECT * FROM Vat")
     suspend fun getVatWithDetails(): List<VatWithDetails>
 
-    @Query("DELETE FROM vat_table")
+    @Query("DELETE FROM Vat")
     suspend fun clearVat()
 
-    @Query("DELETE FROM vat_detail_table")
+    @Query("DELETE FROM VatDetail")
     suspend fun clearVatDetails()
 }

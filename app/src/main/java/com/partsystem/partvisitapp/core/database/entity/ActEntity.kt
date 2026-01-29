@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "act_table")
+@Entity(tableName = "Act")
 data class ActEntity(
     @PrimaryKey val id: Int,
     val vatId: Int?,

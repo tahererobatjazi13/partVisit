@@ -11,17 +11,17 @@ interface InvoiceCategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<InvoiceCategoryEntity>)
 
-    @Query("SELECT * FROM invoice_category_table")
+    @Query("SELECT * FROM InvoiceCategory")
     fun getAllInvoiceCategory(): Flow<List<InvoiceCategoryEntity>>
 
-    @Query("DELETE FROM invoice_category_table")
+    @Query("DELETE FROM InvoiceCategory")
     suspend fun clearInvoiceCategory()
 
 
     @Query("""
         SELECT ic.*
-        FROM invoice_category_table ic
-        LEFT JOIN invoice_category_detail_table icd
+        FROM InvoiceCategory ic
+        LEFT JOIN InvoiceCategoryDetail icd
             ON icd.InvoiceCategoryId = ic.Id
         WHERE icd.UserId IS NULL OR icd.UserId = :userId
         ORDER BY Code ASC

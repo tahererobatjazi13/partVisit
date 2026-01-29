@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "customer_direction_table")
+@Entity(tableName = "CustomerDirection")
 data class CustomerDirectionEntity(
     @PrimaryKey val id: Int,
     val customerId: Int,
@@ -35,8 +35,7 @@ data class CustomerDirectionEntity(
     val isMainAddress: Boolean
 )
 
-/*
-{
+/*{
     "id": 424,
     "customerId": 3585,
     "sortCode": 0,

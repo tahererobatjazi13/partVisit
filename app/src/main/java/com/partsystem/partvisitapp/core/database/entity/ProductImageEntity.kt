@@ -4,12 +4,12 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.partsystem.partvisitapp.core.utils.ImageProductType
 
-@Entity(tableName = "product_images_table")
+@Entity(tableName = "ProductImage")
 data class ProductImageEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val ownerId: Int,
-    val tableName: String,      // Store.Product, Store.GroupProduct
+    val tableName: String,  // Store.Product, Store.GroupProduct
     val fileName: String,
     val fileData: String, // اینجا می‌تواند Base64 یا URL اولیه باشد
     val localPath: String? = null // مسیر فایل ذخیره شده
@@ -21,8 +21,7 @@ data class ProductImageEntity(
             ImageProductType.PRODUCT
 }
 
-/*
-{
+/*{
     "id": 8,
     "ownerId": 5,
     "tableName": "Store.Product",

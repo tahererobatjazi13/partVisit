@@ -21,8 +21,8 @@ interface CustomerDao {
     @Query(
         """
         SELECT c.* 
-        FROM customer_table c
-        INNER JOIN assign_direction_customer_table adc
+        FROM Customer c
+        INNER JOIN AssignDirectionCustomer adc
             ON c.id = adc.customerId 
            AND adc.saleCenterId = c.saleCenterId 
         WHERE c.saleCenterId = :saleCenterId 
@@ -59,12 +59,12 @@ interface CustomerDao {
     @Query(
         """
     SELECT c.*
-    FROM customer_table c
-    INNER JOIN visit_schedule_detail_table vsd 
+    FROM Customer c
+    INNER JOIN VisitScheduleDetail vsd 
            ON c.id = vsd.customerId
-    INNER JOIN visit_schedule_table vs
+    INNER JOIN VisitSchedule vs
            ON vs.id = vsd.visitScheduleId
-    INNER JOIN assign_direction_customer_table adc
+    INNER JOIN AssignDirectionCustomer adc
            ON c.id = adc.customerId
           AND adc.tafsiliId = vs.visitorId
           AND adc.saleCenterId = c.saleCenterId
@@ -82,15 +82,15 @@ interface CustomerDao {
 
 
     // دریافت همه مشتری‌ها
-    @Query("SELECT * FROM customer_table")
+    @Query("SELECT * FROM Customer")
     fun getAllCustomers(): Flow<List<CustomerEntity>>
 
     //  نسخه suspend برای coroutine   //  دریافت مشتری بر اساس ID
-    @Query("SELECT * FROM customer_table WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM Customer WHERE id = :id LIMIT 1")
     suspend fun getCustomerById(id: Int): CustomerEntity?
 
     // نسخه LiveData برای مستقیم observe  //  دریافت مشتری بر اساس ID
-    @Query("SELECT * FROM customer_table WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM Customer WHERE id = :id LIMIT 1")
     fun getCustomerByIdLive(id: Int): LiveData<CustomerEntity>
 
     // درج یک مشتری
@@ -106,13 +106,13 @@ interface CustomerDao {
     suspend fun deleteCustomer(customer: CustomerEntity)
 
     // جستجوی مشتری بر اساس نام
-    @Query("SELECT * FROM customer_table WHERE name LIKE '%' || :keyword || '%'")
+    @Query("SELECT * FROM Customer WHERE name LIKE '%' || :keyword || '%'")
     suspend fun searchCustomer(keyword: String): List<CustomerEntity>
 
-    @Query("SELECT COUNT(*) FROM customer_table")
+    @Query("SELECT COUNT(*) FROM Customer")
     suspend fun getCount(): Int
 
     // حذف همه مشتری‌ها (برای زمانی که API سینک کامل می‌کنی)
-    @Query("DELETE FROM customer_table")
+    @Query("DELETE FROM Customer")
     suspend fun clearCustomers()
 }

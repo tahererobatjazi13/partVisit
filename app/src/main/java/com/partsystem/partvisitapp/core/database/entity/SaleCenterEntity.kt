@@ -3,16 +3,15 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "sale_center_table")
+@Entity(tableName = "SaleCenter")
 data class SaleCenterEntity(
     @PrimaryKey val id: Int,
     val code: Int,
     val name: String?,
     val saleRateKind: Int
 )
-/*
 
-{
+/*{
     "id": 1,
     "code": 1,
     "name": "واحد نیشابور - امیر کبیر",

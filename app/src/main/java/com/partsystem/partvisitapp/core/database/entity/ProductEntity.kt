@@ -5,7 +5,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "product_table")
+@Entity(tableName = "Product")
 data class ProductEntity(
     @PrimaryKey val id: Int,
     val code: String?,
@@ -42,6 +42,7 @@ data class ProductEntity(
     @Ignore
     var ProductPacking: ArrayList<ProductPackingEntity>? = null
 }
+
 /*{
     "id": 1,
     "code": "1033001",

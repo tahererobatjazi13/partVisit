@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "vat_table")
+@Entity(tableName = "Vat")
 data class VatEntity(
     @PrimaryKey val id: Int,
     val code: Int,
@@ -17,9 +17,8 @@ data class VatEntity(
     val sabt: Boolean,
     val kind: Int
 )
-/*
 
-{
+/*{
     "id": 1,
     "code": 1,
     "createDate": "2023-03-21T00:00:00",

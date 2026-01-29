@@ -12,18 +12,18 @@ interface ProductPackingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(packings: List<ProductPackingEntity>)
 
-    @Query("SELECT * FROM product_packing_table")
+    @Query("SELECT * FROM ProductPacking")
     suspend fun getAll(): List<ProductPackingEntity>
 
-    @Query("DELETE FROM product_packing_table")
+    @Query("DELETE FROM ProductPacking")
     suspend fun clearProductPacking()
 
-    @Query("SELECT * FROM product_packing_table WHERE productId = :productId")
+    @Query("SELECT * FROM ProductPacking WHERE productId = :productId")
     suspend fun getPackingsByProductId(productId: Int): List<ProductPackingEntity>
 
     @Query(
         """
-        SELECT * FROM product_packing_table
+        SELECT * FROM ProductPacking
         WHERE packingId = :packingId
         AND productId = :productId
     """

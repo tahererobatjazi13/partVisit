@@ -34,10 +34,6 @@ object DatabaseModule {
         db.visitScheduleDao()
 
     @Provides
-    fun provideOrderDao(db: AppDatabase): OrderDao =
-        db.orderDao()
-
-    @Provides
     fun provideGroupProductDao(db: AppDatabase): GroupProductDao =
         db.groupProductDao()
 

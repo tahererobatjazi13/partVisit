@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "factor_gift_info_table",
+    tableName = "FactorGiftInfo",
     foreignKeys = [
         ForeignKey(
             entity = FactorHeaderEntity::class,

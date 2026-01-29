@@ -17,33 +17,31 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProducts(list: List<ProductEntity>)
 
-    @Query("SELECT * FROM product_table ")
+    @Query("SELECT * FROM Product ")
     fun getAllProducts(): Flow<List<ProductEntity>>
 
-    @Query("DELETE FROM product_table")
+    @Query("DELETE FROM Product")
     suspend fun clearProducts()
 
-    @Query("SELECT * FROM product_table WHERE id = :id")
+    @Query("SELECT * FROM Product WHERE id = :id")
     fun getProductById(id: Int): LiveData<ProductEntity>
 
-    @Query("SELECT COUNT(*) FROM product_table")
+    @Query("SELECT COUNT(*) FROM Product")
     suspend fun getCount(): Int
 
-    @Query("SELECT * FROM product_table WHERE id = :id")
+    @Query("SELECT * FROM Product WHERE id = :id")
     suspend fun getProductByProductId(id: Int): ProductEntity?
 
-    @Query("SELECT * FROM product_table WHERE saleRastehId = :saleRastehId")
+    @Query("SELECT * FROM Product WHERE saleRastehId = :saleRastehId")
     fun getProductsByCategory(saleRastehId: Int): Flow<List<ProductEntity>>
-
 
     /*@Query("SELECT * FROM product_table WHERE subGroupId = :subGroupId")
     fun getProductsBySubGroup(subGroupId: Int): LiveData<List<ProductEntity>>*/
 
-    @Query("SELECT * FROM product_table WHERE id = :id")
+    @Query("SELECT * FROM Product WHERE id = :id")
     suspend fun getProduct(id: Int): ProductEntity?
 
 /*
-
     // فقط برای inject کردن در repository
     @get:Query("SELECT * FROM product_packing_table ")
     val productPackingDao: ProductPackingDao // این روش غیرمستقیم است؛ بهتر است همه DAOها مستقل inject شوند.
@@ -59,8 +57,8 @@ interface ProductDao {
         ad.vatPercent AS actVatPercent,
         ad.tollPercent AS actTollPercent,
         (ad.rate + (ad.rate * ad.vatPercent) + (ad.rate * ad.tollPercent)) AS finalRate
-    FROM product_table p
-    INNER JOIN act_detail_table ad ON ad.productId = p.id
+    FROM Product p
+    INNER JOIN ActDetail ad ON ad.productId = p.id
         WHERE (:groupProductId IS NULL OR p.saleGroupId = :groupProductId 
                OR p.saleGroupDetailId = :groupProductId 
                OR p.saleRastehId = :groupProductId)
@@ -88,9 +86,9 @@ interface ProductDao {
             p.CalculateUnit2Type AS calculateUnit2Type,
             ad.RateAfterVatAndToll AS finalRate,
             a.FileName AS fileName
-        FROM product_table p
-        INNER JOIN act_detail_table ad ON ad.ProductId = p.Id
-        LEFT JOIN product_images_table a ON a.OwnerId = p.Id
+        FROM Product p
+        INNER JOIN ActDetail ad ON ad.ProductId = p.Id
+        LEFT JOIN ProductImage a ON a.OwnerId = p.Id
         WHERE p.Id = :id AND ad.ActId = :actId
         LIMIT 1
     """
@@ -117,34 +115,14 @@ interface ProductDao {
             p.CalculateUnit2Type AS calculateUnit2Type,
             ad.RateAfterVatAndToll AS finalRate,
             a.FileName AS fileName
-        FROM product_table p
-        INNER JOIN act_detail_table ad ON ad.ProductId = p.Id
-        LEFT JOIN product_images_table a ON a.OwnerId = p.Id
+        FROM Product p
+        INNER JOIN ActDetail ad ON ad.ProductId = p.Id
+        LEFT JOIN ProductImage a ON a.OwnerId = p.Id
         WHERE p.Id = :id AND ad.ActId = :actId
         LIMIT 1
     """
     )    fun getProductWithRate2(id: Int, actId: Int): Flow<ProductWithPacking>
 
-    /*
-        @Transaction
-        @Query("""
-        SELECT p.*,
-               ad.rate AS rate,
-               ad.vatPercent AS vatPercent,
-               ad.tollPercent AS tollPercent,
-               ad.rate * ad.tollPercent AS toll,
-               ad.rate * ad.vatPercent AS vat,
-               ad.rateAfterVatAndToll AS rateAfterVatAndToll
-        FROM product_table p
-        INNER JOIN act_detail_table ad ON ad.productId = p.id
-        WHERE (:groupProductId = '' OR
-               p.saleGroupId = :groupProductId OR
-               p.saleGroupDetailId = :groupProductId OR
-               p.saleRastehId = :groupProductId)
-          AND (:actId = '' OR ad.actId = :actId)
-        ORDER BY p.code
-    """)
-        fun getProductsWithActDetails(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>>*/
 }
 
 

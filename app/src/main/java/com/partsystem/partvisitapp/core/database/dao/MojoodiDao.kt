@@ -12,9 +12,9 @@ interface MojoodiDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMojoodi(mojoodi: List<MojoodiEntity>)
 
-    @Query("SELECT * FROM mojoodi_table WHERE anbarId = :anbarId AND productId = :productId LIMIT 1")
+    @Query("SELECT * FROM Mojoodi WHERE anbarId = :anbarId AND productId = :productId LIMIT 1")
     suspend fun getMojoodi(anbarId: Int, productId: Int): MojoodiEntity?
 
-    @Query("DELETE FROM mojoodi_table")
+    @Query("DELETE FROM Mojoodi")
     suspend fun clearMojoodi()
 }
