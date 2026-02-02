@@ -14,7 +14,7 @@ data class FactorHeaderEntity(
     var createDate: String? = null,
     var persianDate: String? = null,
     var invoiceCategoryId: Int? = null,
-    var patternId: Int ? = null,
+    var patternId: Int? = null,
     var dueDate: String? = null,
     var deliveryDate: String? = null,
     var createTime: String? = null,
@@ -27,14 +27,16 @@ data class FactorHeaderEntity(
     var hasDetail: Boolean = false,
     var createUserId: Int? = null,
     var saleCenterId: Int? = null,
-    var actId: Int ? = null,
+    var actId: Int? = null,
     var recipientId: Int? = null,
     var settlementKind: Int = -1,
     var createSource: Int = 0,
     var finalPrice: Double = 0.0,
     var defaultAnbarId: Int? = null,
     var latitude: Double? = 0.0,
-    var longitude: Double? = 0.0
+    var longitude: Double? = 0.0,
+    val productSelectionType: String= "" // "catalog" یا "group"
+
 )
 
 /*

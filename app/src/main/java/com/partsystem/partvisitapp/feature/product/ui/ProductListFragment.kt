@@ -177,24 +177,25 @@ class ProductListFragment : Fragment() {
                         } else maxId = 1
                     }
 
-            /*    factorViewModel.getFactorDetailByFactorIdAndProductId(
-                    factorViewModel.factorHeader.value?.id!!,
-                    product.product.id
-                ).observeForever { product ->
-                    if (product != null)
-                        productIdExistingDetail = product.id
-                }
-*/
+                    factorViewModel.getFactorDetailByFactorIdAndProductId(
+                        factorViewModel.factorHeader.value?.id!!,
+                        product.product.id
+                    ).observeForever { product ->
+                        if (product != null)
+                            productIdExistingDetail = product.id
+                    }
 
                 // چک کردن وجود ردیف با همان فاکتور و محصول
                 val existing = factorViewModel.getFactorDetailByFactorIdAndProductId(
                     factorViewModel.factorHeader.value?.id!!,
                     product.product.id
                 )
-
-
+                Log.d(
+                    "productIdexisting",
+                    existing.toString()
+                )
                 val dialog =
-                    AddEditProductDialog(product) { finalUnit1, finalPackingValue, packingId, detailId, productId ->
+                    AddEditProductDialog(productViewModel,product) { finalUnit1, finalPackingValue, packingId, detailId, productId ->
                         Log.d("productIdDetailId", detailId.toString())
                         Log.d("productIdExistingDetail", productIdExistingDetail.toString())
                         Log.d("productIdproductId", productId.toString())
@@ -202,13 +203,14 @@ class ProductListFragment : Fragment() {
                             "productIdfactorId",
                             factorViewModel.factorHeader.value?.id!!.toString()
                         )
+
                         if (productIdExistingDetail != 0) {
-                            if (productIdExistingDetail == detailId) {
+                          if (productIdExistingDetail == detailId) {
                                 Log.d("uuuuuuuuuuuu1", "true")
                                 Log.d("uuuuuuuuuuuu2", detailId.toString())
+                                Log.d("uuuuuuuuuuuufinalUnit1", finalUnit1.toString())
 
                                 val detail = FactorDetailEntity(
-                                    id = detailId,
                                     factorId = factorViewModel.factorHeader.value?.id!!,
                                     sortCode = detailId + 1,
                                     anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
@@ -227,9 +229,6 @@ class ProductListFragment : Fragment() {
                                 factorViewModel.productInputCache[product.product.id] =
                                     Pair(finalUnit1, finalPackingValue)
 
-                                detail.toll =
-                                    Math.round(product.tollPercent * detail.getPriceAfterDiscount())
-                                        .toDouble()
                                 detail.vat =
                                     Math.round(product.vatPercent * detail.getPriceAfterDiscount())
                                         .toDouble()
@@ -251,7 +250,11 @@ class ProductListFragment : Fragment() {
                                     }
                                 }
                                 val updatedItem = detail.copy(factorId = validFactorId.toInt())
-                                factorViewModel.addOrUpdateFactorDetail(updatedItem)
+                                 factorViewModel.addOrUpdateFactorDetail(updatedItem)
+
+                              Log.d("productdetailunit1Value22", detail.unit1Value.toString())
+
+                              //  factorViewModel.addOrUpdateProduct(detail)
 
                                 // onProductChanged(detail)
 
@@ -261,9 +264,10 @@ class ProductListFragment : Fragment() {
                                     factorViewModel.factorHeader.value,
                                     detail
                                 )
-                            }
+                         }
 
-                        } else {
+                      } else {
+                            Log.d("uuuuuuuuuuuufinalUnit12222", finalUnit1.toString())
 
                             val detail = FactorDetailEntity(
                                 id = maxId + 1,
@@ -285,19 +289,13 @@ class ProductListFragment : Fragment() {
                             factorViewModel.productInputCache[product.product.id] =
                                 Pair(finalUnit1, finalPackingValue)
 
-                            detail.toll =
-                                Math.round(product.tollPercent * detail.getPriceAfterDiscount())
-                                    .toDouble()
                             detail.vat =
                                 Math.round(product.vatPercent * detail.getPriceAfterDiscount())
                                     .toDouble()
 
                             val validFactorId =
                                 factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-                            /*    if (validFactorId <= 0) {
-                                    Log.e("ProductList", "Invalid factorId: cannot save detail")
-                                    return@ProductListAdapter
-                                }*/
+
 
                             factorViewModel.updateHeader(hasDetail = true)
 
@@ -309,7 +307,10 @@ class ProductListFragment : Fragment() {
                                 }
                             }
                             val updatedItem = detail.copy(factorId = validFactorId.toInt())
-                            factorViewModel.addOrUpdateFactorDetail(updatedItem)
+                          factorViewModel.addOrUpdateFactorDetail(updatedItem)
+                            Log.d("productdetailunit1Value33", detail.unit1Value.toString())
+
+                            factorViewModel.addOrUpdateProduct(detail)
 
                             // onProductChanged(detail)
 
@@ -336,13 +337,23 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartData() {
+
+        Log.d("DataFactorId", factorViewModel.currentFactorId.value.toString())
+        Log.d("DataFactorId2", args.factorId.toLong().toString())
+
         val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        Log.d("DataFactorId3", validFactorId.toString())
+
         if (validFactorId <= 0) return
+        Log.d("DataFactorId4", "ok")
 
         factorViewModel.getFactorDetails(validFactorId.toInt())
             .observe(viewLifecycleOwner) { details ->
                 val values = mutableMapOf<Int, Pair<Double, Double>>()
-
+                Log.d("Dataargs", args.fromFactor.toString()
+                )
+                Log.d("DataargsfactorId", args.factorId.toString()
+                )
                 details.forEach { detail ->
                     val cached = factorViewModel.productInputCache[detail.productId]
                     if (cached != null) {
@@ -358,6 +369,8 @@ class ProductListFragment : Fragment() {
                         }
                     }
                 }
+                Log.d("Datavalue", values.toString())
+
                 productListAdapter.updateProductValues(values)
             }
     }

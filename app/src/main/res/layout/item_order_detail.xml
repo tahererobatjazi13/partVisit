@@ -205,7 +205,7 @@
                     style="@style/SmallTextStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/xxx_small_size"
+                    android:layout_marginEnd="@dimen/xx_small_size"
                     android:textDirection="rtl"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/tvTitlePackingValue"

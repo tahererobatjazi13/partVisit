@@ -1,27 +1,28 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-<!-- Base application theme. -->
-<style name="Base.Theme.PartVisitApp" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.PartVisitApp" parent="Theme.Material3.DayNight.NoActionBar">
 
-    <!-- Primary brand color -->
-    <item name="colorPrimary">@color/colorPrimary</item>
-    <item name="colorOnPrimary">@color/white</item>
-    <item name="colorPrimaryVariant">@color/black</item>
-    <item name="colorOnPrimarySurface">@color/white_f8f8fa</item>
-    <item name="colorAccent">@color/colorPrimary</item>
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/black</item>
+        <item name="colorOnPrimarySurface">@color/white_f8f8fa</item>
+        <item name="colorAccent">@color/colorPrimary</item>
 
-    <!--  colors -->
-    <item name="colorShadow">@color/black</item>
-    <item name="colorPassive">@color/black_272729</item>
-    <item name="colorWarning">@color/orange_FF5722</item>
-    <item name="colorRipple">@color/white_80FFFFFF</item>
+        <!--  colors -->
+        <item name="colorShadow">@color/black</item>
+        <item name="colorPassive">@color/black_272729</item>
+        <item name="colorWarning">@color/orange_FF5722</item>
+        <item name="colorRipple">@color/white_80FFFFFF</item>
 
-    <item name="colorSurface">@color/gray_4e4d52</item>
-    <item name="colorLine">@color/gray_414143</item>
-    <item name="colorBasic">@color/black_18181a</item>
-    <item name="colorBackSurface">@color/gray_242328</item>
-    <item name="colorBox">@color/blue_200063F5</item>
-    <item name="colorRow">@color/black_141313</item>
-    <item name="colorItem">@color/black_141313</item>
+        <item name="colorSurface">@color/gray_4e4d52</item>
+        <item name="colorLine">@color/gray_414143</item>
+        <item name="colorBasic">@color/black_18181a</item>
+        <item name="colorBackSurface">@color/gray_242328</item>
+        <item name="colorBox">@color/blue_200063F5</item>
+        <item name="colorRow">@color/black_141313</item>
+        <item name="colorItem">@color/black_141313</item>
+        <item name="colorText">@color/white</item>
 
-</style>
+    </style>
 </resources>

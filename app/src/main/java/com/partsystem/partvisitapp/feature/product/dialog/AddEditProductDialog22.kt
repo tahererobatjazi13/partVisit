@@ -1,3 +1,4 @@
+/*
 package com.partsystem.partvisitapp.feature.product.dialog
 
 import android.annotation.SuppressLint
@@ -19,14 +20,12 @@ import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.gone
-import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.DialogAddEditProductBinding
 import com.partsystem.partvisitapp.feature.create_order.adapter.SpinnerAdapter
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
-import com.partsystem.partvisitapp.feature.product.ui.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -35,7 +34,6 @@ import kotlin.math.floor
 
 @AndroidEntryPoint
 class AddEditProductDialog(
-    private val productViewModel: ProductViewModel,
     private val product: ProductWithPacking,
     private val onSave: (Double, Double, Int, Int, Int) -> Unit,
 ) : DialogFragment() {
@@ -45,7 +43,7 @@ class AddEditProductDialog(
 
     @Inject
     lateinit var mainPreferences: MainPreferences
-    private var selectedPacking: ProductPackingEntity? = null
+
     private lateinit var binding: DialogAddEditProductBinding
     private var currentProduct: ProductWithPacking? = null
     private var watcherUnit1: TextWatcher? = null
@@ -55,18 +53,18 @@ class AddEditProductDialog(
     private var productValues: Map<Int, Pair<Double, Double>> = emptyMap()
     private val factorViewModel: FactorViewModel by hiltNavGraphViewModels(R.id.nav_graph)
     private var currentMojoodiSetting: Int = 1 // Default
-    private var defaultAnbarId = 0
+    private var warehouseId: Int = 0
     private var persianDate: String = ""
-
-    var finalUnit1 = 0.0
-    var finalPackingValue = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        // Get warehouse ID and date from current factor header
         lifecycleScope.launch {
-            defaultAnbarId = mainPreferences.defaultAnbarId.first() ?: 0
+
+            warehouseId = mainPreferences.defaultAnbarId.first() ?: 0
             persianDate = getTodayPersianDate()
+
+            // Load DistributionMojoodi setting
             currentMojoodiSetting = productRepository.getDistributionMojoodiSetting()
         }
     }
@@ -75,11 +73,9 @@ class AddEditProductDialog(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         binding = DialogAddEditProductBinding.inflate(inflater, container, false)
         dialog?.window?.setBackgroundDrawableResource(R.drawable.background_dialog)
         currentProduct = product
-        observeMojoodi()
 
         binding.tvTitleDialog.text = if (product == null) {
             getString(R.string.label_add_product)
@@ -89,12 +85,11 @@ class AddEditProductDialog(
         product?.let {
             observeCartData(product.product.id)
         }
+
         setupInputs(product)
         setupButtons()
         setupSpinner(product)
 
-        selectedPacking =
-            product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
         binding.clConfirm.setOnClickListener {
             Log.d("DistributionMojoodi0", "ok")
 
@@ -107,55 +102,51 @@ class AddEditProductDialog(
 
         return binding.root
     }
+
     private fun validateAndSaveProduct() {
-        val product = currentProduct ?: return
+        val product = currentProduct
         val packing =
-            product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
+            product!!.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
 
         val inputUnit1 =
             binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
 
         val inputPacking =
-            binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
-        if (packingTypedByUser)
-            binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
-        else
-            0.0
+            if (packingTypedByUser)
+                binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
+            else
+                0.0
+        Log.d("DistributionMojoodi1", "ok")
 
-
-        var finalUnit1 = inputUnit1
-        var finalPackingValue = inputPacking
-       // var finalUnit1 = 0.0
-      //  var finalPackingValue = 0.0
+        var finalUnit1 = 0.0
+        var finalPackingValue = 0.0
 
         if (packing != null) {
             val unitPerPack = packing.unit1Value
-
-            if (inputPacking > 0) {
-                finalUnit1 += inputPacking * unitPerPack
-            } else if (inputUnit1 > 0 && unitPerPack > 0) {
-                // محاسبه تعداد بسته از روی unit1
-                finalPackingValue = floor(inputUnit1 / unitPerPack)
-                when {
-                    // packing منبع است فقط اگر تایپ شده
-                    packingTypedByUser && inputPacking > 0 -> {
-                        finalUnit1 = inputPacking * unitPerPack
-                        finalPackingValue = inputPacking
-                    }
-
-                    // unit منبع است
-                    inputUnit1 > 0 -> {
-                        finalUnit1 = inputUnit1
-                        finalPackingValue =
-                            if (unitPerPack > 0) finalUnit1 / unitPerPack else 0.0
-                    }
+            when {
+                // packing منبع است فقط اگر تایپ شده
+                packingTypedByUser && inputPacking > 0 -> {
+                    finalUnit1 = inputPacking * unitPerPack
+                    finalPackingValue = inputPacking
                 }
-
-
-            } else {
-                finalUnit1 = inputUnit1
-                finalPackingValue = 0.0
+                // unit منبع است
+                inputUnit1 > 0 -> {
+                    finalUnit1 = inputUnit1
+                    finalPackingValue =
+                        if (unitPerPack > 0) finalUnit1 / unitPerPack else 0.0
+                }
             }
+            Log.d("DistributionMojoodi2", "ok")
+
+        } else {
+            Log.d("DistributionMojoodi3", "ok")
+
+            finalUnit1 = inputUnit1
+            finalPackingValue = 0.0
+        }
+        val unit1Value = binding.etUnit1Value.text.toString()
+        val packingValue = binding.etPackingValue.text.toString()
+
 
         // Validate inputs
         if ((finalUnit1 == 0.0 && finalPackingValue == 0.0) ||
@@ -166,41 +157,123 @@ class AddEditProductDialog(
             Toast.makeText(context, R.string.error_request_amounts, Toast.LENGTH_SHORT).show()
             return
         }
-            factorViewModel.productInputCache[product.product.id] =
-                Pair(inputUnit1, inputPacking)
-            Pair(finalUnit1, finalPackingValue)
 
-            Log.d("partfinalUnit100", inputUnit1.toString())
-            Log.d("partfinalPackingValue00", inputPacking.toString())
         // Handle based on DistributionMojoodi setting
         when (currentMojoodiSetting) {
             1-> {
                 Log.d("DistributionMojoodi5", "ok")
-
-                Log.d("partfinalUnit1", finalUnit1.toString())
-                Log.d("partfinalPackingValue", finalPackingValue.toString())
-
                 // NoAction: Save directly without inventory check
-                saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
+                saveProduct(finalUnit1, finalPackingValue, packing!!)
             }
 
             2,3 -> {
-                Log.d("tahereproductid", product.product.id.toString())
+                Log.d("DistributionMojoodi6", "ok")
+                // Warning or Error: Check inventory before saving
+                checkInventoryAndSave(finalUnit1, finalPackingValue, packing!!)
+                Log.d("DistributionMojoodifinalUnit1", finalUnit1.toString())
+                Log.d("DistributionMojoodifinalfinalPackingValue", finalPackingValue.toString())
 
-                // چک موجودی
-                productViewModel.checkMojoodi(
-                    anbarId = defaultAnbarId,
-                    productId = product.product.id,
-                    persianDate = getTodayPersianDate()
-                )
             }
-
 
             else -> {
                 // Default behavior: Save directly
-                saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
+                saveProduct(finalUnit1, finalPackingValue, packing!!)
             }
         }
+    }
+
+    private fun checkInventoryAndSave(
+        requestedAmount: Double,
+        packingValue: Double,
+        packing: ProductPackingEntity
+    ) {
+
+        lifecycleScope.launch {
+            val productId = currentProduct?.product?.id ?: 0
+            Log.d("DistributionwarehouseId",warehouseId.toString())
+            Log.d("DistributionproductId",productId.toString())
+            Log.d("DistributionpersianDate",persianDate.toString())
+
+            when (val result = productRepository.checkProductInventory(
+                warehouseId,
+                productId,
+                persianDate
+            )) {
+                is NetworkResult.Loading -> {
+                    // UI feedback during API call
+                    binding.tvConfirm.isEnabled = false
+                    binding.tvConfirm.gone()
+
+                    // Show loading indicator if available in layout
+                    binding.pbConfirm.show()
+                }
+
+                is NetworkResult.Success -> {
+                    val availableStock = result.data
+                    Log.d("DistributionMojoodiavailableStock", availableStock.toString())
+
+                    if (requestedAmount > availableStock) {
+                        Log.d("DistributionMojoodiarequestedAmount", requestedAmount.toString())
+                        Log.d("DistributionMojoodavailableStock", availableStock.toString())
+
+                        // Insufficient stock - show error based on setting
+                        val errorMessage = when (currentMojoodiSetting) {
+                            2 -> "⚠️ هشدار موجودی:\nموجودی کافی نیست!\nدرخواستی: ${
+                                "%.2f".format(
+                                    requestedAmount
+                                )
+                            }\nموجودی: ${"%.2f".format(availableStock)}"
+
+                            3 -> "❌ خطا در موجودی:\nامکان ثبت فاکتور وجود ندارد!\nدرخواستی: ${
+                                "%.2f".format(
+                                    requestedAmount
+                                )
+                            }\nموجودی: ${"%.2f".format(availableStock)}"
+
+                            else -> "موجودی کافی نیست (${availableStock} موجود)"
+                        }
+
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(
+                                context,
+                                errorMessage,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            resetUiState()
+                        }
+                    } else {
+                        // Sufficient stock - proceed to save
+                        requireActivity().runOnUiThread {
+                            saveProduct(requestedAmount, packingValue, packing)
+                        }
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    // Handle API errors based on setting
+                    val errorMessage = when (currentMojoodiSetting) {
+                        2 -> "⚠️ هشدار:\nامکان بررسی موجودی وجود ندارد.\nمی‌توانید با احتیاط ادامه دهید."
+                        3 -> "❌ خطا:\nامکان بررسی موجودی وجود ندارد.\nثبت فاکتور مسدود شد."
+                        else -> "خطا در بررسی موجودی: ${result.message}"
+                    }
+
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(
+                            context,
+                            errorMessage,
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        // Only allow save in Warning mode when API fails
+                        if (currentMojoodiSetting == 2) {
+                            // Optional: Show confirmation dialog before saving without inventory check
+                            saveProduct(requestedAmount, packingValue, packing)
+                        } else {
+                            resetUiState()
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -279,23 +352,23 @@ class AddEditProductDialog(
         val default = product.packings.indexOfFirst { it.isDefault }
         binding.spProductPacking.setSelection(if (default >= 0) default else 0)
 
-
+        var init = false
         binding.spProductPacking.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
-
                 override fun onItemSelected(
                     parent: AdapterView<*>?,
                     view: View?,
                     pos: Int,
                     id: Long
                 ) {
-                    selectedPacking = product.packings.getOrNull(pos)
-                    Log.d("SelectedPacking", selectedPacking?.packingName ?: "NULL")
+                    if (!init) {
+                        init = true
+                        return
+                    }
+                    // Handle spinner change if needed
                 }
 
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    selectedPacking = null
-                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
     }
 
@@ -320,24 +393,16 @@ class AddEditProductDialog(
                             values[detail.productId] = cached
                         } else {
                             val packingSize = detail.packing?.unit1Value ?: 0.0
-                            Log.d("rohampackingSize", packingSize.toString())
-
                             if (packingSize > 0) {
-                                Log.d("rohampackingSize2", packingSize.toString())
-
                                 val pack = floor(detail.unit1Value / packingSize)
                                 val unit = detail.unit1Value % packingSize
                                 values[detail.productId] = Pair(unit, pack)
                             } else {
-                                Log.d("rohamunit1Value", detail.unit1Value.toString())
-
                                 values[detail.productId] = Pair(detail.unit1Value, 0.0)
                             }
                         }
                     }
                 }
-                Log.d("rohamvalues", values.toString())
-
                 updateProductValues(values, productId, detailId)
             }
     }
@@ -348,12 +413,8 @@ class AddEditProductDialog(
         detailId: Int
     ) {
         this.productValues = values
-        val keys: List<Int> = values.keys.toList()
-        Log.d("rohamValue2", values.toString())
 
         values[productId]?.let { (unit1Value, packingValue) ->
-            Log.d("rohamunit1Value2", unit1Value.toString())
-
             binding.etUnit1Value.setText(
                 if (unit1Value % 1 == 0.0) unit1Value.toInt().toString() else unit1Value.toString()
             )
@@ -368,83 +429,6 @@ class AddEditProductDialog(
             }
         }
     }
-    private fun observeMojoodi() {
-
-        productViewModel.checkMojoodi.observe(viewLifecycleOwner) { result ->
-
-            when (result) {
-                is NetworkResult.Loading -> {
-                    binding.tvConfirm.hide()
-                    binding.pbConfirm.show()
-                }
-
-                is NetworkResult.Success -> {
-
-                    binding.tvConfirm.show()
-                    binding.pbConfirm.gone()
-
-                    // ✅ اگر آرایه خالی بود
-                    if (result.data.isNullOrEmpty()) {
-                        Log.d("tahereEmpty","ok")
-
-                        Toast.makeText(
-                            context,
-                            "این کالا در انبار موجودی ندارد",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                        resetUiState()
-                        return@observe
-                    }
-
-                    val mojoodi = result.data.first()
-                    Log.d("taherefinalUnit1", finalUnit1.toString())
-                    Log.d("taheremojoodi", mojoodi.mojoodi.toString())
-
-                    // ✅ چک صحیح با مقدار واقعی
-                    if (finalUnit1 > mojoodi.mojoodi) {
-
-                        Toast.makeText(
-                            context,
-                            "موجودی انبار کافی نیست",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                        resetUiState()
-
-                    } else {
-                        saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
-                        dismiss()
-//
-//                        selectedPacking?.let {
-//                            saveProduct(finalUnit1, finalPackingValue, selectedPacking)
-//                            dismiss()
-//                        } ?: run {
-//                            Toast.makeText(
-//                                context,
-//                                "بسته‌بندی نامعتبر است",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-                    }
-                }
-
-                is NetworkResult.Error -> {
-                    binding.tvConfirm.show()
-                    binding.pbConfirm.gone()
-
-                    Toast.makeText(
-                        context,
-                        result.message,
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    resetUiState()
-                }
-            }
-        }
-    }
-
 
     override fun onStart() {
         super.onStart()
@@ -452,4 +436,5 @@ class AddEditProductDialog(
         dialog?.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
-}
+
+}*/

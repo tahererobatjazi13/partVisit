@@ -82,7 +82,9 @@ class FactorViewModel @Inject constructor(
         dueDate: String? = null,
         deliveryDate: String? = null,
         hasDetail: Boolean? = null,
-        finalPrice: Double? = null
+        finalPrice: Double? = null,
+        productSelectionType: String? = null,
+
     ) {
         val current = factorHeader.value ?: FactorHeaderEntity()
         factorHeader.value = current.copy(
@@ -100,7 +102,9 @@ class FactorViewModel @Inject constructor(
             dueDate = dueDate ?: current.dueDate,
             deliveryDate = deliveryDate ?: current.deliveryDate,
             hasDetail = hasDetail ?: current.hasDetail,
-            finalPrice = finalPrice ?: current.finalPrice
+            finalPrice = finalPrice ?: current.finalPrice,
+            productSelectionType = productSelectionType ?: current.productSelectionType,
+
         )
     }
 
@@ -397,4 +401,46 @@ class FactorViewModel @Inject constructor(
             .asLiveData()
     }
 
+//    private val _currentFactorId = MutableLiveData<Int>()
+//    val currentFactorId: LiveData<Int> = _currentFactorId
+//
+//    fun setFactorId(id: Int) {
+//        _currentFactorId.value = id
+//    }
+
+
+    fun addOrUpdateProduct(
+        detail: FactorDetailEntity/*,
+        productId: Int,
+        actId: Int?,
+        anbarId: Int?,
+        unit1Value: Double,
+        packingValue: Double,
+        unit2Value: Double,
+        price: Double,
+        packingId: Int,
+        vat: Double,
+        unit1Rate: Double*/
+    ) {
+        Log.d("productdetailunit1Value11", detail.unit1Value.toString())
+
+        // val factorId = _currentFactorId.value ?: return
+
+        viewModelScope.launch {
+
+            factorRepository.addOrUpdateDetail(detail
+            /*    factorId = factorId,
+                productId = productId,
+                actId = actId,
+                anbarId = anbarId,
+                unit1Value = unit1Value,
+                packingValue = packingValue,
+                unit2Value = unit2Value,
+                price = price,
+                packingId = packingId,
+                vat = vat,
+                unit1Rate = unit1Rate,*/
+            )
+        }
+    }
 }

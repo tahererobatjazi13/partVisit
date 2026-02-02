@@ -54,6 +54,6 @@ fun FactorDetailUiModel.getPackingValueFormatted(): String {
     val remainText =
         if (remain % 1 == 0.0) remain.toInt().toString() else remain.toString()
 
-    return "$remainText : $fullPacks"
+    return "$remainText:$fullPacks"
 }
 

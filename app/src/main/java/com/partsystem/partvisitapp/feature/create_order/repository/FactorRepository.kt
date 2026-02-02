@@ -116,10 +116,10 @@ class FactorRepository @Inject constructor(
         factorDao.upsertFactorDetail(detail)
     }
 
-  /*  suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
-        factorDao.upsertFactorDetail(detail)
-    }
-*/
+    /*  suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
+          factorDao.upsertFactorDetail(detail)
+      }
+  */
     suspend fun getMaxSortCode(factorId: Int): Int {
         return factorDao.getMaxSortCode(factorId)
     }
@@ -202,4 +202,71 @@ class FactorRepository @Inject constructor(
         return factorDao.getSumUnit1ValueByFactorId(factorId)
     }
 
+
+    /*  fun getDetails(factorId: Int): LiveData<List<FactorDetailEntity>> =
+          factorDao.getDetailsByFactorId(factorId)
+*/
+    suspend fun addOrUpdateDetail(
+        detail: FactorDetailEntity
+        /* factorId: Int,
+         productId: Int,
+         actId: Int?,
+         anbarId: Int?,
+         unit1Value: Double,
+         packingValue: Double,
+         unit2Value: Double,
+         price: Double,
+         packingId: Int,
+         vat: Double,
+         unit1Rate: Double*/
+    ) {
+
+        val existing =
+            factorDao.getDetailByFactorAndProduct(detail.factorId, detail.productId)
+
+        // val price = Math.round(productRate * finalUnit1).toDouble()
+
+        if (existing != null) {
+
+            Log.d("productdetailunit1Value", detail.unit1Value.toString())
+            Log.d("productdetaildetailid", detail.id.toString())
+            Log.d("productdetailpackingValuel", detail.packingValue.toString())
+
+            //  UPDATE
+            val updated = existing.copy(
+                id = detail.id,
+                unit1Value = detail.unit1Value,
+                packingValue = detail.packingValue,
+                price = detail.price,
+                vat = detail.vat,
+                unit1Rate = detail.unit1Rate
+            )
+            factorDao.upsertFactorDetail(updated)
+
+        } else {
+            //  INSERT
+            val nextSort =
+                (factorDao.getMaxSortCode(detail.factorId) ) + 1
+            Log.d("productdetailunit1Value00", detail.unit1Value.toString())
+            Log.d("productdetaildetailid00", detail.id.toString())
+            Log.d("productdetailpackingValuel00", detail.packingValue.toString())
+
+            val detail = FactorDetailEntity(
+                id = detail.id,
+                factorId = detail.factorId,
+                sortCode = nextSort,
+                productId = detail.productId,
+                actId = detail.actId,
+                anbarId = detail.anbarId,
+                unit1Value = detail.unit1Value,
+                packingValue = detail.packingValue,
+                unit2Value = detail.unit2Value,
+                price = detail.price,
+                packingId = detail.packingId,
+                vat = detail.vat,
+                unit1Rate = detail.unit1Rate
+            )
+            factorDao.upsertFactorDetail(detail)
+        }
+    }
 }

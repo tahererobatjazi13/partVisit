@@ -363,12 +363,15 @@ class HeaderOrderFragment : Fragment() {
                 headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
                 headerOrderViewModel.defaultAnbarId.collect { anbarId ->
                     if (anbarId != null) {
+                        Log.d("anbarId", anbarId.toString())
+                        mainPreferences.saveDefaultAnbarId(
+                            defaultAnbarId = anbarId
+                        )
                         factorViewModel.updateHeader(defaultAnbarId = anbarId)
                     }
                 }
             }
         }
-
     }
 
     private fun loadCustomerData(customerId: Int, customerName: String) {
@@ -694,21 +697,70 @@ class HeaderOrderFragment : Fragment() {
             }.show(parentFragmentManager, "CustomerListBottomSheet")
         }
 
+        /*
+                binding.btnContinue.setOnClickBtnOneListener {
+                    factorViewModel.updateHeader(description = binding.etDescription.text.toString())
+
+                    lifecycleScope.launch {
+                        val header = factorViewModel.factorHeader.value ?: return@launch
+                        val currentFactorId = factorViewModel.currentFactorId.value ?: return@launch
+
+                        //  اگر قبلاً نوع صفحه انتخاب شده، مستقیماً هدایت شود
+                        if (header.productSelectionType != null) {
+                            Log.d("productSelectionType1", header.productSelectionType)
+
+                            navigateToProductPage(header.productSelectionType, currentFactorId.toInt())
+                        }
+
+                        // اگر قبلاً وارد صفحه محصولات شده (بدون ذخیره نوع)
+                        if (factorViewModel.enteredProductPage) {
+                            Log.d("productSelectionType2", "ok")
+        if(pendingNavigation == "catalog")
+                            navigateToProductPage("catalog", currentFactorId.toInt()) // پیش‌فرض کاتالوگ
+                            else
+            navigateToProductPage("group", currentFactorId.toInt()) // پیش‌فرض کاتالوگ
+
+                        }
+                        // اولین بار - نمایش باتم‌شیت
+                        validateHeader()
+                    }
+                }
+        */
+
+
+
         binding.btnContinue.setOnClickBtnOneListener {
-            factorViewModel.updateHeader(description = binding.etDescription.text.toString())
-            if (factorViewModel.enteredProductPage) {
-                // به محصولات برگرد
-                val currentFactorId =
-                    factorViewModel.currentFactorId.value ?: return@setOnClickBtnOneListener
-                val action = HeaderOrderFragmentDirections
-                    .actionHeaderOrderFragmentToProductListFragment(
-                        fromFactor = true,
-                        factorId = currentFactorId.toInt()
-                    )
-                findNavController().navigate(action)
-            } else {
-                // اولین بار (اعتبارسنجی و نمایش دیالوگ)
-                validateHeader()
+            if (isEditMode) {
+                factorViewModel.currentFactorId.value = args.factorId.toLong()
+
+                navigateToProductPage(
+                    factorViewModel.factorHeader.value!!.productSelectionType,
+                    args.factorId
+                )
+            }    else {
+                if (factorViewModel.enteredProductPage) {
+                    if (factorViewModel.factorHeader.value!!.productSelectionType=="catalog")
+                        navigateToProductPage(
+                            "catalog",
+                            factorViewModel.factorHeader.value?.id!!
+                        )else
+                        navigateToProductPage(
+                            "group",
+                            factorViewModel.factorHeader.value?.id!!)
+
+                        // به محصولات برگرد
+                   /* val currentFactorId =
+                        factorViewModel.currentFactorId.value ?: return@setOnClickBtnOneListener
+                    val action = HeaderOrderFragmentDirections
+                        .actionHeaderOrderFragmentToProductListFragment(
+                            fromFactor = true,
+                            factorId = currentFactorId.toInt()
+                        )
+                    findNavController().navigate(action)*/
+                } else {
+                    // اولین بار (اعتبارسنجی و نمایش دیالوگ)
+                    validateHeader()
+                }
             }
         }
 
@@ -811,6 +863,34 @@ class HeaderOrderFragment : Fragment() {
             }
     }
 
+    // متد کمکی برای هدایت به صفحه محصولات
+    private fun navigateToProductPage(selectionType: String, factorId: Int) {
+        Log.d("productSelectionType3", selectionType)
+
+        val action = when (selectionType) {
+
+            "group" ->
+                HeaderOrderFragmentDirections
+                    .actionHeaderOrderFragmentToGroupProductFragment(
+                        fromFactor = true,
+                        factorId = factorId
+                    )
+
+            "catalog" -> HeaderOrderFragmentDirections
+                .actionHeaderOrderFragmentToProductListFragment(
+                    fromFactor = true,
+                    factorId = factorId
+                )
+
+            else -> HeaderOrderFragmentDirections // پیش‌فرض کاتالوگ
+                .actionHeaderOrderFragmentToProductListFragment(
+                    fromFactor = true,
+                    factorId = factorId
+                )
+        }
+        findNavController().navigate(action)
+    }
+
     private fun <T> Spinner.setSelectionById(
         id: Int?,
         items: List<T>,
@@ -853,6 +933,7 @@ class HeaderOrderFragment : Fragment() {
 
     private fun validateHeader() {
         val factor = factorViewModel.factorHeader.value ?: return
+        Log.d("productSelectionType4", "ok")
 
         // Invoice Category
         if (binding.spInvoiceCategory.selectedItemPosition == 0) {
@@ -890,25 +971,25 @@ class HeaderOrderFragment : Fragment() {
             .addOption(R.string.label_product_catalog, R.drawable.ic_home_catalog) {
                 pendingNavigation = "catalog"
                 lifecycleScope.launch {
-                    val header = factorViewModel.factorHeader.value ?: return@launch
+                    val currentHeader = factorViewModel.factorHeader.value ?: return@launch
 
-                    var finalFactorId: Long
+                    val updatedHeader = currentHeader.copy(
+                        productSelectionType = "catalog"
+                    )
 
-                    //  اگر id معتبر دارد (یعنی قبلاً ذخیره شده) دوباره ذخیره نکن
-                    if (header.id != null && header.id > 0) {
-                        finalFactorId = header.id.toLong()
-                        // به‌روزرسانی
-                        factorViewModel.currentFactorId.postValue(finalFactorId)
-                    } else {
-                        // اولین بار است → ذخیره کن
-                        finalFactorId = factorViewModel.saveHeaderAndGetId(header)
-                        // به‌روزرسانی هدر در ViewModel با id جدید
-                        factorViewModel.factorHeader.postValue(
-                            header.copy(id = finalFactorId.toInt())
-                        )
-                        factorViewModel.currentFactorId.postValue(finalFactorId)
-                    }
+                    val finalFactorId: Long =
+                        if (currentHeader.id != null && currentHeader.id > 0) {
+                            factorViewModel.updateFactorHeader(updatedHeader)
+                            factorViewModel.factorHeader.postValue(updatedHeader)
+                            currentHeader.id.toLong()
+                        } else {
+                            val newId =
+                                factorViewModel.saveHeaderAndGetId(updatedHeader)
+                            factorViewModel.factorHeader.postValue(updatedHeader.copy(id = newId.toInt()))
+                            newId
+                        }
 
+                    factorViewModel.currentFactorId.postValue(finalFactorId)
                     factorViewModel.enteredProductPage = true
 
                     withContext(Dispatchers.Main) {
@@ -924,18 +1005,26 @@ class HeaderOrderFragment : Fragment() {
             .addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {
                 pendingNavigation = "group"
                 lifecycleScope.launch {
-                    val header = factorViewModel.factorHeader.value ?: return@launch
+                    val currentHeader = factorViewModel.factorHeader.value ?: return@launch
 
-                    var finalFactorId: Long
+                    val updatedHeader = currentHeader.copy(
+                        productSelectionType = "group"
+                    )
 
-                    if (header.id != null && header.id > 0) {
-                        finalFactorId = header.id.toLong()
-                        factorViewModel.currentFactorId.postValue(finalFactorId)
-                    } else {
-                        finalFactorId = factorViewModel.saveHeaderAndGetId(header)
-                        factorViewModel.factorHeader.postValue(header.copy(id = finalFactorId.toInt()))
-                        factorViewModel.currentFactorId.postValue(finalFactorId)
-                    }
+                    val finalFactorId: Long =
+                        if (currentHeader.id != null && currentHeader.id > 0) {
+                            factorViewModel.updateFactorHeader(updatedHeader)
+                            factorViewModel.factorHeader.postValue(updatedHeader)
+                            currentHeader.id.toLong()
+                        } else {
+                            val newId =
+                                factorViewModel.saveHeaderAndGetId(updatedHeader)
+                            factorViewModel.factorHeader.postValue(updatedHeader.copy(id = newId.toInt()))
+                            newId
+                        }
+
+                    factorViewModel.currentFactorId.postValue(finalFactorId)
+                    factorViewModel.enteredProductPage = true
 
                     withContext(Dispatchers.Main) {
                         val action = HeaderOrderFragmentDirections
@@ -947,6 +1036,7 @@ class HeaderOrderFragment : Fragment() {
                     }
                 }
             }
+
         dialog.show(childFragmentManager, "chooseDialog")
         isBottomSheetShowing = true
         dialog.setOnDismissListener {

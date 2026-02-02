@@ -118,7 +118,7 @@ interface ApiService {
     ): Response<ApiResponse>
 
     @GET("Mojoodi")
-    suspend fun getMojoodi(
+    suspend fun checkMojoodi(
         @Query("anbarId") anbarId: Int,
         @Query("productId") productId: Int,
         @Query("persianDate") persianDate: String
