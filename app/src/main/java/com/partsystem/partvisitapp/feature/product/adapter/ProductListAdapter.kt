@@ -63,9 +63,18 @@ class ProductListAdapter(
         list: List<ProductWithPacking>,
         imagesMap: Map<Int, List<ProductImageEntity>> = emptyMap()
     ) {
-        this.productWithAct = list
         this.imagesMap = imagesMap
         this.useModel = true
+
+        // اول محصولاتی که در فاکتور هستند
+        this.productWithAct = list.sortedWith(
+            compareByDescending<ProductWithPacking> {
+                productValues.containsKey(it.product.id)
+            }.thenBy {
+                it.product.id
+            }
+        )
+
         notifyDataSetChanged()
     }
 

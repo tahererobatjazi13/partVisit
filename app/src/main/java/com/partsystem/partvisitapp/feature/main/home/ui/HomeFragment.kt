@@ -86,7 +86,7 @@ class HomeFragment : Fragment() {
         binding.tvDate.text = getTodayPersianDate()
 
         // جمع‌آوری دیتا از DataStore
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             combine(
                 mainPreferences.firstName,
                 mainPreferences.lastName
@@ -241,7 +241,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun onAllDataUpdatedSuccessfully() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             mainPreferences.setActUpdated()
             mainPreferences.setPatternUpdated()
             mainPreferences.setProductUpdated()
@@ -266,7 +266,7 @@ class HomeFragment : Fragment() {
             binding.rvHomeMenu.adapter = HomeMenuAdapter(items) { item ->
                 when (item.id) {
                     1 -> { /* باز کردن صفحه کاتالوگ */
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
                             if (!isDatabaseReady()) {
                                 showSyncRequiredMessage()
                                 return@launch
@@ -280,7 +280,7 @@ class HomeFragment : Fragment() {
                     }
 
                     2 -> { /* باز کردن صفحه لیست کالاها */
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
                             if (!isDatabaseReady()) {
                                 showSyncRequiredMessage()
                                 return@launch
@@ -294,7 +294,7 @@ class HomeFragment : Fragment() {
                     }
 
                     3 -> { /* باز کردن صفحه ثبت سفارش */
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
 
                             if (!isDatabaseReady()) {
                                 showSyncRequiredMessage()
@@ -320,7 +320,7 @@ class HomeFragment : Fragment() {
                     }
 
                     4 -> { /* باز کردن صفحه مشتریان */
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
                             if (!isDatabaseReady()) {
                                 showSyncRequiredMessage()
                                 return@launch
@@ -369,7 +369,7 @@ class HomeFragment : Fragment() {
 
     private fun setupClicks() {
         binding.ivSync.setOnClickListener {
-            lifecycleScope.launch {
+            viewLifecycleOwner.lifecycleScope.launch {
                 if (!isInternetAvailable(requireContext())) {
                     CustomSnackBar.make(
                         requireView(),
@@ -393,7 +393,7 @@ class HomeFragment : Fragment() {
         customDialogForceUpdate?.apply {
             setOnClickNegativeButton { hideProgress() }
             setOnClickPositiveButton {
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
 
                     if (!isInternetAvailable(requireContext())) {
                         CustomSnackBar.make(

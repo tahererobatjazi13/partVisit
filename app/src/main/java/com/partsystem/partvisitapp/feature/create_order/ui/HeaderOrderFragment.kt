@@ -125,7 +125,8 @@ class HeaderOrderFragment : Fragment() {
         if (args.typeCustomer && args.customerId != 0) {
             loadCustomerData(args.customerId, args.customerName)
             // اطمینان از مقداردهی saleCenterId در هر حالت
-            lifecycleScope.launch {
+
+            viewLifecycleOwner.lifecycleScope.launch {
                 saleCenterId = mainPreferences.saleCenterId.first() ?: 0
             }
         }
@@ -271,7 +272,7 @@ class HeaderOrderFragment : Fragment() {
     }
 
     private fun ensureHeaderInitialized() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             // فقط یک بار اجرا شود (برای جلوگیری از تداخل در تغییرات مکرر)
             if (hasLoadedEditData) return@launch
             hasLoadedEditData = true
@@ -320,7 +321,7 @@ class HeaderOrderFragment : Fragment() {
 
     private fun createNewHeader() {
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
 
             val current = factorViewModel.factorHeader.value
 
@@ -336,6 +337,7 @@ class HeaderOrderFragment : Fragment() {
                     uniqueId = getGUID(),
                     saleCenterId = saleCenterId,
                     settlementKind = 0,
+                    createSource = 2,
                     formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
                     createDate = getTodayGregorian(),
                     persianDate = getTodayPersianDate(),
@@ -349,6 +351,7 @@ class HeaderOrderFragment : Fragment() {
                     uniqueId = getGUID(),
                     saleCenterId = saleCenterId,
                     settlementKind = 0,
+                    createSource = 2,
                     formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
                     createDate = getTodayGregorian(),
                     persianDate = getTodayPersianDate(),
@@ -701,7 +704,7 @@ class HeaderOrderFragment : Fragment() {
                 binding.btnContinue.setOnClickBtnOneListener {
                     factorViewModel.updateHeader(description = binding.etDescription.text.toString())
 
-                    lifecycleScope.launch {
+                    viewLifecycleOwner.lifecycleScope.launch {
                         val header = factorViewModel.factorHeader.value ?: return@launch
                         val currentFactorId = factorViewModel.currentFactorId.value ?: return@launch
 
@@ -785,7 +788,7 @@ class HeaderOrderFragment : Fragment() {
                 binding.tvDuoDate.text = gregorianToPersian(header.dueDate.toString())
                 binding.tvDeliveryDate.text = gregorianToPersian(header.deliveryDate.toString())
                 binding.etDescription.setText(header.description)
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
 
                     // ست کردن مقادیر اولیه
                     saleCenterId = header.saleCenterId ?: mainPreferences.saleCenterId.first() ?: 0
@@ -970,7 +973,7 @@ class HeaderOrderFragment : Fragment() {
             .setTitle(R.string.label_choose)
             .addOption(R.string.label_product_catalog, R.drawable.ic_home_catalog) {
                 pendingNavigation = "catalog"
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     val currentHeader = factorViewModel.factorHeader.value ?: return@launch
 
                     val updatedHeader = currentHeader.copy(
@@ -1004,7 +1007,7 @@ class HeaderOrderFragment : Fragment() {
             }
             .addOption(R.string.label_product_group, R.drawable.ic_home_group_product) {
                 pendingNavigation = "group"
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     val currentHeader = factorViewModel.factorHeader.value ?: return@launch
 
                     val updatedHeader = currentHeader.copy(

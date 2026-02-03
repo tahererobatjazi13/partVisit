@@ -227,7 +227,6 @@ class FactorRepository @Inject constructor(
         // val price = Math.round(productRate * finalUnit1).toDouble()
 
         if (existing != null) {
-
             Log.d("productdetailunit1Value", detail.unit1Value.toString())
             Log.d("productdetaildetailid", detail.id.toString())
             Log.d("productdetailpackingValuel", detail.packingValue.toString())
@@ -237,6 +236,7 @@ class FactorRepository @Inject constructor(
                 id = detail.id,
                 unit1Value = detail.unit1Value,
                 packingValue = detail.packingValue,
+                packingId = detail.packingId,
                 price = detail.price,
                 vat = detail.vat,
                 unit1Rate = detail.unit1Rate

@@ -149,6 +149,8 @@
     <string name="error_no_items_cart">هیچ آیتمی به سبد خرید اضافه نشده</string>
     <string name="error_user_not_found">کاربر یافت نشد</string>
     <string name="error_not_detail">جزییات سفارش یافت نشد</string>
+    <string name="error_insufficient_inventory">موجودی انبار کافی نیست</string>
+    <string name="error_out_of_stock">این کالا در انبار موجودی ندارد</string>
     <string name="error_selecting_invoice_category_mandatory">انتخاب گروه صورت حساب اجباری است</string>
     <string name="error_selecting_pattern_mandatory">انتخاب طرح فروش اجباری است</string>
     <string name="error_selecting_act_mandatory">انتخاب مصوبه اجباری است</string>

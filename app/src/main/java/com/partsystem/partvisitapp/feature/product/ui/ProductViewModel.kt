@@ -118,24 +118,27 @@ class ProductViewModel @Inject constructor(
         }
     }*/
 
+    private val _checkMojoodi =
+        MutableLiveData<NetworkResult<List<MojoodiDto>>?>()
 
-        private val _checkMojoodi =
-            MutableLiveData<NetworkResult<List<MojoodiDto>>>()
+    val checkMojoodi: LiveData<NetworkResult<List<MojoodiDto>>?> =
+        _checkMojoodi
 
-        val checkMojoodi: LiveData<NetworkResult<List<MojoodiDto>>> =
-            _checkMojoodi
-
-        fun checkMojoodi(
-            anbarId: Int,
-            productId: Int,
-            persianDate: String
-        ) {
-            viewModelScope.launch {
-                _checkMojoodi.value = NetworkResult.Loading
-                _checkMojoodi.value =
-                    repository.checkMojoodi(anbarId, productId, persianDate)
-            }
+    fun checkMojoodi(
+        anbarId: Int,
+        productId: Int,
+        persianDate: String
+    ) {
+        viewModelScope.launch {
+            _checkMojoodi.value = NetworkResult.Loading
+            _checkMojoodi.value =
+                repository.checkMojoodi(anbarId, productId, persianDate)
         }
+    }
+
+    fun clearCheckMojoodi() {
+        _checkMojoodi.value = null
+    }
 
 }
 

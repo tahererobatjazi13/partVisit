@@ -135,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "unit1 & packing value"
+git commit -m "check mojoodi"
 git push -u origin master
 git push
 */
