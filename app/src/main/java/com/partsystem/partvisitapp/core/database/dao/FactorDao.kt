@@ -107,12 +107,27 @@ interface FactorDao {
 
     @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
     suspend fun getDetailsForHeader(factorId: String): List<FactorDetailEntity>
+/*
 
     @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId AND productId = :productId")
     fun getFactorDetailByFactorIdAndProductId(
         factorId: Int,
         productId: Int
     ): Flow<FactorDetailEntity>
+*/
+
+    @Query("""
+        SELECT * FROM FactorDetail 
+        WHERE factorId = :factorId 
+          AND productId = :productId 
+          AND isGift = 0  
+        LIMIT 1
+    """)
+    fun getFactorDetailByFactorIdAndProductId(
+        factorId: Int,
+        productId: Int
+    ): Flow<FactorDetailEntity>
+
 
 
     @Query("SELECT * FROM FactorDiscount WHERE productId = :productId AND factorDetailId = :factorDetailId LIMIT 1")
@@ -125,6 +140,8 @@ interface FactorDao {
         """
     SELECT COUNT(*) FROM FactorDetail 
     WHERE factorId = :factorId
+     AND isGift = 0  
+        LIMIT 1
     """
     )
     fun getFactorItemCount(factorId: Int): LiveData<Int>
@@ -133,7 +150,12 @@ interface FactorDao {
     @Query("SELECT * FROM FactorDetail ")
     fun getAllFactorDetails(): Flow<List<FactorDetailEntity>>
 
-    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
+    @Query("""
+        SELECT * FROM FactorDetail 
+        WHERE factorId = :factorId 
+          AND isGift = 0  
+        ORDER BY sortCode ASC
+    """)
     fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>>
 
 /*

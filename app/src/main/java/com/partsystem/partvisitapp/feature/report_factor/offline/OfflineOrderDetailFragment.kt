@@ -50,6 +50,7 @@ class OfflineOrderDetailFragment : Fragment() {
         initAdapter()
         rxBinding()
         setupObserver()
+        binding.svMain.gone()
     }
 
     private fun rxBinding() {

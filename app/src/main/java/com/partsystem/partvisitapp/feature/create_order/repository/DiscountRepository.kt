@@ -1,7 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.repository
 
 import android.util.Log
-import androidx.lifecycle.lifecycleScope
 import com.partsystem.partvisitapp.core.database.dao.ActDao
 import com.partsystem.partvisitapp.core.database.dao.DiscountDao
 import com.partsystem.partvisitapp.core.database.dao.FactorDao

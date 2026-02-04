@@ -158,11 +158,11 @@ class AddEditProductDialog(
           }*/
 
         when (currentMojoodiSetting) {
-            2, 3 -> {
+            1 -> {
                 saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
             }
 
-            1 -> {
+            2, 3 -> {
                 mojoodiConsumed = false
                 productViewModel.checkMojoodi(
                     anbarId = defaultAnbarId,

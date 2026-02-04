@@ -176,15 +176,16 @@ class ProductListFragment : Fragment() {
                     productRate = product.rate
                 }
 
+                factorViewModel.getCount()
+                    .observe(viewLifecycleOwner) { count ->
+                        if (count > 0) {
+                            factorViewModel.getMaxFactorDetailId()
+                                .observe(viewLifecycleOwner) { maxFactorDetailId ->
+                                    maxId = maxFactorDetailId
+                                }
+                        } else maxId = 1
 
-                // دریافت حداکثر ID
-                val count = factorViewModel.getCount().value ?: 0
-                maxId = if (count > 0) {
-                    factorViewModel.getMaxFactorDetailId().value ?: 1
-                } else {
-                    1
-                }
-
+                    }
                 // بررسی وجود ردیف قبلی
                 val existingDetail = factorViewModel.getFactorDetailByFactorIdAndProductId(
                     factorViewModel.factorHeader.value?.id!!,
@@ -352,6 +353,36 @@ class ProductListFragment : Fragment() {
 
         factorViewModel.getFactorDetails(validFactorId.toInt())
             .observe(viewLifecycleOwner) { details ->
+                // 🔑 فیلتر نهایی: فقط ردیف‌های عادی (غیر هدیه)
+                val nonGiftDetails = details.filter { it.isGift!=1 }
+
+                val values = mutableMapOf<Int, Pair<Double, Double>>()
+                nonGiftDetails.forEach { detail ->
+                    // ✅ فقط از کش بخوان یا تجزیه کن برای ردیف‌های عادی
+                    val cached = factorViewModel.productInputCache[detail.productId]
+                    if (cached != null) {
+                        values[detail.productId] = cached
+                    } else {
+                        val packingSize = detail.packing?.unit1Value ?: 0.0
+                        if (packingSize > 0) {
+                            val pack = floor(detail.unit1Value / packingSize)
+                            val unit = detail.unit1Value % packingSize
+                            values[detail.productId] = Pair(unit, pack)
+                        } else {
+                            values[detail.productId] = Pair(detail.unit1Value, 0.0)
+                        }
+                    }
+                }
+                productListAdapter.updateProductValues(values)
+            }
+    }
+/*
+    private fun observeCartData() {
+        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        if (validFactorId <= 0) return
+
+        factorViewModel.getFactorDetails(validFactorId.toInt())
+            .observe(viewLifecycleOwner) { details ->
                 val values = mutableMapOf<Int, Pair<Double, Double>>()
                 details.forEach { detail ->
                     // ✅ فقط از کش بخوان، اما کش را با مقادیر تجزیه‌شده آپدیت نکن!
@@ -374,50 +405,7 @@ class ProductListFragment : Fragment() {
                 // ❌ هرگز این خط را اضافه نکنید: factorViewModel.productInputCache.putAll(values)
             }
     }
-
-    /*
-        private fun observeCartData() {
-
-            Log.d("DataFactorId", factorViewModel.currentFactorId.value.toString())
-            Log.d("DataFactorId2", args.factorId.toLong().toString())
-
-            val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-            Log.d("DataFactorId3", validFactorId.toString())
-
-            if (validFactorId <= 0) return
-            Log.d("DataFactorId4", "ok")
-
-            factorViewModel.getFactorDetails(validFactorId.toInt())
-                .observe(viewLifecycleOwner) { details ->
-                    val values = mutableMapOf<Int, Pair<Double, Double>>()
-                    Log.d(
-                        "Dataargs", args.fromFactor.toString()
-                    )
-                    Log.d(
-                        "DataargsfactorId", args.factorId.toString()
-                    )
-                    details.forEach { detail ->
-                        val cached = factorViewModel.productInputCache[detail.productId]
-                        if (cached != null) {
-                            values[detail.productId] = cached
-                        } else {
-                            val packingSize = detail.packing?.unit1Value ?: 0.0
-                            if (packingSize > 0) {
-                                val pack = floor(detail.unit1Value / packingSize)
-                                val unit = detail.unit1Value % packingSize
-                                values[detail.productId] = Pair(unit, pack)
-                            } else {
-                                values[detail.productId] = Pair(detail.unit1Value, 0.0)
-                            }
-                        }
-                    }
-                    Log.d("Datavalue", values.toString())
-
-                    productListAdapter.updateProductValues(values)
-                }
-        }
-    */
-
+*/
 
     private fun observeData() {
         if (args.fromFactor) {

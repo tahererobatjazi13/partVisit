@@ -135,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "check mojoodi"
+git commit -m "insert factor detail"
 git push -u origin master
 git push
 */
