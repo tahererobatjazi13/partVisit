@@ -51,8 +51,8 @@ class DiscountRepository @Inject constructor(
         applyKind: Int,
         factorHeader: FactorHeaderEntity,
         factorDetail: FactorDetailEntity
-    ) {
-        if (factorHeader.patternId == null) return
+    ) = withContext(Dispatchers.IO) {
+        if (factorHeader.patternId == null) return@withContext
 
         val hasGift = false
         val insertCount: Byte = 0
@@ -61,13 +61,12 @@ class DiscountRepository @Inject constructor(
         val productSortCode = 0
         Log.d("EshantyuncreateDate", factorHeader.createDate!!)
 
+
         var discounts =
-            getDiscounts(/*applyKind,*/ factorHeader.createDate!!, factorHeader.persianDate!!, true)
-        //  1404/10/17  2026-01-06
-        // discounts=108
+            getDiscounts(factorHeader.createDate!!, factorHeader.persianDate!!, true)
         Log.d("Eshantyundiscountssize", discounts.size.toString())
 
-        val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return
+        val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return@withContext
         val discountInclusionKind: Int = pattern.discountInclusionKind!!
 
         // Remove already applied discounts
@@ -77,6 +76,7 @@ class DiscountRepository @Inject constructor(
             factorDetail.getDiscountIds(applyKind, factorDetail.id)
         //  usedDiscountIds=[]
         discounts = discounts.filter { !usedDiscountIds.contains(it.id) }
+
 
 
         // Apply pattern inclusion filter
@@ -118,7 +118,7 @@ class DiscountRepository @Inject constructor(
             factor = factorHeader,
             factorDetail = factorDetail,
             applyKind = applyKind,
-            repository = this
+            repository = this@DiscountRepository
         )
     }
 
@@ -472,6 +472,8 @@ class DiscountRepository @Inject constructor(
                         Log.d("EshantyunPercent", "ok")
 
                         discountPrice = (discount.priceAmount / 100.0) * price
+                        Log.d("EshantyunPercentprice", price.toString())
+                        Log.d("EshantyunPercent5", discount.priceAmount.toString())
                         Log.d("EshantyunPercent2", discountPrice.toString())
                     }
 
@@ -1334,8 +1336,8 @@ class DiscountRepository @Inject constructor(
         }
     }
 
-    fun getPatternDetailById(id: Int): List<PatternDetailEntity> =
-        patternDao.getPatternDetailById(id)
-
+    suspend fun getPatternDetailById(patternId: Int): List<PatternDetailEntity>? {
+        return patternDao.getPatternDetailById(patternId)
+    }
 
 }

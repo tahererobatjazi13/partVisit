@@ -8,6 +8,7 @@ data class FactorDetailUiModel(
     val factorId: Int,
     val productId: Int,
     val productName: String?,
+    val packingId: Int?,
     val packingName: String?,
     val packingValue: Double,
     val unitPerPack: Double,
@@ -43,17 +44,26 @@ data class FactorDetailUiModel(
 
 
 fun FactorDetailUiModel.getPackingValueFormatted(): String {
-    val unitPerPack = unitPerPack
-    if (unitPerPack <= 0) return ""
+    // در حالت بدون بسته‌بندی (unitPerPack <= 0) مقدار unit1Value را با :0 نمایش بده
+    if (unitPerPack <= 0) {
+        val valueText = if (unit1Value % 1 == 0.0) {
+            unit1Value.toInt().toString()
+        } else {
+            unit1Value.toString()
+        }
+        return "$valueText:0"
+    }
 
+    // محاسبه مقدار برای بسته‌بندی معتبر
     val fullPacks = kotlin.math.floor(unit1Value / unitPerPack).toInt()
     val remain = unit1Value % unitPerPack
 
-    if (unit1Value <= 0) return ""
-
-    val remainText =
-        if (remain % 1 == 0.0) remain.toInt().toString() else remain.toString()
+    // فرمت‌دهی باقیمانده
+    val remainText = if (remain % 1 == 0.0) {
+        remain.toInt().toString()
+    } else {
+        remain.toString()
+    }
 
     return "$remainText:$fullPacks"
 }
-

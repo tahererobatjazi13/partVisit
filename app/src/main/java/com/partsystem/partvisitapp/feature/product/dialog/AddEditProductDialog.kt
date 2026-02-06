@@ -90,10 +90,8 @@ class AddEditProductDialog(
         }
         setupInputs(product)
         setupButtons()
-        setupSpinner(product)
+        setupSpinner(product) // اصلاح شده
 
-        selectedPacking =
-            product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
         binding.clConfirm.setOnClickListener {
             validateAndSaveProduct()
         }
@@ -107,59 +105,38 @@ class AddEditProductDialog(
 
     private fun validateAndSaveProduct() {
         val product = currentProduct ?: return
-        //val packing = product.packings.getOrNull(binding.spProductPacking.selectedItemPosition)
 
-        val packing = selectedPacking ?: return
-
-        // ذخیره مقادیر اصلی کاربر در کش — این خط کلید اصلی است
+        // ذخیره مقادیر اصلی کاربر در کش
         val originalUnit1 = binding.etUnit1Value.text.toString().toDoubleOrNull() ?: 0.0
         val originalPacking = binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
         factorViewModel.productInputCache[product.product.id] = Pair(originalUnit1, originalPacking)
 
-        //  محاسبه مقادیر نهایی برای ذخیره در دیتابیس (همان منطق فعلی)
-        val inputUnit1 = originalUnit1
-        val inputPacking = originalPacking
-        finalUnit1 = inputUnit1
-        finalPackingValue = inputPacking
-
-        if (packing != null && packing.unit1Value > 0) {
-            val unitPerPack = packing.unit1Value
-
-            //  محاسبه کل تعداد واحدها (unit1Value)
-            finalUnit1 = originalUnit1 + (originalPacking * unitPerPack)
-
-            //  محاسبه packingValue به صورت کسری (کل تعداد ÷ نسبت بسته‌بندی)
-            finalPackingValue = finalUnit1 / unitPerPack
-
+        // 🔑 تغییر اصلی: تشخیص خودکار حالت بدون بسته‌بندی بر اساس وجود بسته‌بندی در محصول
+        val hasPackings = product.packings.isNotEmpty()
+        finalUnit1 = if (hasPackings && selectedPacking != null) {
+            // با بسته‌بندی: محاسبه کل واحدها
+            originalUnit1 + (originalPacking * selectedPacking!!.unit1Value)
         } else {
-            // اگر بسته‌بندی تعریف نشده، فقط واحدهای ساده ذخیره شود
-            finalUnit1 = originalUnit1
-            finalPackingValue = 0.0
+            // بدون بسته‌بندی: فقط واحد اول
+            originalUnit1
         }
+
+        finalPackingValue = if (hasPackings && selectedPacking != null) {
+            finalUnit1 / selectedPacking!!.unit1Value
+        } else {
+            0.0 // بدون بسته‌بندی
+        }
+
         // اعتبارسنجی
-        if ((finalUnit1 == 0.0 && finalPackingValue == 0.0) ||
-            (binding.etUnit1Value.text.toString() == "0" && binding.etPackingValue.text.isNullOrBlank())
-        ) {
+        if (finalUnit1 == 0.0) {
             Toast.makeText(context, R.string.error_request_amounts, Toast.LENGTH_SHORT).show()
             return
         }
-        Log.d("SelectedPacking2", selectedPacking?.packingName ?: "NULL")
 
-        // ذخیره نهایی در دیتابیس (مقادیر محاسبه‌شده)
-        /*  when (currentMojoodiSetting) {
-              2,3 -> saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
-              1 -> productViewModel.checkMojoodi(
-                  anbarId = defaultAnbarId,
-                  productId = product.product.id,
-                  persianDate = getTodayPersianDate()
-              )
-
-              else -> saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
-          }*/
-
+        // ذخیره نهایی
         when (currentMojoodiSetting) {
             1 -> {
-                saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
+                saveProduct(finalUnit1, finalPackingValue, selectedPacking)
             }
 
             2, 3 -> {
@@ -172,7 +149,7 @@ class AddEditProductDialog(
             }
 
             else -> {
-                saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
+                saveProduct(finalUnit1, finalPackingValue, selectedPacking)
             }
         }
     }
@@ -180,14 +157,16 @@ class AddEditProductDialog(
     private fun saveProduct(
         finalUnit1: Double,
         finalPackingValue: Double,
-        packing: ProductPackingEntity
+        packing: ProductPackingEntity?
     ) {
+        // 🔑 تغییر اصلی: ارسال 0 به جای packingId در حالت بدون بسته‌بندی
+        val packingId = packing?.packingId ?: 0
         onSave(
             finalUnit1,
             finalPackingValue,
-            packing!!.packingId,
+            packingId,
             detailId,
-            packing.productId
+            product.product.id
         )
         dismiss()
     }
@@ -204,13 +183,10 @@ class AddEditProductDialog(
 
         val savedValues = this.productValues[product.product.id]
         val unit1 = savedValues?.first ?: 0.0
-
-        // نمایش واحد (بدون تغییر)
         binding.etUnit1Value.setText(
             if (unit1 % 1 == 0.0) unit1.toInt().toString() else unit1.toString()
         )
 
-        // اگر مقدار صفر بود، خالی نمایش بده
         val packing = savedValues?.second ?: 0.0
         binding.etPackingValue.setText(
             when {
@@ -220,7 +196,9 @@ class AddEditProductDialog(
             }
         )
 
-        // TextWatchers بدون تغییر
+        // ✅ حذف خط اشتباه: binding.etPackingValue.isEnabled = (selectedPacking != null)
+        // به جای آن، enabled state فقط در اسپینر و observeCartData تنظیم شود
+
         watcherUnit1 = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -228,9 +206,7 @@ class AddEditProductDialog(
         }
 
         watcherPacking = object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-            }
-
+            override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
@@ -253,13 +229,26 @@ class AddEditProductDialog(
     }
 
     private fun setupSpinner(product: ProductWithPacking) {
-        val names = product.packings.map { it.packingName ?: "" }
-        val adapter = SpinnerAdapter(requireContext(), names.toMutableList())
+        binding.spProductPacking.setSelection(0)
+
+        val hasPackings = product.packings.isNotEmpty()
+        val spinnerItems = if (hasPackings) {
+            product.packings.map { it.packingName ?: "" }
+        } else {
+            listOf("بدون بسته‌بندی")
+        }
+
+        val adapter = SpinnerAdapter(requireContext(), spinnerItems.toMutableList())
         binding.spProductPacking.adapter = adapter
 
-        val default = product.packings.indexOfFirst { it.isDefault }
-        binding.spProductPacking.setSelection(if (default >= 0) default else 0)
+        val selectedIndex = if (hasPackings) {
+            val defaultIndex = product.packings.indexOfFirst { it.isDefault }
+            if (defaultIndex in 0 until spinnerItems.size) defaultIndex else 0
+        } else {
+            0
+        }
 
+        // ✅ تنظیم لیسنر قبل از setSelection برای جلوگیری از فراخوانی ناخواسته
         binding.spProductPacking.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -268,18 +257,34 @@ class AddEditProductDialog(
                     pos: Int,
                     id: Long
                 ) {
-                    selectedPacking = product.packings[pos]
-
-                    // پاک کردن کش
                     factorViewModel.productInputCache.remove(product.product.id)
 
-                    // باز محاسبه UI
+                    if (hasPackings) {
+                        selectedPacking = product.packings.getOrNull(pos)
+                        // ✅ فقط وقتی بسته‌بندی وجود دارد، فیلد فعال شود
+                        binding.etPackingValue.isEnabled = true
+                        binding.etPackingValue.isFocusable = true
+                        binding.etPackingValue.isFocusableInTouchMode = true
+                    } else {
+                        selectedPacking = null
+                        binding.etPackingValue.isEnabled = false
+                        binding.etPackingValue.isFocusable = false
+                        binding.etPackingValue.setText("")
+                    }
+
                     setupInputs(product)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
 
+        // ✅ setSelection بعد از تنظیم لیسنر
+        binding.spProductPacking.setSelection(selectedIndex, false)
+
+        // ✅ تنظیم اولیه enabled state بر اساس وجود بسته‌بندی
+        binding.etPackingValue.isEnabled = hasPackings
+        binding.etPackingValue.isFocusable = hasPackings
+        binding.etPackingValue.isFocusableInTouchMode = hasPackings
     }
 
     private fun observeCartData(productId: Int) {
@@ -294,82 +299,65 @@ class AddEditProductDialog(
                     if (productId == detail.productId) {
                         detailId = detail.id
 
+                        val hasCurrentPackings = currentProduct?.packings?.isNotEmpty() == true
+                        val hasPackingInDetail = detail.packingId != null && detail.packingId != 0
 
-                        // پیدا کردن packing ذخیره‌شده
-                        val savedPackingIndex = currentProduct?.packings
-                            ?.indexOfFirst { it.packingId == detail.packingId }
-                            ?: -1
+                        if (hasCurrentPackings) {
+                            var savedPackingIndex = currentProduct?.packings
+                                ?.indexOfFirst { it.packingId == detail.packingId }
+                                ?: -1
 
-                        if (savedPackingIndex >= 0) {
+                            if (savedPackingIndex < 0) {
+                                savedPackingIndex =
+                                    currentProduct?.packings?.indexOfFirst { it.isDefault }
+                                        ?: 0
+                            }
+
+                            if (savedPackingIndex !in 0 until (currentProduct?.packings?.size
+                                    ?: 0)
+                            ) {
+                                savedPackingIndex = 0
+                            }
+
                             binding.spProductPacking.setSelection(savedPackingIndex, false)
                             selectedPacking = currentProduct?.packings?.get(savedPackingIndex)
+
+                            // ✅ فعال‌سازی فیلد بسته‌بندی
+                            binding.etPackingValue.isEnabled = true
+                            binding.etPackingValue.isFocusable = true
+                            binding.etPackingValue.isFocusableInTouchMode = true
+                        } else {
+                            binding.spProductPacking.setSelection(0, false)
+                            selectedPacking = null
+
+                            // ✅ غیرفعال‌سازی فیلد بسته‌بندی
+                            binding.etPackingValue.isEnabled = false
+                            binding.etPackingValue.isFocusable = false
+                            binding.etPackingValue.setText("")
                         }
 
-                        //  خواندن از کش (مقادیر اصلی کاربر)
                         val cached = factorViewModel.productInputCache[detail.productId]
                         if (cached != null) {
-                            // مستقیماً از کش نمایش داده شود — این همان چیزی است که می‌خواهیم
                             updateProductValues(mapOf(productId to cached), productId, detailId)
-                            return@forEach // خروج زودهنگام برای جلوگیری از اجراي بقیه کد
+                            return@forEach
                         }
 
-                        // ✅ اولویت 2: اگر کش وجود نداشت، تجزیه با استفاده از packingId صحیح
-                        val packingForDetail =
-                            currentProduct?.packings?.find { it.packingId == detail.packingId }
-                        val packingSize = packingForDetail?.unit1Value ?: 0.0
-
+                        val packingSize = selectedPacking?.unit1Value ?: 0.0
                         val values = mutableMapOf<Int, Pair<Double, Double>>()
-                        if (packingSize > 0) {
-                            // 🔑 تجزیه صحیح: واحد باقیمانده + تعداد بسته‌های کامل
+                        if (packingSize > 0 && hasPackingInDetail && hasCurrentPackings) {
                             val totalUnits = detail.unit1Value
                             val packCount = floor(totalUnits / packingSize)
                             val looseUnits = totalUnits - (packCount * packingSize)
-
                             values[detail.productId] = Pair(looseUnits, packCount)
                         } else {
                             values[detail.productId] = Pair(detail.unit1Value, 0.0)
+                            binding.etPackingValue.setText("")
                         }
                         updateProductValues(values, productId, detailId)
                     }
                 }
             }
     }
-    /*
-        private fun observeCartData(productId: Int) {
-            val validFactorId = factorViewModel.currentFactorId.value
-                ?: factorViewModel.header.value?.id?.toLong() ?: return
-
-            if (validFactorId <= 0) return
-
-            factorViewModel.getFactorDetails(validFactorId.toInt())
-                .observe(viewLifecycleOwner) { details ->
-                    details.forEach { detail ->
-                        if (productId == detail.productId) {
-                            detailId = detail.id
-
-                            //  خواندن از کش (مقادیر اصلی کاربر)
-                            val cached = factorViewModel.productInputCache[detail.productId]
-                            if (cached != null) {
-                                // مستقیماً از کش نمایش داده شود
-                                updateProductValues(mapOf(productId to cached), productId, detailId)
-                            } else {
-                                //  اگر کش وجود نداشت، از دیتابیس بخوان و تجزیه کن (برای داده‌های قدیمی)
-                                val packingSize = detail.packing?.unit1Value ?: 0.0
-                                val values = mutableMapOf<Int, Pair<Double, Double>>()
-                                if (packingSize > 0) {
-                                    val pack = floor(detail.unit1Value / packingSize)
-                                    val unit = detail.unit1Value % packingSize
-                                    values[detail.productId] = Pair(unit, pack)
-                                } else {
-                                    values[detail.productId] = Pair(detail.unit1Value, 0.0)
-                                }
-                                updateProductValues(values, productId, detailId)
-                            }
-                        }
-                    }
-                }
-        }
-    */
 
     private fun updateProductValues(
         values: Map<Int, Pair<Double, Double>>,
@@ -378,15 +366,13 @@ class AddEditProductDialog(
     ) {
         this.productValues = values
         values[productId]?.let { (unit1Value, packingValue) ->
-            // نمایش واحد (بدون تغییر)
             binding.etUnit1Value.setText(
                 if (unit1Value % 1 == 0.0) unit1Value.toInt().toString() else unit1Value.toString()
             )
 
-            //  اگر مقدار صفر یا نزدیک به صفر بود، خالی نمایش بده
             binding.etPackingValue.setText(
                 when {
-                    packingValue < 0.001 -> "" // صفر یا نزدیک به صفر → خالی
+                    packingValue < 0.001 -> ""
                     packingValue % 1 == 0.0 -> packingValue.toInt().toString()
                     else -> packingValue.toString()
                 }
@@ -399,7 +385,6 @@ class AddEditProductDialog(
             if (result == null || mojoodiConsumed) return@observe
 
             when (result) {
-
                 is NetworkResult.Loading -> {
                     binding.tvConfirm.hide()
                     binding.pbConfirm.show()
@@ -424,9 +409,6 @@ class AddEditProductDialog(
 
                     val mojoodi = result.data.first()
 
-                    Log.d("mojoodifinalUnit1", finalUnit1.toString())
-                    Log.d("mojoodimojoodi", mojoodi.mojoodi.toString())
-
                     if (finalUnit1 > mojoodi.mojoodi) {
                         Toast.makeText(
                             context,
@@ -435,7 +417,7 @@ class AddEditProductDialog(
                         ).show()
                         resetUiState()
                     } else {
-                        saveProduct(finalUnit1, finalPackingValue, selectedPacking!!)
+                        saveProduct(finalUnit1, finalPackingValue, selectedPacking)
                         dismiss()
                     }
                 }
@@ -463,5 +445,4 @@ class AddEditProductDialog(
         val width = (resources.displayMetrics.widthPixels * 0.85).toInt()
         dialog?.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
-
 }

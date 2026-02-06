@@ -56,6 +56,7 @@
     <string name="label_description">توضیحات</string>
     <string name="label_product_description">توضیحات محصول :</string>
     <string name="label_unit_name">واحد:</string>
+    <string name="label_no_packing">بدون بسته‌بندی</string>
     <string name="label_rate">نرخ:</string>
     <string name="label_total">جمع</string>
     <string name="label_discount">تخفیف</string>

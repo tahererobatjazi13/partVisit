@@ -9,13 +9,17 @@ import androidx.core.content.ContextCompat
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.getColorAttr
 import com.partsystem.partvisitapp.databinding.ItemSpinnerBinding
+
 class SpinnerAdapter(
     context: Context,
     private val items: MutableList<String>
 ) : ArrayAdapter<String>(context, R.layout.item_spinner, items) {
 
     private val inflater = LayoutInflater.from(context)
+    var backColorOne: Int = 0
+    var backColorTwo: Int = 0
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = bindView(position, convertView, parent, false)
@@ -50,14 +54,17 @@ class SpinnerAdapter(
         }
 
         binding.tvName.text = items[position]
+        backColorOne = getColorAttr(context, R.attr.colorBasic)
+        backColorTwo = getColorAttr(context, R.attr.colorBackSurface)
 
         if (isDropdown) {
             binding.view.show()
-            val bgColor = if (position % 2 == 0)
-                ContextCompat.getColor(context, R.color.white)
-            else
-                ContextCompat.getColor(context, R.color.gray_dark)
-            binding.root.setBackgroundColor(bgColor)
+            if (position % 2 == 0) {
+                binding.root.setBackgroundColor(backColorOne)
+            } else {
+                binding.root.setBackgroundColor(backColorTwo)
+            }
+
         } else {
             binding.root.setBackgroundColor(ContextCompat.getColor(context, R.color.transparent))
             binding.view.gone()

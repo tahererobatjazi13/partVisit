@@ -80,7 +80,7 @@ class OfflineOrderDetailFragment : Fragment() {
         binding.rvOrderDetail.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            offlineOrderDetailAdapter = OfflineOrderDetailAdapter(factorViewModel)
+            offlineOrderDetailAdapter = OfflineOrderDetailAdapter()
             adapter = offlineOrderDetailAdapter
         }
     }

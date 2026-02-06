@@ -204,16 +204,16 @@ interface DiscountDao {
     ): Double?
 
 
-
-
     // Sum Unit1Value
-    @Query("""
+    @Query(
+        """
         SELECT SUM(Unit1Value) 
         FROM FactorDetail 
         WHERE FactorId = :factorId    AND productId = :productId
           AND IsGift = 0
           AND (:filterByProductIds = 0 OR ProductId IN (:productIds))
-    """)
+    """
+    )
     suspend fun sumUnit1Value(
         factorId: Int,
         productId: Int,
@@ -400,19 +400,24 @@ interface DiscountDao {
         productIdsSize: Int = productIds.size
     ): DiscountEshantyunResult
 
+
     @Query(
         """
-        SELECT DISTINCT p.id 
+        SELECT DISTINCT p.Id 
         FROM DiscountGroup AS g 
         INNER JOIN Product AS p 
-        ON p.saleGroupId = g.groupId 
-        AND (p.saleGroupDetailId = g.groupDetailId OR g.groupDetailId IS NULL) 
-        AND (p.saleRastehId = g.rastehId OR g.rastehId IS NULL)
-        WHERE g.discountId = :discountId 
-        AND p.id IN (:productIds)
+            ON p.SaleGroupId = g.GroupId 
+            AND (p.SaleGroupDetailId = g.GroupDetailId OR g.GroupDetailId IS NULL) 
+            AND (p.SaleRastehId = g.RastehId OR g.RastehId IS NULL  OR g.RastehId==0)
+        WHERE g.DiscountID = :discountId 
+        AND p.Id IN (:productIds)
     """
     )
-    fun getProductMatchDiscountGroup(discountId: Int, productIds: List<Int>): List<Int>
+    fun getProductMatchDiscountGroup(
+        discountId: Int,
+        productIds: List<Int>
+    ): List<Int>
+
 
     @Query("SELECT COUNT(*) FROM FactorDiscount")
     fun getCount(): LiveData<Int>

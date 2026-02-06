@@ -23,6 +23,6 @@ data class DiscountGroupsEntity(
     val discountId: Int,
     val kind: Int,
     val groupId: Int,
-    val groupDetailId: Int,
-    val rastehId: Int
+    val groupDetailId: Int?,
+    val rastehId: Int?
 )

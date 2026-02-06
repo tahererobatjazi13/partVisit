@@ -14,10 +14,10 @@ data class ProductWithPacking(
     val rate: Double,
 
     @ColumnInfo(name = "actVatPercent")
-    val vatPercent: Float,
+    val vatPercent: Double,
 
     @ColumnInfo(name = "actTollPercent")
-    val tollPercent: Float,
+    val tollPercent: Double,
 
     @ColumnInfo(name = "finalRate")
     val finalRate: Double,// قیمت نهایی VAT + Toll + Rate

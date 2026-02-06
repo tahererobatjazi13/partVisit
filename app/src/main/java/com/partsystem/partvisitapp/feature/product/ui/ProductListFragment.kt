@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
@@ -154,19 +155,102 @@ class ProductListFragment : Fragment() {
                 val action = ProductListFragmentDirections
                     .actionProductListFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
-            },
-            onClickDialog = { product ->
-                var productRate = 0.0
-                var productIdExistingDetail = 0
-                var maxId = 0
 
-                /*    // دریافت نرخ محصول
-                    factorViewModel.getProductByActId(
-                        product.product.id,
-                        factorViewModel.factorHeader.value?.actId!!
-                    ).observeForever { product ->
-                        productRate = product.rate
-                    }*/
+            }, onClickDialog = { product ->
+                // 1. تمام داده‌های مورد نیاز را به صورت suspend جمع‌آوری کنید
+                lifecycleScope.launch {
+                    val factorHeader = factorViewModel.factorHeader.value ?: return@launch
+
+                    val productWithRate =
+                        factorViewModel.getProductRate(product.product.id, factorHeader.actId!!)
+                    if (productWithRate == null) {
+                        Toast.makeText(
+                            requireContext(),
+                            "خطا در دریافت اطلاعات محصول",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@launch
+                    }
+                    val productRate = productWithRate
+
+                    // بررسی وجود ردیف قبلی
+                    val existingDetail = try {
+                        factorViewModel.getExistingFactorDetail(factorHeader.id!!, product.product.id)
+                    } catch (e: Exception) {
+                        null
+                    }
+
+
+                    // دریافت maxId برای ایجاد ردیف جدید
+                    val maxId = if (factorViewModel.getCount().value ?: 0 > 0) {
+                        factorViewModel.getMaxFactorDetailId().value ?: 0
+                    } else {
+                        0
+                    }
+
+                    // 2. نمایش دیالوگ با داده‌های آماده
+                    val dialog = AddEditProductDialog(
+                        productViewModel,
+                        product
+                    ) { finalUnit1, finalPackingValue, packingId, _, _ ->
+                        // 3. ایجاد یا به‌روزرسانی ردیف در ViewModel
+                        lifecycleScope.launch {
+                            val validFactorId = factorViewModel.currentFactorId.value
+                                ?: args.factorId.toLong()
+
+                            // ایجاد entity با مقادیر محاسبه‌شده
+                            val detail = FactorDetailEntity(
+                                id = existingDetail?.id ?: (maxId + 1),
+                                factorId = validFactorId.toInt(),
+                                sortCode = existingDetail?.sortCode ?: (maxId + 1),
+                                anbarId = factorHeader.defaultAnbarId,
+                                productId = product.product.id,
+                                actId = factorHeader.actId,
+                                unit1Value = finalUnit1,
+                                packingValue = finalPackingValue,
+                                unit2Value = 0.0,
+                                price = Math.round(productRate * finalUnit1).toDouble(),
+                                packingId = packingId,
+                                vat = 0.0,
+                                unit1Rate = productRate,
+                                isGift = 0
+                            )
+
+                            // ذخیره‌سازی و محاسبه تخفیف در ViewModel
+
+                            factorViewModel.saveProductWithDiscounts(
+                                detail = detail,
+                                factorHeader = factorHeader,
+                                productRate = productRate,
+                                vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
+                                tollPercent = product.tollPercent
+                            )
+                        }
+                    }
+
+                    // نمایش دیالوگ
+                    val fm = childFragmentManager
+                    fm.findFragmentByTag("AddRawProductDialog")?.let {
+                        fm.beginTransaction().remove(it).commitAllowingStateLoss()
+                    }
+                    dialog.show(fm, "AddRawProductDialog")
+                }
+            }
+            /*
+                        onClickDialog = { product ->
+                            var productRate = 0.0
+                            var productIdExistingDetail = 0
+                            var maxId = 0
+
+                            */
+            /*    // دریافت نرخ محصول
+                                factorViewModel.getProductByActId(
+                                    product.product.id,
+                                    factorViewModel.factorHeader.value?.actId!!
+                                ).observeForever { product ->
+                                    productRate = product.rate
+                                }*//*
+
 
                 // دریافت نرخ محصول
                 factorViewModel.getProductByActId(
@@ -336,6 +420,7 @@ class ProductListFragment : Fragment() {
                 }
                 dialog.show(fm, "AddRawProductDialog")
             }
+*/
         )
     }
 
@@ -354,7 +439,7 @@ class ProductListFragment : Fragment() {
         factorViewModel.getFactorDetails(validFactorId.toInt())
             .observe(viewLifecycleOwner) { details ->
                 // 🔑 فیلتر نهایی: فقط ردیف‌های عادی (غیر هدیه)
-                val nonGiftDetails = details.filter { it.isGift!=1 }
+                val nonGiftDetails = details.filter { it.isGift != 1 }
 
                 val values = mutableMapOf<Int, Pair<Double, Double>>()
                 nonGiftDetails.forEach { detail ->
@@ -376,36 +461,36 @@ class ProductListFragment : Fragment() {
                 productListAdapter.updateProductValues(values)
             }
     }
-/*
-    private fun observeCartData() {
-        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-        if (validFactorId <= 0) return
+    /*
+        private fun observeCartData() {
+            val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+            if (validFactorId <= 0) return
 
-        factorViewModel.getFactorDetails(validFactorId.toInt())
-            .observe(viewLifecycleOwner) { details ->
-                val values = mutableMapOf<Int, Pair<Double, Double>>()
-                details.forEach { detail ->
-                    // ✅ فقط از کش بخوان، اما کش را با مقادیر تجزیه‌شده آپدیت نکن!
-                    val cached = factorViewModel.productInputCache[detail.productId]
-                    if (cached != null) {
-                        values[detail.productId] = cached
-                    } else {
-                        // فقط برای نمایش در لیست، تجزیه کن (کش را تغییر نده)
-                        val packingSize = detail.packing?.unit1Value ?: 0.0
-                        if (packingSize > 0) {
-                            val pack = floor(detail.unit1Value / packingSize)
-                            val unit = detail.unit1Value % packingSize
-                            values[detail.productId] = Pair(unit, pack)
+            factorViewModel.getFactorDetails(validFactorId.toInt())
+                .observe(viewLifecycleOwner) { details ->
+                    val values = mutableMapOf<Int, Pair<Double, Double>>()
+                    details.forEach { detail ->
+                        // ✅ فقط از کش بخوان، اما کش را با مقادیر تجزیه‌شده آپدیت نکن!
+                        val cached = factorViewModel.productInputCache[detail.productId]
+                        if (cached != null) {
+                            values[detail.productId] = cached
                         } else {
-                            values[detail.productId] = Pair(detail.unit1Value, 0.0)
+                            // فقط برای نمایش در لیست، تجزیه کن (کش را تغییر نده)
+                            val packingSize = detail.packing?.unit1Value ?: 0.0
+                            if (packingSize > 0) {
+                                val pack = floor(detail.unit1Value / packingSize)
+                                val unit = detail.unit1Value % packingSize
+                                values[detail.productId] = Pair(unit, pack)
+                            } else {
+                                values[detail.productId] = Pair(detail.unit1Value, 0.0)
+                            }
                         }
                     }
+                    productListAdapter.updateProductValues(values)
+                    // ❌ هرگز این خط را اضافه نکنید: factorViewModel.productInputCache.putAll(values)
                 }
-                productListAdapter.updateProductValues(values)
-                // ❌ هرگز این خط را اضافه نکنید: factorViewModel.productInputCache.putAll(values)
-            }
-    }
-*/
+        }
+    */
 
     private fun observeData() {
         if (args.fromFactor) {

@@ -148,14 +148,7 @@ interface PatternDao {
     @Query("SELECT * FROM Pattern WHERE Id = :id")
     suspend fun getPattern(id: Int): PatternEntity?
 
-    @Query(
-        """
-        SELECT * FROM PatternDetail
-        WHERE patternId = :patternId
-    """
-    )
-     fun getPatternDetailById(
-        patternId: Int,
-    ): List<PatternDetailEntity>
+    @Query("SELECT * FROM PatternDetail WHERE patternId = :patternId")
+    suspend fun getPatternDetailById(patternId: Int): List<PatternDetailEntity>
 
 }

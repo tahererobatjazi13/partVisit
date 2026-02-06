@@ -50,5 +50,5 @@ fun ReportFactorDto.getPackingValueFormatted(): String {
     val remainText =
         if (remain % 1 == 0.0) remain.toInt().toString() else remain.toString()
 
-    return "$fullPacks:$remainText"
+    return "$remainText:$fullPacks"
 }

@@ -5,14 +5,15 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import java.text.DecimalFormat
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.utils.extensions.clean
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.getColorAttr
 import com.partsystem.partvisitapp.core.utils.getColorFromAttr
 import com.partsystem.partvisitapp.databinding.ItemOrderDetailBinding
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
@@ -23,6 +24,7 @@ class OrderAdapter(
     private val onClickDialog: (FactorDetailUiModel) -> Unit = {},
     private val onDelete: (FactorDetailUiModel) -> Unit,
 ) : ListAdapter<FactorDetailUiModel, OrderAdapter.OrderViewHolder>(OrderDiffCallback()) {
+    var backColorGift: Int = 0
 
     private val formatter = DecimalFormat("#,###,###,###")
 
@@ -31,6 +33,8 @@ class OrderAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorDetailUiModel) = with(binding) {
+            val context = binding.root.context
+
             if (bindingAdapterPosition % 2 == 0) {
                 binding.root.setBackgroundColor(
                     itemView.context.getColorFromAttr(R.attr.colorBasic)
@@ -40,33 +44,49 @@ class OrderAdapter(
                     itemView.context.getColorFromAttr(R.attr.colorRow)
                 )
             }
+
+            backColorGift = getColorAttr(context, R.attr.colorGift)
+
             if (item.isGift == 1) {
                 binding.ivDelete.gone()
-                binding.root.setBackgroundColor(
-                    ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.yellow_FFEB3B
-                    )
-                )
+                binding.root.setBackgroundColor(backColorGift)
             } else binding.ivDelete.show()
 
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
-            tvPackingName.text = item.packingName
-            tvPackingValue.text = item.getPackingValueFormatted()
             tvUnitName.text = item.unit1Name
 
-            tvRate1.text = formatter.format(item.unit1Rate) + " ریال"
-            val total = item.unit1Rate * item.unit1Value
-            val displayUnit1 = item.unit1Value
-
-            val unit1Text = if (displayUnit1 % 1 == 0.0) {
-                item.unit1Value.toInt().toString()
+            if (item.packingId == 0) {
+                // بدون بسته‌بندی
+                tvPackingName.text = itemView.context.getString(R.string.label_no_packing)
             } else {
-                item.unit1Value.toString()
+                // با بسته‌بندی
+                tvPackingName.text = item.packingName
             }
-            tvUnitValue.text = unit1Text
+            tvPackingValue.text = item.getPackingValueFormatted()
 
-            if (item.discountPrice > 0) {
+            tvRate1.text = formatter.format(item.unit1Rate) + " ریال"
+            tvUnitValue.text = item.unit1Value.clean()
+            val total = item.unit1Rate * item.unit1Value
+
+            if (item.vat != null && item.vat > 0) {
+
+                clVat.show()
+
+                tvVat.text = formatter.format(item.vat) + " مالیات"
+
+                if (item.discountPrice > 0) {
+                    tvPriceAfterVat.text =
+                        formatter.format((total - item.discountPrice) + item.vat) + " م.بعداز مالیات"
+                } else {
+                    tvPriceAfterVat.text =
+                        formatter.format(item.vat + total) + " م.بعداز مالیات"
+                }
+
+            } else {
+                clVat.gone()
+            }
+
+            if (item.discountPrice != null && item.discountPrice > 0) {
                 clDiscountPrice.show()
                 tvSumPrice.show()
 
@@ -81,7 +101,6 @@ class OrderAdapter(
                 tvSumPrice.text = formatter.format(total) + " ریال"
 
             } else {
-
                 binding.clDiscountPrice.gone()
                 tvSumPrice.show()
                 tvSumPrice.paintFlags =
@@ -89,17 +108,6 @@ class OrderAdapter(
                 tvSumPrice.text = formatter.format(total) + " ریال"
             }
 
-            if (item.vat > 0) {
-                tvVat.show()
-                tvPriceAfterVat.show()
-
-                tvVat.text = formatter.format(item.vat) + " مالیات"
-                tvPriceAfterVat.text =
-                    formatter.format(item.vat + total) + " م.بعداز مالیات"
-            } else {
-                tvVat.gone()
-                tvPriceAfterVat.gone()
-            }
             ivDelete.setOnClickListener { onDelete(item) }
             itemView.setOnClickListener { onClickDialog(item) }
 

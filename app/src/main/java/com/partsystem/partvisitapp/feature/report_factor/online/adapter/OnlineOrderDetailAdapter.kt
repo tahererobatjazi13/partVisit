@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +13,7 @@ import com.partsystem.partvisitapp.feature.report_factor.online.model.ReportFact
 import com.partsystem.partvisitapp.core.utils.extensions.clean
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.getColorAttr
 import com.partsystem.partvisitapp.core.utils.getColorFromAttr
 import com.partsystem.partvisitapp.databinding.ItemOrderDetailBinding
 import com.partsystem.partvisitapp.feature.report_factor.online.model.getPackingValueFormatted
@@ -24,6 +24,7 @@ class OnlineOrderDetailAdapter :
         OnlineOrderDetailDiffCallback()
     ) {
     private val formatter = DecimalFormat("#,###,###,###")
+    var backColorGift: Int = 0
 
     inner class OnlineOrderDetailViewHolder(val binding: ItemOrderDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -31,6 +32,7 @@ class OnlineOrderDetailAdapter :
         @SuppressLint("SetTextI18n")
         fun bind(item: ReportFactorDto) = with(binding) {
             binding.clDelete.gone()
+            val context = binding.root.context
 
             if (bindingAdapterPosition % 2 == 0) {
                 binding.root.setBackgroundColor(
@@ -42,24 +44,39 @@ class OnlineOrderDetailAdapter :
                 )
             }
 
+            backColorGift = getColorAttr(context, R.attr.colorGift)
+
             if (item.isGift) {
-                binding.root.setBackgroundColor(
-                    ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.yellow_FFEB3B
-                    )
-                )
+                binding.root.setBackgroundColor(backColorGift)
             }
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
-            tvPackingName.text = item.packingName
-            tvPackingValue.text = item.getPackingValueFormatted()
             tvUnitName.text = item.unitName
+
+            if (item.packingName == null && item.packingCode == null) {
+                // بدون بسته‌بندی
+                tvPackingName.text = itemView.context.getString(R.string.label_no_packing)
+
+            } else {
+                // با بسته‌بندی
+                tvPackingName.text = item.packingName
+            }
+            tvPackingValue.text = item.getPackingValueFormatted()
+
             tvRate1.text = formatter.format(item.rate1) + " ریال"
             tvUnitValue.text = item.unit1Value!!.clean()
 
+            if (item.vat != null && item.vat > 0) {
+                clVat.show()
+
+                tvVat.text = formatter.format(item.vat) + " مالیات"
+                tvPriceAfterVat.text = formatter.format(item.priceAfterVat) + " م.بعداز مالیات"
+
+            } else {
+                clVat.gone()
+            }
+
             if (item.discountPrice != null && item.discountPrice > 0) {
-                tvDiscountPrice.show()
-                tvPriceAfterDiscount.show()
+                clDiscountPrice.show()
                 tvSumPrice.show()
 
                 tvDiscountPrice.text = formatter.format(item.discountPrice) + " تخفیف"
@@ -73,23 +90,11 @@ class OnlineOrderDetailAdapter :
             } else {
 
                 tvSumPrice.show()
-                tvDiscountPrice.gone()
-                tvPriceAfterDiscount.gone()
+                clDiscountPrice.gone()
                 tvSumPrice.paintFlags = tvSumPrice.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 tvSumPrice.text = formatter.format(item.price) + " ریال"
             }
 
-            if (item.vat != null && item.vat > 0) {
-                tvVat.show()
-                tvPriceAfterVat.show()
-
-                tvVat.text = formatter.format(item.vat) + " مالیات"
-                tvPriceAfterVat.text = formatter.format(item.priceAfterVat) + " م.بعداز مالیات"
-
-            } else {
-                tvVat.gone()
-                tvPriceAfterVat.gone()
-            }
 
             if (bindingAdapterPosition < itemCount - 1) {
                 view.show()

@@ -172,7 +172,7 @@ interface FactorDao {
         suspend fun getMaxSortCode(factorId: Int): Int
 
         // 🔑 Upsert ترانزکشنی (اگر وجود داشت آپدیت، در غیر اینصورت اینزرت با sortCode جدید)
-        @Transaction
+      /*  @Transaction
         suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
             // چک کردن وجود ردیف با همان فاکتور و محصول
             val existing = getDetailByFactorAndProduct(
@@ -199,7 +199,44 @@ interface FactorDao {
         suspend fun insert(detail: FactorDetailEntity): Long
 
         @Update
-        suspend fun update(detail: FactorDetailEntity)
+        suspend fun update(detail: FactorDetailEntity)*/
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(detail: FactorDetailEntity): Long // rowId
+
+    @Update
+    suspend fun update(detail: FactorDetailEntity)
+
+/*    @Transaction
+    suspend fun upsertFactorDetail(detail: FactorDetailEntity): Long {
+        val existing = getDetailByFactorAndProduct(detail.factorId, detail.productId)
+        return if (existing != null) {
+            update(existing.copy( id = existing.id,
+                sortCode = existing.sortCode))
+            existing.id.toLong()
+        } else {
+            val nextSort = getMaxSortCode(detail.factorId) + 1
+            insert(detail.copy(id = 0, sortCode = nextSort)) // id=0 → Room auto-generate
+        }
+    }*/
+
+    @Transaction
+    suspend fun upsertFactorDetail(detail: FactorDetailEntity): Long {
+        val existing = getDetailByFactorAndProduct(detail.factorId, detail.productId)
+        return if (existing != null) {
+            // ✅ از داده‌های جدید (detail) استفاده کنید و فقط id و sortCode را از موجود کپی کنید
+            val updated = detail.copy(
+                id = existing.id,
+                sortCode = existing.sortCode
+            )
+            update(updated)
+            existing.id.toLong()
+        } else {
+            val nextSort = getMaxSortCode(detail.factorId) + 1
+            insert(detail.copy(id = 0, sortCode = nextSort))
+        }
+    }
 
         @Query("""
         SELECT * FROM FactorDetail 
@@ -245,6 +282,7 @@ interface FactorDao {
         fd.id,
         fd.unit1Value,
         fd.unit2Value,
+        fd.packingId,
         fd.packingValue,
         fd.isGift,
         fd.unit1Rate,
@@ -498,4 +536,25 @@ interface FactorDao {
         insertFactorDiscount(discount)
         gifts.forEach { insertFactorGift(it) }
     }
+
+
+    // در FactorDao
+    @Query("""
+    SELECT IFNULL(SUM(fd.Price), 0) 
+    FROM FactorDiscount fd
+    JOIN Discount d ON fd.DiscountId = d.Id
+    WHERE fd.FactorDetailId = :detailId 
+    AND d.Kind = 0  -- DiscountKind.Discount
+""")
+    suspend fun getTotalDiscountForDetail(detailId: Int): Double?
+
+    @Query("""
+    SELECT IFNULL(SUM(fd.Price), 0) 
+    FROM FactorDiscount fd
+    JOIN Discount d ON fd.DiscountId = d.Id
+    WHERE fd.FactorDetailId = :detailId 
+    AND d.Kind = 1  -- DiscountKind.Addition
+""")
+    suspend fun getTotalAdditionForDetail(detailId: Int): Double?
+
 }

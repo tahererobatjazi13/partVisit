@@ -6,32 +6,34 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import androidx.lifecycle.viewModelScope
-import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.Event
-import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
-import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
-import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
-import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorDetailDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorDiscountDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorGiftDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
+import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.feature.create_order.repository.DiscountRepository
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @HiltViewModel
 class FactorViewModel @Inject constructor(
@@ -114,6 +116,13 @@ class FactorViewModel @Inject constructor(
 
     fun getProductByActId(productId: Int, actId: Int): LiveData<ProductWithPacking> {
         return productRepository.getProductByActId2(productId, actId).asLiveData()
+    }
+
+
+    suspend fun getProductRate(productId: Int, actId: Int): Double? {
+        return productRepository.getProductByActId2(productId, actId)
+            .map { it.rate }
+            .firstOrNull()
     }
 
     suspend fun updateFactorHeader(header: FactorHeaderEntity) =
@@ -389,6 +398,7 @@ class FactorViewModel @Inject constructor(
         return factorRepository.getMaxFactorDetailId()
     }
 
+
     fun getCount(): LiveData<Int> {
         return factorRepository.getCount()
     }
@@ -399,6 +409,11 @@ class FactorViewModel @Inject constructor(
     ): LiveData<FactorDetailEntity> {
         return factorRepository.getFactorDetailByFactorIdAndProductId(factorId, productId)
             .asLiveData()
+    }
+
+    suspend fun getExistingFactorDetail(factorId: Int, productId: Int): FactorDetailEntity? {
+        return factorRepository.getFactorDetailByFactorIdAndProductIdAsFlow(factorId, productId)
+            .firstOrNull()
     }
 
 //    private val _currentFactorId = MutableLiveData<Int>()
@@ -443,4 +458,95 @@ class FactorViewModel @Inject constructor(
             )
         }
     }
+/*
+    suspend fun saveProductWithDiscounts(
+        detail: FactorDetailEntity,
+        factorHeader: FactorHeaderEntity,
+        productRate: Double
+    ) {
+        // 1. ابتدا FactorDetail را ذخیره کن و id واقعی آن را بگیر
+        val savedDetailId = factorRepository.addOrUpdateDetail(detail)
+
+        // 2. حالا detail ذخیره شده — id آن معتبر است
+        val savedDetail = detail.copy(id = savedDetailId)
+
+        // 3. حالا می‌توانیم تخفیف را ذخیره کنیم
+        discountRepository.calculateDiscountInsert(
+            applyKind = DiscountApplyKind.ProductLevel.ordinal,
+            factorHeader = factorHeader,
+            factorDetail = savedDetail
+        )
+    }*/
+
+    suspend fun saveProductWithDiscounts(
+        detail: FactorDetailEntity,
+        factorHeader: FactorHeaderEntity,
+        productRate: Double,
+        vatPercent: Double,
+        tollPercent: Double
+    ) = withContext(Dispatchers.IO) {
+        // 1. ذخیره اولیه ردیف (بدون VAT صحیح)
+        val savedDetailId = factorRepository.addOrUpdateDetail(detail)
+        val savedDetail = detail.copy(id = savedDetailId)
+
+        // 2. اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
+        discountRepository.calculateDiscountInsert(
+            applyKind = DiscountApplyKind.ProductLevel.ordinal,
+            factorHeader = factorHeader,
+            factorDetail = savedDetail
+        )
+
+        // 3. بازیابی مجموع تخفیف‌ها و اضافات از دیتابیس
+        val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
+        val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
+
+        // 4. محاسبه قیمت پس از تخفیف
+        val priceAfterDiscount = Math.round(savedDetail.price - totalDiscount + totalAddition)
+
+        Log.d("Mathround1",savedDetail.price.toString())
+        Log.d("Mathround2",totalDiscount.toString())
+        Log.d("Mathround3",totalAddition.toString())
+
+        // 5. محاسبه VAT و Toll بر اساس قیمت پس از تخفیف
+        Log.d("Mathround4",vatPercent.toString())
+        Log.d("Mathround5",priceAfterDiscount.toString())
+
+        val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
+        val toll = Math.round(tollPercent * priceAfterDiscount).toDouble()
+        Log.d("Mathround6",vat.toString())
+
+        // 6. به‌روزرسانی نهایی ردیف با مقادیر صحیح
+        val updatedDetail = savedDetail.copy(
+            vat = vat
+        )
+
+        factorRepository.updateFactorDetail(updatedDetail)
+    }
+/*
+    fun saveProductWithDiscounts(
+        detail: FactorDetailEntity,
+        factorHeader: FactorHeaderEntity,
+        productRate: Double,
+        hasExistingDetail: Boolean
+    ) {
+        viewModelScope.launch {
+            // 1. به‌روزرسانی هدر (یک بار)
+            if (!factorHeader.hasDetail) {
+                updateFactorHeader(factorHeader.copy(hasDetail = true))
+            }
+
+            // 2. ذخیره‌سازی ردیف (خودکار تشخیص اینزرت/آپدیت)
+            addOrUpdateProduct(detail)
+
+            // 3. محاسبه و ذخیره تخفیف‌ها
+            onProductConfirmed(
+                applyKind = DiscountApplyKind.ProductLevel.ordinal,
+                factorHeader = factorHeader,
+                factorDetail = detail
+            )
+
+            // 4. نوتیفیکیشن موفقیت (اختیاری)
+         //   _uiMessage.value = "محصول با موفقیت ${if (hasExistingDetail) "ویرایش" else "افزوده"} شد"
+        }
+    }*/
 }

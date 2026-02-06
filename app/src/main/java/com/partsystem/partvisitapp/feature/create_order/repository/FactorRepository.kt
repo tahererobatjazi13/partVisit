@@ -11,6 +11,7 @@ import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.ErrorHandler
 import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
 import com.partsystem.partvisitapp.feature.create_order.model.ApiResponse
@@ -18,12 +19,15 @@ import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequest
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderDbModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FactorRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: ApiService,
+    private val discountRepository: DiscountRepository,
     private val factorDao: FactorDao,
 ) {
 
@@ -86,6 +90,12 @@ class FactorRepository @Inject constructor(
         return factorDao.getFactorDetailByFactorIdAndProductId(factorId, productId)
     }
 
+    fun getFactorDetailByFactorIdAndProductIdAsFlow(
+        factorId: Int,
+        productId: Int
+    ): Flow<FactorDetailEntity?> {
+        return factorDao.getFactorDetailByFactorIdAndProductId(factorId, productId)
+    }
     suspend fun saveFactorGift(gift: FactorGiftInfoEntity): Long = factorDao.insertFactorGift(gift)
     suspend fun getFactorGifts(factorId: Int) = factorDao.getFactorGifts(factorId)
 
@@ -206,9 +216,11 @@ class FactorRepository @Inject constructor(
     /*  fun getDetails(factorId: Int): LiveData<List<FactorDetailEntity>> =
           factorDao.getDetailsByFactorId(factorId)
 */
+/*
     suspend fun addOrUpdateDetail(
         detail: FactorDetailEntity
-        /* factorId: Int,
+        */
+/* factorId: Int,
          productId: Int,
          actId: Int?,
          anbarId: Int?,
@@ -218,7 +230,8 @@ class FactorRepository @Inject constructor(
          price: Double,
          packingId: Int,
          vat: Double,
-         unit1Rate: Double*/
+         unit1Rate: Double*//*
+
     ) {
 
         val existing =
@@ -268,5 +281,83 @@ class FactorRepository @Inject constructor(
             )
             factorDao.upsertFactorDetail(detail)
         }
+    }
+*/
+
+    /*suspend fun saveFactorDetailWithDiscounts(
+        detail: FactorDetailEntity,
+        factorHeader: FactorHeaderEntity,
+        applyKind: Int = DiscountApplyKind.ProductLevel.ordinal
+    ) {
+        // 1. ذخیره ردیف
+        addOrUpdateDetail(detail)
+
+        // 2. محاسبه و ذخیره تخفیف‌ها
+        discountRepository.calculateDiscountInsert(applyKind, factorHeader, detail)
+    }*/
+    suspend fun addOrUpdateDetail(detail: FactorDetailEntity): Int {
+        return withContext(Dispatchers.IO) {
+            val existing = factorDao.getDetailByFactorAndProduct(detail.factorId, detail.productId)
+            if (existing != null) {
+                val updated = existing.copy(
+                    unit1Value = detail.unit1Value,
+                    packingValue = detail.packingValue,
+                    packingId = detail.packingId,
+                    price = detail.price,
+                    vat = detail.vat,
+                    unit1Rate = detail.unit1Rate
+                )
+                factorDao.update(updated) // فقط متد ساده update فراخوانی شود
+                updated.id
+            } else {
+                val nextSortCode = factorDao.getMaxSortCode(detail.factorId) + 1
+                factorDao.insert(detail.copy(id = 0, sortCode = nextSortCode)).toInt()
+            }
+        }
+    }
+
+/*
+    suspend fun addOrUpdateDetail(detail: FactorDetailEntity): Int {
+        return withContext(Dispatchers.IO) {
+            val existing = factorDao.getDetailByFactorAndProduct(detail.factorId, detail.productId)
+
+            if (existing != null) {
+                // Update
+                val updated = existing.copy(
+                    unit1Value = detail.unit1Value,
+                    packingValue = detail.packingValue,
+                    packingId = detail.packingId,
+                    price = detail.price,
+                    vat = detail.vat,
+                    unit1Rate = detail.unit1Rate
+                )
+                factorDao.upsertFactorDetail(updated)
+                updated.id // 👈 id موجود
+            } else {
+                // Insert
+                val nextSortCode = factorDao.getMaxSortCode(detail.factorId) + 1
+                val newDetail = detail.copy(
+                    id = 0, // Room خودش id تولید می‌کند
+                    sortCode = nextSortCode
+                )
+                val insertedId = factorDao.upsertFactorDetail(newDetail).toInt() // برگرداندن id جدید
+                insertedId
+            }
+        }
+    }
+*/
+
+
+    // در FactorRepository
+    suspend fun getTotalDiscountForDetail(detailId: Int): Double = withContext(Dispatchers.IO) {
+        factorDao.getTotalDiscountForDetail(detailId) ?: 0.0
+    }
+
+    suspend fun getTotalAdditionForDetail(detailId: Int): Double = withContext(Dispatchers.IO) {
+        factorDao.getTotalAdditionForDetail(detailId) ?: 0.0
+    }
+
+    suspend fun updateFactorDetail(detail: FactorDetailEntity) = withContext(Dispatchers.IO) {
+        factorDao.updateFactorDetail(detail)
     }
 }
