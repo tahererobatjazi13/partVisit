@@ -20,10 +20,12 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
+import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.databinding.FragmentProductListBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.dialog.AddEditProductDialog
@@ -175,7 +177,10 @@ class ProductListFragment : Fragment() {
 
                     // بررسی وجود ردیف قبلی
                     val existingDetail = try {
-                        factorViewModel.getExistingFactorDetail(factorHeader.id!!, product.product.id)
+                        factorViewModel.getExistingFactorDetail(
+                            factorHeader.id!!,
+                            product.product.id
+                        )
                     } catch (e: Exception) {
                         null
                     }
@@ -202,7 +207,7 @@ class ProductListFragment : Fragment() {
                             val detail = FactorDetailEntity(
                                 id = existingDetail?.id ?: (maxId + 1),
                                 factorId = validFactorId.toInt(),
-                                sortCode = existingDetail?.sortCode ?: (maxId + 1),
+                                sortCode = 0,
                                 anbarId = factorHeader.defaultAnbarId,
                                 productId = product.product.id,
                                 actId = factorHeader.actId,
@@ -550,12 +555,13 @@ class ProductListFragment : Fragment() {
     private fun setupSearch() {
         if (args.fromFactor) {
             binding.etSearch.addTextChangedListener { editable ->
-                val query = editable.toString()
+                val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
                 productViewModel.filterProductsWithAct(query)
             }
         } else {
+
             binding.etSearch.addTextChangedListener { editable ->
-                val query = editable.toString()
+                val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
                 productViewModel.filterProducts(query)
             }
         }

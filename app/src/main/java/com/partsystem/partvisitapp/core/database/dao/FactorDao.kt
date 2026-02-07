@@ -167,9 +167,14 @@ interface FactorDao {
     suspend fun getMaxSortCode(factorId: Int): Int
 */
 
-    // 🔑 دریافت بعدین sortCode برای فاکتور جاری
-        @Query("SELECT IFNULL(MAX(sortCode), 0) FROM FactorDetail WHERE factorId = :factorId")
-        suspend fun getMaxSortCode(factorId: Int): Int
+    //  دریافت بعدین sortCode برای فاکتور جاری
+     @Query("SELECT COALESCE(MAX(sortCode), 0) FROM FactorDetail WHERE factorId = :factorId")
+    suspend fun getMaxSortCode(factorId: Int): Int
+
+
+    // در FactorDao.kt
+    @Query("UPDATE FactorDetail SET vat = :vat WHERE id = :id")
+    suspend fun updateVat(id: Int, vat: Double)
 
         // 🔑 Upsert ترانزکشنی (اگر وجود داشت آپدیت، در غیر اینصورت اینزرت با sortCode جدید)
       /*  @Transaction
@@ -179,6 +184,7 @@ interface FactorDao {
                 detail.factorId,
                 detail.productId
             )
+
 
             if (existing != null) {
                 // آپدیت ردیف موجود (بدون تغییر sortCode)

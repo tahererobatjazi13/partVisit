@@ -13,11 +13,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.databinding.BottomSheetCustomerListBinding
 import com.partsystem.partvisitapp.feature.create_order.bottomSheet.adapter.CustomerBottomSheetAdapter
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
@@ -156,7 +158,7 @@ class CustomerListBottomSheet(
 
     private fun setupSearch() {
         binding.etSearch.addTextChangedListener { editable ->
-            val query = editable.toString()
+            val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
             customerViewModel.filterCustomers(query)
         }
     }

@@ -14,11 +14,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
+import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.databinding.FragmentCustomerListBinding
 import com.partsystem.partvisitapp.feature.customer.dialog.AddEditCustomerDialog
 import com.partsystem.partvisitapp.feature.customer.ui.adapter.CustomerListAdapter
@@ -181,7 +183,7 @@ class CustomerListFragment : Fragment() {
 
     private fun setupSearch() {
         binding.etSearch.addTextChangedListener { editable ->
-            val query = editable.toString()
+            val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
             customerViewModel.filterCustomers(query)
         }
     }

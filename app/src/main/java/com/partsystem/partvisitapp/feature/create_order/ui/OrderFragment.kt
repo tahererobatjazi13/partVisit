@@ -16,7 +16,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
+import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -152,11 +154,13 @@ class OrderFragment : Fragment() {
 
                     is NetworkResult.Error -> {
                         binding.bmbSendOrder.checkShowPbOne(false)
-                        Toast.makeText(
-                            requireContext(),
+
+                        CustomSnackBar.make(
+                            requireActivity().findViewById(android.R.id.content),
                             result.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            SnackBarType.Error.value
+                        )?.show()
+
                     }
                 }
             }

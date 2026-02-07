@@ -87,7 +87,7 @@ class FactorViewModel @Inject constructor(
         finalPrice: Double? = null,
         productSelectionType: String? = null,
 
-    ) {
+        ) {
         val current = factorHeader.value ?: FactorHeaderEntity()
         factorHeader.value = current.copy(
             customerId = customerId ?: current.customerId,
@@ -107,7 +107,7 @@ class FactorViewModel @Inject constructor(
             finalPrice = finalPrice ?: current.finalPrice,
             productSelectionType = productSelectionType ?: current.productSelectionType,
 
-        )
+            )
     }
 
     fun loadProduct(productId: Int, actId: Int): ProductWithPacking? {
@@ -443,41 +443,78 @@ class FactorViewModel @Inject constructor(
 
         viewModelScope.launch {
 
-            factorRepository.addOrUpdateDetail(detail
-            /*    factorId = factorId,
-                productId = productId,
-                actId = actId,
-                anbarId = anbarId,
-                unit1Value = unit1Value,
-                packingValue = packingValue,
-                unit2Value = unit2Value,
-                price = price,
-                packingId = packingId,
-                vat = vat,
-                unit1Rate = unit1Rate,*/
+            factorRepository.addOrUpdateDetail(
+                detail
+                /*    factorId = factorId,
+                    productId = productId,
+                    actId = actId,
+                    anbarId = anbarId,
+                    unit1Value = unit1Value,
+                    packingValue = packingValue,
+                    unit2Value = unit2Value,
+                    price = price,
+                    packingId = packingId,
+                    vat = vat,
+                    unit1Rate = unit1Rate,*/
             )
         }
     }
-/*
+    /*
+        suspend fun saveProductWithDiscounts(
+            detail: FactorDetailEntity,
+            factorHeader: FactorHeaderEntity,
+            productRate: Double
+        ) {
+            // 1. ابتدا FactorDetail را ذخیره کن و id واقعی آن را بگیر
+            val savedDetailId = factorRepository.addOrUpdateDetail(detail)
+
+            // 2. حالا detail ذخیره شده — id آن معتبر است
+            val savedDetail = detail.copy(id = savedDetailId)
+
+            // 3. حالا می‌توانیم تخفیف را ذخیره کنیم
+            discountRepository.calculateDiscountInsert(
+                applyKind = DiscountApplyKind.ProductLevel.ordinal,
+                factorHeader = factorHeader,
+                factorDetail = savedDetail
+            )
+        }*/
+
     suspend fun saveProductWithDiscounts(
         detail: FactorDetailEntity,
         factorHeader: FactorHeaderEntity,
-        productRate: Double
-    ) {
-        // 1. ابتدا FactorDetail را ذخیره کن و id واقعی آن را بگیر
-        val savedDetailId = factorRepository.addOrUpdateDetail(detail)
+        productRate: Double,
+        vatPercent: Double,
+        tollPercent: Double
+    ) = withContext(Dispatchers.IO) {
 
-        // 2. حالا detail ذخیره شده — id آن معتبر است
+        // 1. ذخیره اولیه ردیف (بدون VAT صحیح)
+        val savedDetailId = factorRepository.addOrUpdateDetail(detail)
         val savedDetail = detail.copy(id = savedDetailId)
 
-        // 3. حالا می‌توانیم تخفیف را ذخیره کنیم
+        // 2. اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
         discountRepository.calculateDiscountInsert(
             applyKind = DiscountApplyKind.ProductLevel.ordinal,
             factorHeader = factorHeader,
             factorDetail = savedDetail
         )
-    }*/
 
+        // 3. محاسبه مقادیر
+
+        val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
+        val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
+
+        // 4. محاسبه قیمت پس از تخفیف
+        val priceAfterDiscount = Math.round(savedDetail.price - totalDiscount + totalAddition)
+
+        val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
+        val toll = Math.round(tollPercent * priceAfterDiscount).toDouble()
+
+
+        // 4. فقط VAT را آپدیت کنید - سایر فیلدها (مثل sortCode) دست نخورده باقی می‌مانند
+        factorRepository.updateVatForDetail(savedDetailId, vat)
+    }
+
+/*
     suspend fun saveProductWithDiscounts(
         detail: FactorDetailEntity,
         factorHeader: FactorHeaderEntity,
@@ -503,17 +540,9 @@ class FactorViewModel @Inject constructor(
         // 4. محاسبه قیمت پس از تخفیف
         val priceAfterDiscount = Math.round(savedDetail.price - totalDiscount + totalAddition)
 
-        Log.d("Mathround1",savedDetail.price.toString())
-        Log.d("Mathround2",totalDiscount.toString())
-        Log.d("Mathround3",totalAddition.toString())
-
-        // 5. محاسبه VAT و Toll بر اساس قیمت پس از تخفیف
-        Log.d("Mathround4",vatPercent.toString())
-        Log.d("Mathround5",priceAfterDiscount.toString())
 
         val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
-        val toll = Math.round(tollPercent * priceAfterDiscount).toDouble()
-        Log.d("Mathround6",vat.toString())
+        val toll = Math.round(tollPercent * pri  ceAfterDiscount).toDouble()
 
         // 6. به‌روزرسانی نهایی ردیف با مقادیر صحیح
         val updatedDetail = savedDetail.copy(
@@ -522,31 +551,32 @@ class FactorViewModel @Inject constructor(
 
         factorRepository.updateFactorDetail(updatedDetail)
     }
-/*
-    fun saveProductWithDiscounts(
-        detail: FactorDetailEntity,
-        factorHeader: FactorHeaderEntity,
-        productRate: Double,
-        hasExistingDetail: Boolean
-    ) {
-        viewModelScope.launch {
-            // 1. به‌روزرسانی هدر (یک بار)
-            if (!factorHeader.hasDetail) {
-                updateFactorHeader(factorHeader.copy(hasDetail = true))
+*/
+    /*
+        fun saveProductWithDiscounts(
+            detail: FactorDetailEntity,
+            factorHeader: FactorHeaderEntity,
+            productRate: Double,
+            hasExistingDetail: Boolean
+        ) {
+            viewModelScope.launch {
+                // 1. به‌روزرسانی هدر (یک بار)
+                if (!factorHeader.hasDetail) {
+                    updateFactorHeader(factorHeader.copy(hasDetail = true))
+                }
+
+                // 2. ذخیره‌سازی ردیف (خودکار تشخیص اینزرت/آپدیت)
+                addOrUpdateProduct(detail)
+
+                // 3. محاسبه و ذخیره تخفیف‌ها
+                onProductConfirmed(
+                    applyKind = DiscountApplyKind.ProductLevel.ordinal,
+                    factorHeader = factorHeader,
+                    factorDetail = detail
+                )
+
+                // 4. نوتیفیکیشن موفقیت (اختیاری)
+             //   _uiMessage.value = "محصول با موفقیت ${if (hasExistingDetail) "ویرایش" else "افزوده"} شد"
             }
-
-            // 2. ذخیره‌سازی ردیف (خودکار تشخیص اینزرت/آپدیت)
-            addOrUpdateProduct(detail)
-
-            // 3. محاسبه و ذخیره تخفیف‌ها
-            onProductConfirmed(
-                applyKind = DiscountApplyKind.ProductLevel.ordinal,
-                factorHeader = factorHeader,
-                factorDetail = detail
-            )
-
-            // 4. نوتیفیکیشن موفقیت (اختیاری)
-         //   _uiMessage.value = "محصول با موفقیت ${if (hasExistingDetail) "ویرایش" else "افزوده"} شد"
-        }
-    }*/
+        }*/
 }

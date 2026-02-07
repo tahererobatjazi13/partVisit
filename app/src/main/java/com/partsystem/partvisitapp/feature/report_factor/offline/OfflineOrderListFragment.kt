@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
@@ -20,9 +19,11 @@ import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
+import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.databinding.FragmentOrderListBinding
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.adapter.OfflineOrderListAdapter
@@ -192,92 +193,25 @@ class OfflineOrderListFragment : Fragment() {
                     is NetworkResult.Loading -> Unit
 
                     is NetworkResult.Success -> {
-
-                        val message =
-                            result.message ?: getString(R.string.msg_order_successfully_sent)
-
-                        Toast.makeText(
-                            requireContext(),
-                            message,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        CustomSnackBar.make(
+                            requireActivity().findViewById(android.R.id.content),
+                            result.message ?: getString(R.string.msg_order_successfully_sent),
+                            SnackBarType.Success.value
+                        )?.show()
                     }
 
                     is NetworkResult.Error -> {
-                        Toast.makeText(
-                            requireContext(),
+                        CustomSnackBar.make(
+                            requireActivity().findViewById(android.R.id.content),
                             result.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            SnackBarType.Error.value
+                        )?.show()
                     }
                 }
             }
         }
     }
 
-    /*
-        private fun observeSendFactor() {
-            factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { result ->
-                when (result) {
-
-                    is NetworkResult.Loading -> Unit
-
-                    is NetworkResult.Success -> {
-                        val factorId = result.data
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.msg_order_successfully_sent,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-
-                    is NetworkResult.Error -> {
-                        Toast.makeText(
-                            requireContext(),
-                            result.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
-        }
-    */
-
-
-    /*
-        private fun observeSendFactor() {
-            factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { result ->
-                when (result) {
-
-                    is NetworkResult.Loading -> {
-                        customDialogSend?.showProgress()
-                    }
-
-                    is NetworkResult.Success -> {
-                        customDialogSend?.hideProgress()
-                        selectedFactor = null
-
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.msg_order_successfully_sent,
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        observeData()                }
-
-                    is NetworkResult.Error -> {
-                        customDialogSend?.hideProgress()
-
-                        Toast.makeText(
-                            requireContext(),
-                            result.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
-        }
-    */
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupClicks() {
@@ -321,7 +255,7 @@ class OfflineOrderListFragment : Fragment() {
     private fun setupSearch() {
 
         binding.etSearch.addTextChangedListener { editable ->
-            val query = editable.toString()
+            val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
 
             binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 null,

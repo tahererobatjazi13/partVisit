@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
+import androidx.room.withTransaction
+import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
@@ -29,6 +31,7 @@ class FactorRepository @Inject constructor(
     private val api: ApiService,
     private val discountRepository: DiscountRepository,
     private val factorDao: FactorDao,
+    private val appDatabase: AppDatabase,
 ) {
 
 
@@ -158,16 +161,23 @@ class FactorRepository @Inject constructor(
             val response = api.sendFactorToServer(factors)
             val body = response.body()
 
-            if (response.isSuccessful && body != null) {
-                // ✅ پیام سرور را همراه با داده‌ها برگردان
+            if (response.isSuccessful && body != null && body.isSuccess) {
                 NetworkResult.Success(body, body.message)
             } else {
-                val errorMessage =
+                val errorMessage = if (body != null && !body.isSuccess) {
+                    // پیام خطا از سرور
+                    body.message ?: ErrorHandler.getHttpErrorMessage(
+                        context,
+                        response.code(),
+                        response.message()
+                    )
+                } else {
                     ErrorHandler.getHttpErrorMessage(
                         context,
                         response.code(),
                         response.message()
                     )
+                }
                 NetworkResult.Error(errorMessage)
             }
 
@@ -295,6 +305,8 @@ class FactorRepository @Inject constructor(
         // 2. محاسبه و ذخیره تخفیف‌ها
         discountRepository.calculateDiscountInsert(applyKind, factorHeader, detail)
     }*/
+
+
     suspend fun addOrUpdateDetail(detail: FactorDetailEntity): Int {
         return withContext(Dispatchers.IO) {
             val existing = factorDao.getDetailByFactorAndProduct(detail.factorId, detail.productId)
@@ -310,42 +322,61 @@ class FactorRepository @Inject constructor(
                 factorDao.update(updated) // فقط متد ساده update فراخوانی شود
                 updated.id
             } else {
-                val nextSortCode = factorDao.getMaxSortCode(detail.factorId) + 1
-                factorDao.insert(detail.copy(id = 0, sortCode = nextSortCode)).toInt()
+                appDatabase.withTransaction {
+
+                    val currentMax = factorDao.getMaxSortCode(detail.factorId)
+                    Log.d("SortCodeDebug", "Current max sortCode for factor ${detail.factorId}: $currentMax")
+
+                    val nextSortCode = currentMax + 1
+                    Log.d("SortCodeDebug", "Inserting new detail with sortCode: $nextSortCode")
+
+                    factorDao.insert(detail.copy(id = 0, sortCode = nextSortCode)).toInt()
+
+
+             /*   val nextSortCode = factorDao.getMaxSortCode(detail.factorId) + 1
+                factorDao.insert(detail.copy(id = 0, sortCode = nextSortCode)).toInt()*/
+            }
             }
         }
     }
 
-/*
-    suspend fun addOrUpdateDetail(detail: FactorDetailEntity): Int {
-        return withContext(Dispatchers.IO) {
-            val existing = factorDao.getDetailByFactorAndProduct(detail.factorId, detail.productId)
-
-            if (existing != null) {
-                // Update
-                val updated = existing.copy(
-                    unit1Value = detail.unit1Value,
-                    packingValue = detail.packingValue,
-                    packingId = detail.packingId,
-                    price = detail.price,
-                    vat = detail.vat,
-                    unit1Rate = detail.unit1Rate
-                )
-                factorDao.upsertFactorDetail(updated)
-                updated.id // 👈 id موجود
-            } else {
-                // Insert
-                val nextSortCode = factorDao.getMaxSortCode(detail.factorId) + 1
-                val newDetail = detail.copy(
-                    id = 0, // Room خودش id تولید می‌کند
-                    sortCode = nextSortCode
-                )
-                val insertedId = factorDao.upsertFactorDetail(newDetail).toInt() // برگرداندن id جدید
-                insertedId
-            }
+    // در FactorRepository.kt
+    suspend fun updateVatForDetail(detailId: Int, vat: Double) {
+        withContext(Dispatchers.IO) {
+            factorDao.updateVat(detailId, vat)
         }
     }
-*/
+
+    /*
+        suspend fun addOrUpdateDetail(detail: FactorDetailEntity): Int {
+            return withContext(Dispatchers.IO) {
+                val existing = factorDao.getDetailByFactorAndProduct(detail.factorId, detail.productId)
+
+                if (existing != null) {
+                    // Update
+                    val updated = existing.copy(
+                        unit1Value = detail.unit1Value,
+                        packingValue = detail.packingValue,
+                        packingId = detail.packingId,
+                        price = detail.price,
+                        vat = detail.vat,
+                        unit1Rate = detail.unit1Rate
+                    )
+                    factorDao.upsertFactorDetail(updated)
+                    updated.id // 👈 id موجود
+                } else {
+                    // Insert
+                    val nextSortCode = factorDao.getMaxSortCode(detail.factorId) + 1
+                    val newDetail = detail.copy(
+                        id = 0, // Room خودش id تولید می‌کند
+                        sortCode = nextSortCode
+                    )
+                    val insertedId = factorDao.upsertFactorDetail(newDetail).toInt() // برگرداندن id جدید
+                    insertedId
+                }
+            }
+        }
+    */
 
 
     // در FactorRepository

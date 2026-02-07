@@ -17,10 +17,12 @@ import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.ReportFactorListType
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
+import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.fixPersianChars
 import com.partsystem.partvisitapp.databinding.FragmentOrderListBinding
 import com.partsystem.partvisitapp.feature.report_factor.online.adapter.OnlineOrderListAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -166,8 +168,7 @@ class OnlineOrderListFragment : Fragment() {
 
     private fun setupSearch() {
         binding.etSearch.addTextChangedListener { editable ->
-
-            val query = editable.toString()
+            val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
 
             binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 null, null,
