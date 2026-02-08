@@ -459,6 +459,7 @@ class FactorViewModel @Inject constructor(
             )
         }
     }
+
     /*
         suspend fun saveProductWithDiscounts(
             detail: FactorDetailEntity,
@@ -479,6 +480,18 @@ class FactorViewModel @Inject constructor(
             )
         }*/
 
+    suspend fun calculateDiscountInsert(
+        applyKind: Int,
+        factorHeader: FactorHeaderEntity,
+        factorDetail: FactorDetailEntity?
+    ) =
+        discountRepository.calculateDiscountInsert(
+            applyKind = applyKind,
+            factorHeader = factorHeader,
+            factorDetail = factorDetail!!
+        )
+
+
     suspend fun saveProductWithDiscounts(
         detail: FactorDetailEntity,
         factorHeader: FactorHeaderEntity,
@@ -487,11 +500,11 @@ class FactorViewModel @Inject constructor(
         tollPercent: Double
     ) = withContext(Dispatchers.IO) {
 
-        // 1. ذخیره اولیه ردیف (بدون VAT صحیح)
+        //  ذخیره اولیه ردیف (بدون VAT صحیح)
         val savedDetailId = factorRepository.addOrUpdateDetail(detail)
         val savedDetail = detail.copy(id = savedDetailId)
 
-        // 2. اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
+        // اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
         discountRepository.calculateDiscountInsert(
             applyKind = DiscountApplyKind.ProductLevel.ordinal,
             factorHeader = factorHeader,
@@ -514,44 +527,44 @@ class FactorViewModel @Inject constructor(
         factorRepository.updateVatForDetail(savedDetailId, vat)
     }
 
-/*
-    suspend fun saveProductWithDiscounts(
-        detail: FactorDetailEntity,
-        factorHeader: FactorHeaderEntity,
-        productRate: Double,
-        vatPercent: Double,
-        tollPercent: Double
-    ) = withContext(Dispatchers.IO) {
-        // 1. ذخیره اولیه ردیف (بدون VAT صحیح)
-        val savedDetailId = factorRepository.addOrUpdateDetail(detail)
-        val savedDetail = detail.copy(id = savedDetailId)
+    /*
+        suspend fun saveProductWithDiscounts(
+            detail: FactorDetailEntity,
+            factorHeader: FactorHeaderEntity,
+            productRate: Double,
+            vatPercent: Double,
+            tollPercent: Double
+        ) = withContext(Dispatchers.IO) {
+            // 1. ذخیره اولیه ردیف (بدون VAT صحیح)
+            val savedDetailId = factorRepository.addOrUpdateDetail(detail)
+            val savedDetail = detail.copy(id = savedDetailId)
 
-        // 2. اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
-        discountRepository.calculateDiscountInsert(
-            applyKind = DiscountApplyKind.ProductLevel.ordinal,
-            factorHeader = factorHeader,
-            factorDetail = savedDetail
-        )
+            // 2. اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
+            discountRepository.calculateDiscountInsert(
+                applyKind = DiscountApplyKind.ProductLevel.ordinal,
+                factorHeader = factorHeader,
+                factorDetail = savedDetail
+            )
 
-        // 3. بازیابی مجموع تخفیف‌ها و اضافات از دیتابیس
-        val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
-        val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
+            // 3. بازیابی مجموع تخفیف‌ها و اضافات از دیتابیس
+            val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
+            val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
 
-        // 4. محاسبه قیمت پس از تخفیف
-        val priceAfterDiscount = Math.round(savedDetail.price - totalDiscount + totalAddition)
+            // 4. محاسبه قیمت پس از تخفیف
+            val priceAfterDiscount = Math.round(savedDetail.price - totalDiscount + totalAddition)
 
 
-        val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
-        val toll = Math.round(tollPercent * pri  ceAfterDiscount).toDouble()
+            val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
+            val toll = Math.round(tollPercent * pri  ceAfterDiscount).toDouble()
 
-        // 6. به‌روزرسانی نهایی ردیف با مقادیر صحیح
-        val updatedDetail = savedDetail.copy(
-            vat = vat
-        )
+            // 6. به‌روزرسانی نهایی ردیف با مقادیر صحیح
+            val updatedDetail = savedDetail.copy(
+                vat = vat
+            )
 
-        factorRepository.updateFactorDetail(updatedDetail)
-    }
-*/
+            factorRepository.updateFactorDetail(updatedDetail)
+        }
+    */
     /*
         fun saveProductWithDiscounts(
             detail: FactorDetailEntity,

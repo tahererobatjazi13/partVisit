@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
@@ -88,6 +89,21 @@ class OrderFragment : Fragment() {
                     // تیک نزده → هشدار
                     showWarningDialog()
                 }
+            }
+            cbSabt.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        factorViewModel.calculateDiscountInsert(
+                            applyKind = DiscountApplyKind.FactorLevel.ordinal,
+                            factorHeader = factorViewModel.factorHeader.value ?: return@launch,
+                            factorDetail = null
+                        )
+                    }
+
+                } else {
+                    //removeGiftAndHeaderDiscount()
+                }
+
             }
         }
     }

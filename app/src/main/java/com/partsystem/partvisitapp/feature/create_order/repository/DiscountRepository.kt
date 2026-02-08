@@ -33,7 +33,6 @@ import com.partsystem.partvisitapp.feature.create_order.model.DiscountEshantyunR
 import com.partsystem.partvisitapp.feature.create_order.model.ProductModel
 import com.partsystem.partvisitapp.feature.create_order.model.VwFactorDetail
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.floor
@@ -62,8 +61,10 @@ class DiscountRepository @Inject constructor(
         Log.d("EshantyuncreateDate", factorHeader.createDate!!)
 
 
+        //region Init
+
         var discounts =
-            getDiscounts(factorHeader.createDate!!, factorHeader.persianDate!!, true)
+            getDiscounts(applyKind, factorHeader.createDate!!, factorHeader.persianDate!!, true)
         Log.d("Eshantyundiscountssize", discounts.size.toString())
 
         val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return@withContext
@@ -76,7 +77,6 @@ class DiscountRepository @Inject constructor(
             factorDetail.getDiscountIds(applyKind, factorDetail.id)
         //  usedDiscountIds=[]
         discounts = discounts.filter { !usedDiscountIds.contains(it.id) }
-
 
 
         // Apply pattern inclusion filter
@@ -1270,7 +1270,7 @@ class DiscountRepository @Inject constructor(
 
 
     suspend fun getDiscounts(
-        //  applyKind: Int,
+        applyKind: Int,
         toDate: String,
         persianBeginDate: String,
         includeDetail: Boolean
@@ -1278,7 +1278,7 @@ class DiscountRepository @Inject constructor(
 
         if (includeDetail) {
             val discountsWithDetails = discountDao.getDiscountsWithDetails(
-                //applyKind = applyKind,
+                applyKind = applyKind,
                 toDate = toDate,
                 persianBeginDate = persianBeginDate
             )
@@ -1329,7 +1329,7 @@ class DiscountRepository @Inject constructor(
             }
         } else {
             discountDao.getDiscounts(
-                //  applyKind = applyKind,
+                applyKind = applyKind,
                 toDate = toDate,
                 persianBeginDate = persianBeginDate
             )
