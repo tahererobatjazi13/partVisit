@@ -488,7 +488,7 @@ class FactorViewModel @Inject constructor(
         discountRepository.calculateDiscountInsert(
             applyKind = applyKind,
             factorHeader = factorHeader,
-            factorDetail = factorDetail!!
+            factorDetail = factorDetail
         )
 
 

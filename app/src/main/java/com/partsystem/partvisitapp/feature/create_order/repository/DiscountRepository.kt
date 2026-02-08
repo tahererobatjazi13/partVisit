@@ -49,7 +49,7 @@ class DiscountRepository @Inject constructor(
     suspend fun calculateDiscountInsert(
         applyKind: Int,
         factorHeader: FactorHeaderEntity,
-        factorDetail: FactorDetailEntity
+        factorDetail: FactorDetailEntity?
     ) = withContext(Dispatchers.IO) {
         if (factorHeader.patternId == null) return@withContext
 
@@ -71,10 +71,11 @@ class DiscountRepository @Inject constructor(
         val discountInclusionKind: Int = pattern.discountInclusionKind!!
 
         // Remove already applied discounts
-        val usedDiscountIds = if (applyKind == DiscountApplyKind.FactorLevel.ordinal)
-            factorDetail.getDiscountIds(applyKind, null)
-        else
-            factorDetail.getDiscountIds(applyKind, factorDetail.id)
+        val usedDiscountIds = if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
+            factorDetail?.getDiscountIds(applyKind, null) ?: emptyList()
+        } else {
+            factorDetail?.getDiscountIds(applyKind, factorDetail.id) ?: emptyList()
+        }
         //  usedDiscountIds=[]
         discounts = discounts.filter { !usedDiscountIds.contains(it.id) }
 
@@ -125,7 +126,7 @@ class DiscountRepository @Inject constructor(
     suspend fun processDiscounts(
         discounts: List<DiscountEntity>,
         factor: FactorHeaderEntity,
-        factorDetail: FactorDetailEntity,
+        factorDetail: FactorDetailEntity?,
         applyKind: Int, // 0 = FactorLevel, 1 = ProductLevel
         repository: DiscountRepository
     ) {
@@ -153,10 +154,14 @@ class DiscountRepository @Inject constructor(
                 Log.d("EshantyunproductOfDiscount", productOfDiscount.toString())
 
                 // جستجوی رکورد موجود
-                val existingDiscount = factorDao.getFactorDiscountByProductIdAndFactorDetailId(
-                    productId = factorDetail.productId,
-                    factorDetailId = factorDetail.id
-                )
+                val existingDiscount = if (factorDetail != null) {
+                    factorDao.getFactorDiscountByProductIdAndFactorDetailId(
+                        productId = factorDetail.productId,
+                        factorDetailId = factorDetail.id
+                    )
+                } else {
+                    null // برای تخفیف سطح فاکتور، رکورد موجودی نداریم
+                }
 
                 if (existingDiscount != null) {
 
@@ -165,7 +170,7 @@ class DiscountRepository @Inject constructor(
                         id = existingDiscount.id,
                         factorId = factor.id,
                         discountId = discount.id,
-                        productId = factorDetail.productId,
+                        productId = factorDetail!!.productId,
                         sortCode = 0,
                         price = 0.0,
                         discountPercent = 0.0 // مقدار جدید
@@ -252,8 +257,8 @@ class DiscountRepository @Inject constructor(
                         id = maxFactorDiscountId + 1,
                         factorId = factor.id,
                         discountId = discount.id,
-                        productId = factorDetail.productId,
-                        factorDetailId = factorDetail.id,
+                        productId = factorDetail!!.productId,
+                        factorDetailId = factorDetail!!.id,
                         sortCode = 0,
                         price = 0.0,
                         discountPercent = 0.0
@@ -376,7 +381,7 @@ class DiscountRepository @Inject constructor(
                 }
             }
 
-            DiscountInclusionKind.Group.ordinal -> {
+         /*   DiscountInclusionKind.Group.ordinal -> {
                 if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
                     val productId = arrayListOf(factorDetail!!.productId)
 
@@ -397,6 +402,23 @@ class DiscountRepository @Inject constructor(
                         Log.d("DiscountInclusionKind2", "okkkk")
                         Pair(false, emptyList())
                     }
+                }*/
+
+                DiscountInclusionKind.Group.ordinal -> {
+                    if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
+                        // برای سطح فاکتور، باید تمام محصولات فاکتور را بررسی کنیم
+                        val productIds = getFactorProductIds(factor.id)
+                        val matched = discountDao.getProductMatchDiscountGroup(discount.id, ArrayList(productIds))
+                        Pair(matched.isNotEmpty(), emptyList())
+                    } else {
+                        // برای سطح محصول
+                        val productId = factorDetail?.productId ?: return Pair(false, emptyList())
+                        val matched = discountDao.getProductMatchDiscountGroup(
+                            discount.id,
+                            arrayListOf(productId)
+                        )
+                        Pair(matched.isNotEmpty(), emptyList())
+                    }
                 }
                 /* if (applyKind == DiscountApplyKind.FactorLevel) {
                      val productIds = q.getProductMatchDiscountGroup(discount.id, factor.productIds)
@@ -406,7 +428,7 @@ class DiscountRepository @Inject constructor(
                  } else {
 
                  }*/
-            }
+
             // Handle Group, ProductKind similarly with repository calls
             else -> {
                 // For simplicity, return false — implement based on your DB structure
