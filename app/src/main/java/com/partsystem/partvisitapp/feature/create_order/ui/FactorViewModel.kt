@@ -27,6 +27,8 @@ import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHea
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -86,6 +88,7 @@ class FactorViewModel @Inject constructor(
         hasDetail: Boolean? = null,
         finalPrice: Double? = null,
         productSelectionType: String? = null,
+        sabt: Int? = null,
 
         ) {
         val current = factorHeader.value ?: FactorHeaderEntity()
@@ -106,6 +109,7 @@ class FactorViewModel @Inject constructor(
             hasDetail = hasDetail ?: current.hasDetail,
             finalPrice = finalPrice ?: current.finalPrice,
             productSelectionType = productSelectionType ?: current.productSelectionType,
+            sabt = sabt ?: current.sabt,
 
             )
     }
@@ -262,23 +266,25 @@ class FactorViewModel @Inject constructor(
             val body = listOf(request)
             Log.d("FINAL_json1", body.toString())
 
-            when (val result = factorRepository.sendFactorToServer(body)) {
+            /*
+                        when (val result = factorRepository.sendFactorToServer(body)) {
 
-                is NetworkResult.Success -> {
-                    factorRepository.deleteFactor(factorId)
-                    _sendFactorResult.value = Event(
-                        NetworkResult.Success(factorId, result.message)
-                    )
-                    Log.d("FINAL_json2", "ok")
-                }
+                            is NetworkResult.Success -> {
+                                factorRepository.deleteFactor(factorId)
+                                _sendFactorResult.value = Event(
+                                    NetworkResult.Success(factorId, result.message)
+                                )
+                                Log.d("FINAL_json2", "ok")
+                            }
 
-                is NetworkResult.Error -> {
-                    updateSendingState(factorId, false)
-                    _sendFactorResult.value = Event(NetworkResult.Error(result.message))
-                }
+                            is NetworkResult.Error -> {
+                                updateSendingState(factorId, false)
+                                _sendFactorResult.value = Event(NetworkResult.Error(result.message))
+                            }
 
-                else -> {}
-            }
+                            else -> {}
+                        }
+            */
         }
     }
 
@@ -592,4 +598,20 @@ class FactorViewModel @Inject constructor(
              //   _uiMessage.value = "محصول با موفقیت ${if (hasExistingDetail) "ویرایش" else "افزوده"} شد"
             }
         }*/
+
+
+    private val _operationResult = MutableSharedFlow<Boolean>()
+    val operationResult = _operationResult.asSharedFlow()
+
+    fun removeGiftsAndDiscounts(factorId: Int) {
+        viewModelScope.launch {
+            val success = discountRepository.removeGiftsAndAutoDiscounts(factorId)
+            //  _operationResult.emit(success)
+
+            /*   if (success) {
+                   // Notify UI to refresh factor data
+                   // DataHolder.isDirty = true (if maintaining legacy pattern)
+               }*/
+        }
+    }
 }

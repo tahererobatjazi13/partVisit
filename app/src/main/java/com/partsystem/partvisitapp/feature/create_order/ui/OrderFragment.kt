@@ -2,18 +2,17 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
@@ -24,6 +23,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentOrderBinding
+import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -58,6 +58,45 @@ class OrderFragment : Fragment() {
         setupObserver()
         observeSendFactor()
         customDialog = CustomDialog()
+
+        if (args.factorId > 0) {
+            binding.hfOrder.textTitle = getString(R.string.label_edit_order)
+
+            if (args.sabt == 0) {
+                binding.cbSabt.setChecked(false)
+                binding.cbSabt.setEnabled(true)
+            } else {
+                binding.cbSabt.setChecked(false)
+                binding.cbSabt.setEnabled(true)
+            }
+        } else {
+            binding.hfOrder.textTitle = getString(R.string.label_register_order)
+            binding.cbSabt.setChecked(false)
+            binding.cbSabt.setEnabled(true)
+        }
+
+        if (binding.cbSabt.isChecked) {
+
+            factorViewModel.updateHeader(sabt = 1)
+
+            lifecycleScope.launch {
+                val updatedHeader =
+                    factorViewModel.factorHeader.value?.copy(sabt = 1)
+                updatedHeader?.let {
+                    factorViewModel.updateFactorHeader(it)
+                }
+            }
+        } else {
+            factorViewModel.updateHeader(sabt = 0)
+
+            lifecycleScope.launch {
+                val updatedHeader =
+                    factorViewModel.factorHeader.value?.copy(sabt = 0)
+                updatedHeader?.let {
+                    factorViewModel.updateFactorHeader(it)
+                }
+            }
+        }
     }
 
     /**
@@ -99,11 +138,9 @@ class OrderFragment : Fragment() {
                             factorDetail = null
                         )
                     }
-
                 } else {
-                    //removeGiftAndHeaderDiscount()
+                    factorViewModel.removeGiftsAndDiscounts(factorViewModel.factorHeader.value.id)
                 }
-
             }
         }
     }

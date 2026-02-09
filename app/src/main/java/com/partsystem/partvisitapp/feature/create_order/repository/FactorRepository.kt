@@ -391,4 +391,7 @@ class FactorRepository @Inject constructor(
     suspend fun updateFactorDetail(detail: FactorDetailEntity) = withContext(Dispatchers.IO) {
         factorDao.updateFactorDetail(detail)
     }
+
+
+
 }

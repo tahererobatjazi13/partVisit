@@ -98,7 +98,10 @@ class GroupProductFragment : Fragment() {
         }
         binding.hfGroupProduct.setOnClickImgOneListener {
             val action =
-                GroupProductFragmentDirections.actionGroupProductFragmentToOrderFragment(args.factorId)
+                GroupProductFragmentDirections.actionGroupProductFragmentToOrderFragment(
+                    args.factorId,
+                    args.sabt
+                )
             findNavController().navigate(action)
         }
     }
@@ -214,11 +217,11 @@ class GroupProductFragment : Fragment() {
                                 Math.round(product.vatPercent * detail.getPriceAfterDiscount())
                                     .toDouble()
 
-                       /*     // ذخیره‌سازی و محاسبه تخفیف در ViewModel
-                            factorViewModel.saveProductWithDiscounts(
-                                detail = detail,
-                                factorHeader = factorHeader,
-                                productRate = productRate*//*,
+                            /*     // ذخیره‌سازی و محاسبه تخفیف در ViewModel
+                                 factorViewModel.saveProductWithDiscounts(
+                                     detail = detail,
+                                     factorHeader = factorHeader,
+                                     productRate = productRate*//*,
                                 hasExistingDetail = existingDetail != null*//*
                             )*/
                         }

@@ -95,6 +95,9 @@
             android:name="fromFactor"
             app:argType="boolean" />
         <argument
+            android:name="sabt"
+            app:argType="integer" />
+        <argument
             android:name="factorId"
             android:defaultValue="0"
             app:argType="reference" />
@@ -150,6 +153,9 @@
             android:name="fromFactor"
             app:argType="boolean" />
         <argument
+            android:name="sabt"
+            app:argType="integer" />
+        <argument
             android:name="factorId"
             android:defaultValue="0"
             app:argType="reference" />
@@ -175,6 +181,9 @@
         tools:layout="@layout/fragment_order">
         <argument
             android:name="factorId"
+            app:argType="integer" />
+        <argument
+            android:name="sabt"
             app:argType="integer" />
         <action
             android:id="@+id/action_orderFragment_to_homeFragment"

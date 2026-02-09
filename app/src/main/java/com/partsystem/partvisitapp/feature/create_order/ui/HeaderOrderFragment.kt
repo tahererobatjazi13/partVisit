@@ -738,6 +738,7 @@ class HeaderOrderFragment : Fragment() {
 
                 navigateToProductPage(
                     factorViewModel.factorHeader.value!!.productSelectionType,
+                    factorViewModel.factorHeader.value!!.sabt,
                     args.factorId
                 )
             }    else {
@@ -745,10 +746,12 @@ class HeaderOrderFragment : Fragment() {
                     if (factorViewModel.factorHeader.value!!.productSelectionType=="catalog")
                         navigateToProductPage(
                             "catalog",
-                            factorViewModel.factorHeader.value?.id!!
-                        )else
+                            factorViewModel.factorHeader.value!!.sabt,
+                            factorViewModel.factorHeader.value?.id!!,
+                            )else
                         navigateToProductPage(
                             "group",
+                            factorViewModel.factorHeader.value!!.sabt,
                             factorViewModel.factorHeader.value?.id!!)
 
                         // به محصولات برگرد
@@ -867,7 +870,7 @@ class HeaderOrderFragment : Fragment() {
     }
 
     // متد کمکی برای هدایت به صفحه محصولات
-    private fun navigateToProductPage(selectionType: String, factorId: Int) {
+    private fun navigateToProductPage(selectionType: String, sabt: Int, factorId: Int) {
         Log.d("productSelectionType3", selectionType)
 
         val action = when (selectionType) {
@@ -876,18 +879,21 @@ class HeaderOrderFragment : Fragment() {
                 HeaderOrderFragmentDirections
                     .actionHeaderOrderFragmentToGroupProductFragment(
                         fromFactor = true,
+                        sabt = sabt,
                         factorId = factorId
                     )
 
             "catalog" -> HeaderOrderFragmentDirections
                 .actionHeaderOrderFragmentToProductListFragment(
                     fromFactor = true,
+                    sabt = sabt,
                     factorId = factorId
                 )
 
             else -> HeaderOrderFragmentDirections // پیش‌فرض کاتالوگ
                 .actionHeaderOrderFragmentToProductListFragment(
                     fromFactor = true,
+                    sabt = sabt,
                     factorId = factorId
                 )
         }
@@ -999,8 +1005,10 @@ class HeaderOrderFragment : Fragment() {
                         val action = HeaderOrderFragmentDirections
                             .actionHeaderOrderFragmentToProductListFragment(
                                 fromFactor = true,
+                                sabt = currentHeader.sabt,
                                 factorId = finalFactorId.toInt()
                             )
+
                         findNavController().navigate(action)
                     }
                 }
@@ -1033,6 +1041,7 @@ class HeaderOrderFragment : Fragment() {
                         val action = HeaderOrderFragmentDirections
                             .actionHeaderOrderFragmentToGroupProductFragment(
                                 fromFactor = true,
+                                sabt = currentHeader.id,
                                 factorId = finalFactorId.toInt()
                             )
                         findNavController().navigate(action)

@@ -420,4 +420,24 @@ interface DiscountDao {
     @Query("SELECT COUNT(*) FROM FactorDiscount")
     fun getCount(): LiveData<Int>
 
+
+    @Query("DELETE FROM FactorDetail WHERE factorId = :factorId AND isGift = 1")
+     fun deleteGiftDetails(factorId: Int): Int
+
+    @Query("SELECT id FROM FactorDetail WHERE factorId = :factorId AND isGift = 1")
+     fun getGiftDetailIds(factorId: Int): List<Int>
+
+    // Cascade handles detail discounts, but we need explicit delete for header discounts
+    @Query("DELETE FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId IS NULL")
+     fun deleteAutoCalculatedHeaderDiscounts(factorId: Int): Int
+
+    // Safety fallback (if cascade fails)
+    @Query("DELETE FROM FactorDiscount WHERE factorDetailId IN (:detailIds)")
+     fun deleteDiscountsByDetailIds(detailIds: List<Int>)
+
+    @Query("DELETE FROM FactorGiftInfo WHERE factorId = :factorId")
+     fun deleteByFactorId(factorId: Int): Int
+
+    @Query("UPDATE FactorHeader SET sabt = 0, hasDetail = (SELECT COUNT(*) > 0 FROM FactorDetail WHERE factorId = :factorId) WHERE id = :factorId")
+     fun resetSabtAndRefreshHasDetail(factorId: Int): Int
 }

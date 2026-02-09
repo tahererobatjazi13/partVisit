@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.feature.create_order.repository
 
 import android.util.Log
+import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.database.dao.ActDao
 import com.partsystem.partvisitapp.core.database.dao.DiscountDao
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
@@ -18,6 +19,7 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
+import com.partsystem.partvisitapp.core.network.modelDto.FactorDetail
 import com.partsystem.partvisitapp.core.utils.ActKind
 import com.partsystem.partvisitapp.core.utils.CalculateUnit2Type
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
@@ -33,6 +35,8 @@ import com.partsystem.partvisitapp.feature.create_order.model.DiscountEshantyunR
 import com.partsystem.partvisitapp.feature.create_order.model.ProductModel
 import com.partsystem.partvisitapp.feature.create_order.model.VwFactorDetail
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.floor
@@ -45,6 +49,8 @@ class DiscountRepository @Inject constructor(
     private val productPackingDao: ProductPackingDao,
     private val mojoodiDao: MojoodiDao,
     private val actDao: ActDao,
+    private val database: AppDatabase
+
 ) {
     suspend fun calculateDiscountInsert(
         applyKind: Int,
@@ -170,7 +176,6 @@ class DiscountRepository @Inject constructor(
                         id = existingDiscount.id,
                         factorId = factor.id,
                         discountId = discount.id,
-                        productId = factorDetail!!.productId,
                         sortCode = 0,
                         price = 0.0,
                         discountPercent = 0.0 // مقدار جدید
@@ -195,6 +200,7 @@ class DiscountRepository @Inject constructor(
                             productSortCode = existingCount + 1
                         }
                         factorDiscount.sortCode = productSortCode++
+                        factorDiscount.productId = factorDetail!!.productId
                     }
 
                     // Calculate discount amount
@@ -257,8 +263,8 @@ class DiscountRepository @Inject constructor(
                         id = maxFactorDiscountId + 1,
                         factorId = factor.id,
                         discountId = discount.id,
-                        productId = factorDetail!!.productId,
-                        factorDetailId = factorDetail!!.id,
+                        productId = 0,
+                        factorDetailId =0,
                         sortCode = 0,
                         price = 0.0,
                         discountPercent = 0.0
@@ -282,6 +288,8 @@ class DiscountRepository @Inject constructor(
                             productSortCode = existingCount + 1
                         }
                         factorDiscount.sortCode = productSortCode++
+                        factorDiscount.factorDetailId = factorDetail!!.id
+                        factorDiscount.productId = factorDetail!!.productId
                     }
 
                     // Calculate discount amount
@@ -557,6 +565,11 @@ class DiscountRepository @Inject constructor(
                 val anbarId = eshantyun.anbarId
                 val maxId = repository.getMaxFactorDetailId()
 
+                val productWithRate =
+                    productDao.getProductWithRate2(productId, factor.actId!!) .map { it.rate }
+                        .firstOrNull()
+                val productRate = productWithRate
+
                 // 1. ساخت detail هدیه
                 val detail = FactorDetailEntity(
                     id = maxId + 1,
@@ -571,7 +584,7 @@ class DiscountRepository @Inject constructor(
                     packingValue = 0.0,
                     packingId = packingId,
                     price = 0.0,
-                    unit1Rate = factorDetail?.unit1Rate!!.toDouble()
+                    unit1Rate = productRate!!.toDouble()
                 )
 
                 // تنظیم مقادیر بر اساس نوع واحد هدیه
@@ -1361,5 +1374,36 @@ class DiscountRepository @Inject constructor(
     suspend fun getPatternDetailById(patternId: Int): List<PatternDetailEntity>? {
         return patternDao.getPatternDetailById(patternId)
     }
+    suspend fun removeGiftsAndAutoDiscounts(factorId: Int): Any =
+        withContext(Dispatchers.IO) {
+            try {
+                database.runInTransaction {
+                    // STEP 1: Delete gift details (CASCADE automatically deletes their discounts)
+                    val deletedGiftCount = discountDao.deleteGiftDetails(factorId)
 
+                    // STEP 2: Delete auto-calculated HEADER discounts (factorDetailId = NULL)
+                    val deletedHeaderDiscounts = discountDao.deleteAutoCalculatedHeaderDiscounts(factorId)
+
+                    // STEP 3: Delete all gift info records for this factor
+                    discountDao.deleteByFactorId(factorId)
+
+                    // STEP 4: Reset factor status and refresh hasDetail flag
+                    discountDao.resetSabtAndRefreshHasDetail(factorId)
+
+                    // Optional: Safety fallback if cascade delete failed (defensive)
+                    if (deletedGiftCount > 0) {
+                        val giftDetailIds = discountDao.getGiftDetailIds(factorId)
+                        if (giftDetailIds.isNotEmpty()) {
+                            discountDao.deleteDiscountsByDetailIds(giftDetailIds)
+                            // Log warning: "Cascade delete may have failed for detail discounts"
+                        }
+                    }
+
+                    true
+                }
+            } catch (e: Exception) {
+                Log.e("FactorRepository", "Failed to remove gifts/discounts for factor $factorId", e)
+                false
+            }
+        }
 }

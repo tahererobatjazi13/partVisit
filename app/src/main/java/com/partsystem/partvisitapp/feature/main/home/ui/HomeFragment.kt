@@ -273,7 +273,8 @@ class HomeFragment : Fragment() {
                             }
                             val action =
                                 HomeFragmentDirections.actionHomeFragmentToProductListFragment(
-                                    fromFactor = false
+                                    fromFactor = false,
+                                    sabt =0
                                 )
                             findNavController().navigate(action)
                         }
@@ -287,7 +288,8 @@ class HomeFragment : Fragment() {
                             }
                             val action =
                                 HomeFragmentDirections.actionHomeFragmentToGroupProductFragment(
-                                    fromFactor = false
+                                    fromFactor = false,
+                                    sabt =0
                                 )
                             findNavController().navigate(action)
                         }
