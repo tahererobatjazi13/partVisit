@@ -291,6 +291,45 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
+            <Button
+                android:id="@+id/btnDraftOrder"
+                style="@style/ButtonDefault"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/medium_size"
+                android:backgroundTint="@color/green_21BF73"
+                android:text="@string/label_draft_order"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toEndOf="@id/bmbSendOrder"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.partsystem.partvisitapp.core.utils.componenet.BottomMain
+                android:id="@+id/bmbSendOrder"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:backColorBtnOne="@color/colorPrimary"
+                app:badgeTextColorBtnOne="?attr/colorOnPrimary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnDraftOrder"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:textBtnOne="@string/label_send_online_order" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+<!--
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clBottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/medium_size"
+            android:layout_marginTop="@dimen/medium_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
             <com.partsystem.partvisitapp.core.utils.componenet.BottomMain
                 android:id="@+id/bmbSendOrder"
                 android:layout_width="match_parent"
@@ -304,6 +343,7 @@
                 app:textBtnOne="@string/label_send_order" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

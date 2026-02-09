@@ -62,16 +62,29 @@ class OfflineOrderDetailFragment : Fragment() {
             }
 
             btnEditOrder.setOnClickListener {
-                val bundle = bundleOf(
-                    "typeCustomer" to true,
-                    "typeOrder" to OrderType.Edit.value,
-                    "customerId" to 0,
-                    "customerName" to "",
-                    "factorId" to args.factorId
-                )
 
-                val navController = requireActivity().findNavController(R.id.mainNavHost)
-                navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
+     /*           if (args.sabt == 1) {
+
+                    val bundle = bundleOf(
+                        "factorId" to args.factorId,
+                        "sabt" to args.sabt
+                    )
+
+                    val navController = requireActivity().findNavController(R.id.mainNavHost)
+                    navController.navigate(R.id.action_global_to_orderFragment, bundle)
+                } else {*/
+                    val bundle = bundleOf(
+                        "typeCustomer" to true,
+                        "typeOrder" to OrderType.Edit.value,
+                        "customerId" to 0,
+                        "customerName" to "",
+                        "factorId" to args.factorId
+                    )
+
+                    val navController = requireActivity().findNavController(R.id.mainNavHost)
+                    navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
+              //  }
+
             }
         }
     }
@@ -128,7 +141,7 @@ class OfflineOrderDetailFragment : Fragment() {
         }
         with(binding) {
             tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
-            tvSumDiscountPrice.text = "${"-"+formatter.format(sumDiscountPrice)} ریال"
+            tvSumDiscountPrice.text = "${"-" + formatter.format(sumDiscountPrice)} ریال"
             tvSumVat.text = "${formatter.format(sumVat)} ریال"
             tvFinalPrice.text = "${formatter.format((sumPrice - sumDiscountPrice) + sumVat)} ریال"
         }

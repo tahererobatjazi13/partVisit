@@ -28,7 +28,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -152,6 +154,16 @@ class FactorViewModel @Inject constructor(
 
     val currentFactorId = MutableLiveData<Long>(0L)
     val headerId = MutableLiveData<Int?>()
+    // فلگ برای ردیابی حذف دستی تخفیف توسط کاربر
+    private val _discountManuallyRemoved = MutableStateFlow(false)
+    val discountManuallyRemoved = _discountManuallyRemoved.asStateFlow()
+    fun markDiscountApplied() {
+        _discountManuallyRemoved.value = false
+    }
+
+    fun markDiscountRemoved() {
+        _discountManuallyRemoved.value = true
+    }
 
     suspend fun saveHeaderAndGetId(header: FactorHeaderEntity): Long {
         return factorRepository.saveFactorHeader(header)
@@ -179,6 +191,7 @@ class FactorViewModel @Inject constructor(
                         createTime = it.createTime,
                         finalPrice = it.finalPrice,
                         hasDetail = it.hasDetail,
+                        sabt = it.sabt,
                         isSending = false
                     )
                 }
@@ -266,25 +279,24 @@ class FactorViewModel @Inject constructor(
             val body = listOf(request)
             Log.d("FINAL_json1", body.toString())
 
-            /*
-                        when (val result = factorRepository.sendFactorToServer(body)) {
+            when (val result = factorRepository.sendFactorToServer(body)) {
 
-                            is NetworkResult.Success -> {
-                                factorRepository.deleteFactor(factorId)
-                                _sendFactorResult.value = Event(
-                                    NetworkResult.Success(factorId, result.message)
-                                )
-                                Log.d("FINAL_json2", "ok")
-                            }
+                is NetworkResult.Success -> {
+                    factorRepository.deleteFactor(factorId)
+                    _sendFactorResult.value = Event(
+                        NetworkResult.Success(factorId, result.message)
+                    )
+                    Log.d("FINAL_json2", "ok")
+                }
 
-                            is NetworkResult.Error -> {
-                                updateSendingState(factorId, false)
-                                _sendFactorResult.value = Event(NetworkResult.Error(result.message))
-                            }
+                is NetworkResult.Error -> {
+                    updateSendingState(factorId, false)
+                    _sendFactorResult.value = Event(NetworkResult.Error(result.message))
+                }
 
-                            else -> {}
-                        }
-            */
+                else -> {}
+            }
+
         }
     }
 
@@ -292,7 +304,7 @@ class FactorViewModel @Inject constructor(
         val header = factorRepository.getHeaderByLocalId(factorId.toLong())
             ?: throw IllegalStateException("Header not found")
 
-        val details = factorRepository.getFactorDetails(header.id).first()
+        val details = factorRepository.getAllFactorDetails(header.id).first()
         val gifts = factorRepository.getFactorGifts(header.id)
 
         Log.d("FINAL_header", header.id.toString())

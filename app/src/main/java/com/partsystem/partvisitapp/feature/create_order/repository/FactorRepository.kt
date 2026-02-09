@@ -123,6 +123,9 @@ class FactorRepository @Inject constructor(
     fun getFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
         factorDao.getFactorDetails(factorId)
 
+fun getAllFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
+        factorDao.getAllFactorDetails(factorId)
+
 
     // اضافه یا ویرایش آیتم سبد
     suspend fun upsertFactorDetail(detail: FactorDetailEntity) {

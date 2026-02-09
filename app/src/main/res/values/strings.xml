@@ -83,6 +83,7 @@
     <string name="label_total_price">قابل پرداخت:</string>
     <string name="label_view_order">مشاهده سفارش</string>
     <string name="label_send_order">ثبت و ارسال نهایی سفارش</string>
+    <string name="label_send_online_order">ارسال آنلاین سفارش</string>
     <string name="label_draft_order">پیش نویس سفارش</string>
     <string name="label_edit_order">ویرایش سفارش</string>
     <string name="label_order_description">توضیحات سفارش...</string>

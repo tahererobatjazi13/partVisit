@@ -85,7 +85,7 @@ class OfflineOrderListFragment : Fragment() {
                 if (factors.hasDetail) {
                     val action =
                         OfflineOrderListFragmentDirections.actionOfflineOrderListFragmentToOfflineOrderDetailFragment(
-                            factors.factorId
+                            factors.factorId,factors.sabt
                         )
                     findNavController().navigate(action)
                 } else {

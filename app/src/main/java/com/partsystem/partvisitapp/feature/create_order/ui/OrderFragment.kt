@@ -2,6 +2,7 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -66,36 +67,13 @@ class OrderFragment : Fragment() {
                 binding.cbSabt.setChecked(false)
                 binding.cbSabt.setEnabled(true)
             } else {
-                binding.cbSabt.setChecked(false)
+                binding.cbSabt.setChecked(true)
                 binding.cbSabt.setEnabled(true)
             }
         } else {
             binding.hfOrder.textTitle = getString(R.string.label_register_order)
             binding.cbSabt.setChecked(false)
             binding.cbSabt.setEnabled(true)
-        }
-
-        if (binding.cbSabt.isChecked) {
-
-            factorViewModel.updateHeader(sabt = 1)
-
-            lifecycleScope.launch {
-                val updatedHeader =
-                    factorViewModel.factorHeader.value?.copy(sabt = 1)
-                updatedHeader?.let {
-                    factorViewModel.updateFactorHeader(it)
-                }
-            }
-        } else {
-            factorViewModel.updateHeader(sabt = 0)
-
-            lifecycleScope.launch {
-                val updatedHeader =
-                    factorViewModel.factorHeader.value?.copy(sabt = 0)
-                updatedHeader?.let {
-                    factorViewModel.updateFactorHeader(it)
-                }
-            }
         }
     }
 
@@ -108,6 +86,9 @@ class OrderFragment : Fragment() {
                 findNavController().navigateUp()
             }
 
+            btnDraftOrder.setOnClickListener() {
+                navigateToReportFactor()
+            }
             bmbSendOrder.setOnClickBtnOneListener {
                 if (currentCartItems.isEmpty()) {
                     Toast.makeText(
@@ -131,17 +112,62 @@ class OrderFragment : Fragment() {
             }
             cbSabt.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        factorViewModel.calculateDiscountInsert(
-                            applyKind = DiscountApplyKind.FactorLevel.ordinal,
-                            factorHeader = factorViewModel.factorHeader.value ?: return@launch,
-                            factorDetail = null
-                        )
+                    // اعمال تخفیف اگر:
+                    // - فاکتور جدید است (args.sabt == 0) یا
+                    // - تخفیف قبلاً دستی حذف شده است
+                    if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            factorViewModel.calculateDiscountInsert(
+                                applyKind = DiscountApplyKind.FactorLevel.ordinal,
+                                factorHeader = factorViewModel.factorHeader.value ?: return@launch,
+                                factorDetail = null
+                            )
+                            factorViewModel.markDiscountApplied() // ریست فلگ
+                        }
                     }
+                    factorViewModel.updateHeader(sabt = 1)
+                    lifecycleScope.launch {
+                        val updatedHeader =
+                            factorViewModel.factorHeader.value?.copy(sabt = 1)
+                        updatedHeader?.let {
+                            factorViewModel.updateFactorHeader(it)
+                        }
+                    }
+
                 } else {
+                    factorViewModel.updateHeader(sabt = 0)
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        val updatedHeader =
+                            factorViewModel.factorHeader.value?.copy(sabt = 0)
+                        updatedHeader?.let {
+                            factorViewModel.updateFactorHeader(it)
+                        }
+                        factorViewModel.removeGiftsAndDiscounts(factorViewModel.factorHeader.value.id)
+                        factorViewModel.markDiscountRemoved() // ست کردن فلگ
+                    }
+                }
+            }
+/*
+            cbSabt.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    if (args.sabt != 1) {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            factorViewModel.calculateDiscountInsert(
+                                applyKind = DiscountApplyKind.FactorLevel.ordinal,
+                                factorHeader = factorViewModel.factorHeader.value ?: return@launch,
+                                factorDetail = null
+                            )
+                        }
+                        factorViewModel.updateHeader(sabt = 1)
+
+                    }
+
+                } else {
+                    factorViewModel.updateHeader(sabt = 0)
                     factorViewModel.removeGiftsAndDiscounts(factorViewModel.factorHeader.value.id)
                 }
             }
+*/
         }
     }
 

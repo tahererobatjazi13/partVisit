@@ -46,7 +46,7 @@ class OfflineOrderListAdapter(
 
             root.setOnClickListener { onClick(item) }
 
-            if (showSyncButton && item.hasDetail) {
+            if (showSyncButton && item.hasDetail && item.sabt==1) {
                 clSyncOrder.show()
             } else {
                 clSyncOrder.gone()

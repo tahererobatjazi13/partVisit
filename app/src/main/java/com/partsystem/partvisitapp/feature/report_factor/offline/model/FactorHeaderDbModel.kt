@@ -9,5 +9,6 @@ data class FactorHeaderDbModel(
     val persianDate: String,
     val createTime: String,
     val finalPrice: Long,
-    val hasDetail: Boolean
+    val hasDetail: Boolean,
+    val sabt: Int
 )
