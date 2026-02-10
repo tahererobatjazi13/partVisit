@@ -142,7 +142,7 @@ class OrderFragment : Fragment() {
                         updatedHeader?.let {
                             factorViewModel.updateFactorHeader(it)
                         }
-                        factorViewModel.removeGiftsAndDiscounts(factorViewModel.factorHeader.value.id)
+                        factorViewModel.removeGiftsAndDiscounts(args.factorId)
                         factorViewModel.markDiscountRemoved() // ست کردن فلگ
                     }
                 }

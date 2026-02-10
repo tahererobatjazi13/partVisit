@@ -62,17 +62,14 @@ class OfflineOrderDetailFragment : Fragment() {
             }
 
             btnEditOrder.setOnClickListener {
-
-     /*           if (args.sabt == 1) {
-
+               if (args.sabt == 1) {
                     val bundle = bundleOf(
                         "factorId" to args.factorId,
                         "sabt" to args.sabt
                     )
-
                     val navController = requireActivity().findNavController(R.id.mainNavHost)
                     navController.navigate(R.id.action_global_to_orderFragment, bundle)
-                } else {*/
+                } else {
                     val bundle = bundleOf(
                         "typeCustomer" to true,
                         "typeOrder" to OrderType.Edit.value,
@@ -83,7 +80,7 @@ class OfflineOrderDetailFragment : Fragment() {
 
                     val navController = requireActivity().findNavController(R.id.mainNavHost)
                     navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
-              //  }
+               }
 
             }
         }
