@@ -35,6 +35,7 @@ class OnlineOrderListAdapter(
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             root.setOnClickListener { onClick(item) }
             ivDelete.gone()
+            tvStatus.gone()
 
             if (showSyncButton) {
                 tvSyncOrder.show()

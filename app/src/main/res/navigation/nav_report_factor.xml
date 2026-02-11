@@ -49,9 +49,11 @@
         <argument
             android:name="factorId"
             app:argType="integer" />
+
         <argument
             android:name="sabt"
-            app:argType="integer" />
+            app:argType="integer"
+            android:defaultValue="0" />
 
     </fragment>
 

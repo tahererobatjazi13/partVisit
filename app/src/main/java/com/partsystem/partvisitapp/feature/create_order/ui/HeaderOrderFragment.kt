@@ -46,7 +46,9 @@ import com.partsystem.partvisitapp.feature.create_order.bottomSheet.CustomerList
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -86,7 +88,6 @@ class HeaderOrderFragment : Fragment() {
 
     private val args: HeaderOrderFragmentArgs by navArgs()
     private val persianDate: String = getTodayPersianDate()
-    private var hasLoadedEditData = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -98,20 +99,19 @@ class HeaderOrderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
-        initCustomer()
         setupSpinners()
         observeData()
 
         if (isEditMode) {
             loadEditData()
         } else {
+            // همیشه هدر را ایجاد یا نمایش بده (بدون چک کردن وضعیت قبلی)
             ensureHeaderInitialized()
         }
 
         setupClicks()
         setWidth()
     }
-
     private fun initAdapter() {
         val defaultAdapter =
             SpinnerAdapter(requireContext(), mutableListOf(getString(R.string.label_please_select)))
@@ -126,9 +126,7 @@ class HeaderOrderFragment : Fragment() {
             loadCustomerData(args.customerId, args.customerName)
             // اطمینان از مقداردهی saleCenterId در هر حالت
 
-            viewLifecycleOwner.lifecycleScope.launch {
-                saleCenterId = mainPreferences.saleCenterId.first() ?: 0
-            }
+
         }
     }
 
@@ -271,112 +269,213 @@ class HeaderOrderFragment : Fragment() {
         }
     }
 
+
     private fun ensureHeaderInitialized() {
         viewLifecycleOwner.lifecycleScope.launch {
-            // فقط یک بار اجرا شود (برای جلوگیری از تداخل در تغییرات مکرر)
-            if (hasLoadedEditData) return@launch
-            hasLoadedEditData = true
-
             val current = factorViewModel.factorHeader.value
 
-            // اگر هدر هنوز ایجاد نشده یا uniqueId ندارد، یکی بساز
-            if (current?.uniqueId == null) {
-                createNewHeader()
+            // اگر هدر از قبل وجود دارد، فقط داده‌ها را به ویوها بیند کن
+            if (current?.uniqueId != null) {
+                bindHeaderToViews(current)
+                return@launch
+            }
+
+            // هدر جدید ایجاد کن
+            createNewHeader()
+        }
+    }
+
+    private suspend fun bindHeaderToViews(header: FactorHeaderEntity) {
+        // بیند کردن تاریخ‌ها
+        header.createDate?.let { binding.tvDate.text = gregorianToPersian(it) }
+        header.dueDate?.let { binding.tvDuoDate.text = gregorianToPersian(it) }
+        header.deliveryDate?.let { binding.tvDeliveryDate.text = gregorianToPersian(it) }
+        binding.etDescription.setText(header.description ?: "")
+
+        // بارگذاری مقادیر پیش‌فرض
+        saleCenterId = header.saleCenterId ?: mainPreferences.saleCenterId.firstOrNull() ?: 0
+        userId = mainPreferences.id.firstOrNull() ?: 0
+        visitorId = mainPreferences.personnelId.firstOrNull() ?: 0
+
+        // 🔑 بارگذاری مشتری با استفاده از observe (نه .value)
+        header.customerId?.let { customerId ->
+            // ابتدا نام را از آرگومان‌ها یا کش نمایش دهیم
+            if (args.typeCustomer && args.customerId != 0 && args.customerName.isNotEmpty()) {
+                binding.tvCustomerName.text = args.customerName
+                loadCustomerData(args.customerId, args.customerName)
             } else {
-                // حتی اگر هدر وجود داشت، مطمئن شویم saleCenterId و سایر مقادیر ضروری ست شده‌اند
-                val saleCenterIdPref = mainPreferences.saleCenterId.first() ?: 0
-                val userId = mainPreferences.id.first() ?: 0
-                val visitorId = mainPreferences.personnelId.first() ?: 0
-
-                // فقط اگر فیلدهای ضروری null بودند، آپدیت کن
-                if (current.saleCenterId == null || current.createUserId == null || current.visitorId == null) {
-                    factorViewModel.factorHeader.value = current.copy(
-                        saleCenterId = current.saleCenterId ?: saleCenterIdPref,
-                        createUserId = current.createUserId ?: userId,
-                        visitorId = current.visitorId ?: visitorId,
-                        // اطمینان از تاریخ‌ها (اختیاری)
-                        createDate = current.createDate ?: getTodayGregorian(),
-                        persianDate = current.persianDate ?: getTodayPersianDate(),
-                        dueDate = current.dueDate ?: getTodayGregorian(),
-                        deliveryDate = current.deliveryDate ?: getTodayGregorian(),
-                        createTime = current.createTime ?: getCurrentTime()
-                    )
-                }
-
-                // همیشه saleCenterId را به‌روز کن (برای استفاده در loadPatterns)
-                saleCenterId = current.saleCenterId ?: saleCenterIdPref
-
-                // اگر defaultAnbarId نبود، بارگیری کن
-                if (current.defaultAnbarId == null) {
-                    headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
-                    headerOrderViewModel.defaultAnbarId.collect { anbarId ->
-                        if (anbarId != null) {
-                            factorViewModel.updateHeader(defaultAnbarId = anbarId)
-                        }
+                // بارگذاری نام مشتری از دیتابیس
+                customerViewModel.getCustomerById(customerId).observe(viewLifecycleOwner) { customer ->
+                    if (customer != null) {
+                        binding.tvCustomerName.text = customer.name
+                        loadCustomerData(customerId, customer.name)
+                    } else {
+                        binding.tvCustomerName.text = getString(R.string.msg_no_customer)
                     }
                 }
             }
         }
-    }
 
-    private fun createNewHeader() {
+        // 🔑 بارگذاری دسته‌بندی صورتحساب اگر وجود دارد
+        header.invoiceCategoryId?.let { categoryId ->
+            // اطمینان از بارگذاری لیست دسته‌بندی‌ها
+            headerOrderViewModel.getInvoiceCategory(userId).observe(viewLifecycleOwner) { list ->
+                if (list.isNotEmpty()) {
+                    allInvoiceCategory.clear()
+                    allInvoiceCategory.addAll(list)
+                    val items = mutableListOf(getString(R.string.label_please_select))
+                    items.addAll(list.map { it.name })
+                    binding.spInvoiceCategory.adapter = SpinnerAdapter(requireContext(), items)
 
-        viewLifecycleOwner.lifecycleScope.launch {
+                    // ست کردن مقدار انتخابی
+                    binding.spInvoiceCategory.setSelectionById(categoryId, allInvoiceCategory) { it.id }
 
-            val current = factorViewModel.factorHeader.value
-
-            //  اگر هدر  جدید است
-            if (current?.uniqueId == null) {
-
-                saleCenterId = mainPreferences.saleCenterId.first() ?: 0
-                controlVisit = mainPreferences.controlVisitSchedule.first() ?: false
-                userId = mainPreferences.id.first() ?: 0
-                visitorId = mainPreferences.personnelId.first() ?: 0
-
-                factorViewModel.factorHeader.value = current?.copy(
-                    uniqueId = getGUID(),
-                    saleCenterId = saleCenterId,
-                    settlementKind = 0,
-                    createSource = 2,
-                    formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
-                    createDate = getTodayGregorian(),
-                    persianDate = getTodayPersianDate(),
-                    dueDate = getTodayGregorian(),
-                    deliveryDate = getTodayGregorian(),
-                    createTime = getCurrentTime(),
-                    createUserId = userId,
-                    visitorId = visitorId,
-                    sabt = 0,
-                ) ?: FactorHeaderEntity(
-                    uniqueId = getGUID(),
-                    saleCenterId = saleCenterId,
-                    settlementKind = 0,
-                    createSource = 2,
-                    formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
-                    createDate = getTodayGregorian(),
-                    persianDate = getTodayPersianDate(),
-                    dueDate = getTodayGregorian(),
-                    deliveryDate = getTodayGregorian(),
-                    createTime = getCurrentTime(),
-                    createUserId = userId,
-                    visitorId = visitorId,
-                    sabt = 0,
-                )
-
-                headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
-                headerOrderViewModel.defaultAnbarId.collect { anbarId ->
-                    if (anbarId != null) {
-                        Log.d("anbarId", anbarId.toString())
-                        mainPreferences.saveDefaultAnbarId(
-                            defaultAnbarId = anbarId
+                    // 🔑 بارگذاری الگوها پس از انتخاب دسته‌بندی
+                    header.customerId?.let { customerId ->
+                        headerOrderViewModel.loadPatterns(
+                            customer = customerId,
+                            centerId = saleCenterId,
+                            invoiceCategoryId = categoryId,
+                            settlementKind = header.settlementKind ?: 0,
+                            date = header.persianDate ?: getTodayPersianDate()
                         )
+                    }
+                }
+            }
+        }
+        // 🔑 بارگذاری الگو و آکت از طریق observe (نه فراخوانی مستقیم)
+        header.patternId?.let { patternId ->
+            // اطمینان از بارگذاری لیست الگوها قبل از ست کردن انتخاب
+            headerOrderViewModel.patterns.observe(viewLifecycleOwner) { patterns ->
+                if (patterns.isNotEmpty()) {
+                    allPattern.clear()
+                    allPattern.addAll(patterns)
+                    val items = mutableListOf(getString(R.string.label_please_select))
+                    items.addAll(patterns.map { it.name })
+                    binding.spPattern.adapter = SpinnerAdapter(requireContext(), items)
+
+                    // ست کردن مقدار انتخابی
+                    binding.spPattern.setSelectionById(patternId, allPattern) { it.id }
+
+                    // 🔑 بارگذاری آکت‌ها پس از انتخاب الگو
+                    headerOrderViewModel.loadActs(
+                        patternId = patternId,
+                        actKind = ActKind.Product.ordinal
+                    )
+
+                    // لود نوع پرداخت
+                    headerOrderViewModel.loadPatternById(patternId)
+                    headerOrderViewModel.selectedPattern.observe(viewLifecycleOwner) { pattern ->
+                        fillPaymentType(pattern)
+                    }
+                }
+            }
+        }
+
+        // 🔑 بارگذاری آکت انتخاب شده
+        header.actId?.let { actId ->
+            headerOrderViewModel.acts.observe(viewLifecycleOwner) { acts ->
+                if (acts.isNotEmpty()) {
+                    allAct.clear()
+                    allAct.addAll(acts)
+                    updateActSpinner()
+
+                    // ست کردن مقدار انتخابی با تأخیر کوتاه برای اطمینان از آماده بودن اسپینر
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        delay(100)
+                        binding.spAct.setSelectionById(actId, allAct) { it.id }
+                    }
+                }
+            }
+        }
+        // بارگذاری انبار پیش‌فرض اگر وجود ندارد
+        if (header.defaultAnbarId == null && saleCenterId != 0) {
+            headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
+            viewLifecycleOwner.lifecycleScope.launch {
+                headerOrderViewModel.defaultAnbarId.firstOrNull()?.let { anbarId ->
+                    if (anbarId != null) {
                         factorViewModel.updateHeader(defaultAnbarId = anbarId)
                     }
                 }
             }
         }
-    }
+          /*
+        // 🔑 بارگذاری داده‌های تکمیلی فقط اگر هدر کامل نیست
+        if (header.invoiceCategoryId != null && header.customerId != null) {
+            headerOrderViewModel.loadPatterns(
+                customer = header.customerId!!,
+                centerId = saleCenterId,
+                invoiceCategoryId = header.invoiceCategoryId!!,
+                settlementKind = header.settlementKind ?: 0,
+                date = header.persianDate ?: getTodayPersianDate()
+            )
+        }
 
+        if (header.patternId != null) {
+            headerOrderViewModel.loadActs(
+                patternId = header.patternId!!,
+                actKind = ActKind.Product.ordinal
+            )
+        }*/
+    }
+    private fun createNewHeader() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val current = factorViewModel.factorHeader.value
+
+            // فقط اگر هدر وجود ندارد یا فاکتور جدید است (بدون uniqueId)، هدر جدید ایجاد کن
+            if (current?.uniqueId != null) {
+                bindHeaderToViews(current)
+                return@launch
+            }
+
+            // ایجاد هدر جدید
+            saleCenterId = mainPreferences.saleCenterId.firstOrNull() ?: 0
+            controlVisit = mainPreferences.controlVisitSchedule.firstOrNull() ?: false
+            userId = mainPreferences.id.firstOrNull() ?: 0
+            visitorId = mainPreferences.personnelId.firstOrNull() ?: 0
+
+            val newHeader = FactorHeaderEntity(
+                uniqueId = getGUID(),
+                saleCenterId = saleCenterId,
+                settlementKind = 0,
+                createSource = 2,
+                formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
+                createDate = getTodayGregorian(),
+                persianDate = getTodayPersianDate(),
+                dueDate = getTodayGregorian(),
+                deliveryDate = getTodayGregorian(),
+                createTime = getCurrentTime(),
+                createUserId = userId,
+                visitorId = visitorId,
+                sabt = 0,
+            )
+
+            factorViewModel.factorHeader.value = newHeader
+
+            // بارگذاری انبار پیش‌فرض
+            headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
+            headerOrderViewModel.defaultAnbarId.collect { anbarId ->
+                if (anbarId != null) {
+                    mainPreferences.saveDefaultAnbarId(defaultAnbarId = anbarId)
+                    factorViewModel.updateHeader(defaultAnbarId = anbarId)
+                }
+            }
+
+            // 🔑 انتخاب خودکار اولین مشتری (در حالت جدید و نه ویرایش)
+            if (!isEditMode && !args.typeCustomer) {
+                customerViewModel.filteredCustomers.value?.firstOrNull()?.let { firstCustomer ->
+                    binding.tvCustomerName.text = firstCustomer.name
+                    loadCustomerData(firstCustomer.id, firstCustomer.name)
+                    factorViewModel.updateHeader(customerId = firstCustomer.id)
+                }
+            }
+
+            // اگر مشتری از آرگومان‌ها آمده، آن را بارگذاری کن
+            if (args.typeCustomer && args.customerId != 0 && args.customerName.isNotEmpty()) {
+                loadCustomerData(args.customerId, args.customerName)
+            }
+        }
+    }
     private fun loadCustomerData(customerId: Int, customerName: String) {
         binding.tvCustomerName.text = customerName
         factorViewModel.updateHeader(customerId = customerId)
@@ -404,20 +503,20 @@ class HeaderOrderFragment : Fragment() {
                 binding.spCustomerDirection.adapter =
                     SpinnerAdapter(requireContext(), items)
 
-                factorViewModel.factorHeader.value?.directionDetailId?.let { id ->
-                    binding.spCustomerDirection.setSelectionById(
-                        id,
-                        allCustomerDirection
-                    ) { it.directionDetailId }
-                }
-                if (isEditMode) {
-                    Log.d("isEditModedirectionDetailId", "ok")
+                viewLifecycleOwner.lifecycleScope.launch {
+                    delay(100) // تأخیر برای اطمینان از آماده بودن اسپینر
 
-                    editingHeader?.directionDetailId?.let { id ->
+                    // اولویت ۱: از هدر فعلی ویومدل بخوان
+                    val directionIdFromHeader = factorViewModel.factorHeader.value?.directionDetailId
+
+                    // اولویت ۲: اگر در ویومدل نبود، از هدر ویرایشی بخوان
+                    val directionId = directionIdFromHeader ?: editingHeader?.directionDetailId
+
+                    if (directionId != null && directionId != 0) {
                         binding.spCustomerDirection.setSelectionById(
-                            id = id,
+                            id = directionId,
                             items = allCustomerDirection
-                        ) { it.id }
+                        ) { it.directionDetailId } // ✅ استفاده صحیح از directionDetailId
                     }
                 }
             }
@@ -463,25 +562,23 @@ class HeaderOrderFragment : Fragment() {
             header.deliveryDate?.let { binding.tvDeliveryDate.text = gregorianToPersian(it) }
         }
 
-        // دریافت لیست مشتریان
+        // 🔑 دریافت لیست مشتریان بدون شرط اضافی
         if (controlVisit) {
-
-            //  با برنامه ویزیت
             customerViewModel.loadCustomersWithSchedule(persianDate)
         } else {
-            //  بدون برنامه ویزیت
             customerViewModel.loadCustomersWithoutSchedule()
         }
-        if (!args.typeCustomer) {
-            customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
-                if (isEditMode) return@observe // در حالت ویرایش،این قسمت اجرا نشود
 
-                if (customers.isNotEmpty()) {
-                    val first = customers.first()
-                    factorViewModel.updateHeader(customerId = first.id)
-                    binding.tvCustomerName.text = first.name
-                    loadCustomerData(first.id, first.name)
-                }
+        // 🔑 انتخاب خودکار اولین مشتری فقط در حالت جدید (نه ویرایش)
+        customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
+            if (isEditMode) return@observe
+
+            // فقط اگر هنوز مشتری انتخاب نشده است
+            if (customers.isNotEmpty() && factorViewModel.factorHeader.value?.customerId == null) {
+                val first = customers.first()
+                factorViewModel.updateHeader(customerId = first.id)
+                binding.tvCustomerName.text = first.name
+                loadCustomerData(first.id, first.name)
             }
         }
 
@@ -524,10 +621,24 @@ class HeaderOrderFragment : Fragment() {
             setActSpinnerSelection(actId)
         }
 
+        // 🔑 بارگذاری آکت‌ها با ست کردن انتخاب پس از بارگذاری کامل
         headerOrderViewModel.acts.observe(viewLifecycleOwner) { acts ->
             allAct.clear()
             allAct.addAll(acts)
             updateActSpinner()
+
+            // ست کردن مقدار انتخابی با تأخیر کوتاه
+            viewLifecycleOwner.lifecycleScope.launch {
+                delay(50)
+                factorViewModel.factorHeader.value?.actId?.let { id ->
+                    binding.spAct.setSelectionById(id, allAct) { it.id }
+                }
+                if (isEditMode) {
+                    editingHeader?.actId?.let { id ->
+                        binding.spAct.setSelectionById(id, allAct) { it.id }
+                    }
+                }
+            }
         }
 
         headerOrderViewModel.addedAct.observe(viewLifecycleOwner) { act ->
@@ -591,21 +702,18 @@ class HeaderOrderFragment : Fragment() {
     private fun updateActSpinner() {
         val items = mutableListOf(getString(R.string.label_please_select))
         items.addAll(allAct.map { it.description ?: "" })
-        binding.spAct.adapter =
-            SpinnerAdapter(requireContext(), items)
-        Log.d("factorHeaderctId", factorViewModel.factorHeader.value?.actId.toString())
-        factorViewModel.factorHeader.value?.actId?.let { id ->
-            binding.spAct.setSelectionById(id, allAct) { it.id }
-        }
-        if (isEditMode) {
-            Log.d("factorHeaderctId4", factorViewModel.factorHeader.value?.actId.toString())
-            Log.d("isEditModeinvoiceactId", "ok")
+        binding.spAct.adapter = SpinnerAdapter(requireContext(), items)
 
-            editingHeader?.actId?.let { id ->
-                binding.spAct.setSelectionById(
-                    id = id,
-                    items = allAct
-                ) { it.id }
+        // ست کردن مقدار انتخابی با تأخیر کوتاه
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(50)
+            factorViewModel.factorHeader.value?.actId?.let { id ->
+                binding.spAct.setSelectionById(id, allAct) { it.id }
+            }
+            if (isEditMode) {
+                editingHeader?.actId?.let { id ->
+                    binding.spAct.setSelectionById(id, allAct) { it.id }
+                }
             }
         }
     }
@@ -700,38 +808,6 @@ class HeaderOrderFragment : Fragment() {
             }.show(parentFragmentManager, "CustomerListBottomSheet")
         }
 
-        /*
-                binding.btnContinue.setOnClickBtnOneListener {
-                    factorViewModel.updateHeader(description = binding.etDescription.text.toString())
-
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        val header = factorViewModel.factorHeader.value ?: return@launch
-                        val currentFactorId = factorViewModel.currentFactorId.value ?: return@launch
-
-                        //  اگر قبلاً نوع صفحه انتخاب شده، مستقیماً هدایت شود
-                        if (header.productSelectionType != null) {
-                            Log.d("productSelectionType1", header.productSelectionType)
-
-                            navigateToProductPage(header.productSelectionType, currentFactorId.toInt())
-                        }
-
-                        // اگر قبلاً وارد صفحه محصولات شده (بدون ذخیره نوع)
-                        if (factorViewModel.enteredProductPage) {
-                            Log.d("productSelectionType2", "ok")
-        if(pendingNavigation == "catalog")
-                            navigateToProductPage("catalog", currentFactorId.toInt()) // پیش‌فرض کاتالوگ
-                            else
-            navigateToProductPage("group", currentFactorId.toInt()) // پیش‌فرض کاتالوگ
-
-                        }
-                        // اولین بار - نمایش باتم‌شیت
-                        validateHeader()
-                    }
-                }
-        */
-
-
-
         binding.btnContinue.setOnClickBtnOneListener {
             if (isEditMode) {
                 factorViewModel.currentFactorId.value = args.factorId.toLong()
@@ -741,28 +817,29 @@ class HeaderOrderFragment : Fragment() {
                     factorViewModel.factorHeader.value!!.sabt,
                     args.factorId
                 )
-            }    else {
+            } else {
                 if (factorViewModel.enteredProductPage) {
-                    if (factorViewModel.factorHeader.value!!.productSelectionType=="catalog")
+                    if (factorViewModel.factorHeader.value!!.productSelectionType == "catalog")
                         navigateToProductPage(
                             "catalog",
                             factorViewModel.factorHeader.value!!.sabt,
                             factorViewModel.factorHeader.value?.id!!,
-                            )else
+                        ) else
                         navigateToProductPage(
                             "group",
                             factorViewModel.factorHeader.value!!.sabt,
-                            factorViewModel.factorHeader.value?.id!!)
-
-                        // به محصولات برگرد
-                   /* val currentFactorId =
-                        factorViewModel.currentFactorId.value ?: return@setOnClickBtnOneListener
-                    val action = HeaderOrderFragmentDirections
-                        .actionHeaderOrderFragmentToProductListFragment(
-                            fromFactor = true,
-                            factorId = currentFactorId.toInt()
+                            factorViewModel.factorHeader.value?.id!!
                         )
-                    findNavController().navigate(action)*/
+
+                    // به محصولات برگرد
+                    /* val currentFactorId =
+                         factorViewModel.currentFactorId.value ?: return@setOnClickBtnOneListener
+                     val action = HeaderOrderFragmentDirections
+                         .actionHeaderOrderFragmentToProductListFragment(
+                             fromFactor = true,
+                             factorId = currentFactorId.toInt()
+                         )
+                     findNavController().navigate(action)*/
                 } else {
                     // اولین بار (اعتبارسنجی و نمایش دیالوگ)
                     validateHeader()
@@ -786,13 +863,16 @@ class HeaderOrderFragment : Fragment() {
             .observe(viewLifecycleOwner) { header ->
                 editingHeader = header
                 factorViewModel.factorHeader.value = header
+                // 🔑 اطمینان از ست شدن directionDetailId در ویومدل
+                if (header.directionDetailId != null && header.directionDetailId != 0) {
+                    factorViewModel.updateHeader(directionDetailId = header.directionDetailId)
+                }
 
                 binding.tvDate.text = gregorianToPersian(header.createDate.toString())
                 binding.tvDuoDate.text = gregorianToPersian(header.dueDate.toString())
                 binding.tvDeliveryDate.text = gregorianToPersian(header.deliveryDate.toString())
                 binding.etDescription.setText(header.description)
                 viewLifecycleOwner.lifecycleScope.launch {
-
                     // ست کردن مقادیر اولیه
                     saleCenterId = header.saleCenterId ?: mainPreferences.saleCenterId.first() ?: 0
                     userId = mainPreferences.id.first() ?: 0
@@ -905,10 +985,16 @@ class HeaderOrderFragment : Fragment() {
         items: List<T>,
         getId: (T) -> Int?
     ) {
-        if (id == null) return
+        if (id == null || items.isEmpty() || adapter == null) return
 
         val position = items.indexOfFirst { getId(it) == id }
-        if (position >= 0) setSelection(position + 1)
+        // position + 1 چون اولین آیتم "لطفاً انتخاب کنید" است
+        if (position >= 0 && position + 1 < adapter!!.count) {
+            setSelection(position + 1)
+        } else {
+            // اگر آیتم پیدا نشد، اولین گزینه را انتخاب کن
+            setSelection(0)
+        }
     }
 
     // تابع جدید

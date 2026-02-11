@@ -85,6 +85,9 @@
     <string name="label_send_order">ثبت و ارسال نهایی سفارش</string>
     <string name="label_send_online_order">ارسال آنلاین سفارش</string>
     <string name="label_draft_order">پیش نویس سفارش</string>
+    <string name="label_completed_order_item">سفارش تکمیل شده</string>
+    <string name="label_not_completed_order_item">سفارش تکمیل نشده</string>
+    <string name="label_draft_order_item">سفارش پیش نویس</string>
     <string name="label_edit_order">ویرایش سفارش</string>
     <string name="label_order_description">توضیحات سفارش...</string>
     <string name="label_apply_discount">اعمال تخفیف</string>
@@ -104,8 +107,8 @@
     <string name="label_server_setting">تنظیمات سرور</string>
     <string name="label_update">آپدیت</string>
     <string name="label_back">بازگشت</string>
-
-
+    <string name="label_attention">توجه</string>
+    <string name="label_understand">متوجه شدم</string>
     <!-- date picker -->
     <string name="picker_announce_current_selection">Current selection: %1$s</string>
     <string name="picker_date_header_selected">%1$s</string>
@@ -130,6 +133,7 @@
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
     <string name="msg_press_back_button_again_exit">برای خروج دوباره دکمه بازگشت را بزنید</string>
     <string name="msg_order_successfully_sent">سفارش با موفقیت ارسال شد</string>
+    <string name="msg_cannot_go_back_warning">پس از زدن تیک تکمیل سفارش، امکان بازگشت به لیست محصولات وجود ندارد. برای ادامه کار، سفارش را ذخیره یا ارسال کنید.</string>
 
     <!-- Errors -->
     <string name="error_enter_address_server">آدرس سرور را وارد کنید</string>
@@ -170,5 +174,6 @@
     این سفارش به صورت پیش نویس در تبلت شما ذخیره می شود
     لطفا در اولین فرصت نسبت به ارسال آن به سرور اقدام نمایید
     و تا قبل از ارسال به سرور از حساب کاربری خود خارج نشوید.</string>
+    <string name="error_cannot_go_back_when_completed">پس از تکمیل سفارش امکان بازگشت وجود ندارد. لطفاً سفارش را پیش نویس یا ارسال کنید.</string>
 
 </resources>

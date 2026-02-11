@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.lifecycle.lifecycleScope
@@ -43,6 +44,7 @@ class OrderFragment : Fragment() {
     private var currentCartItems: List<FactorDetailUiModel> = emptyList()
     private val args: OrderFragmentArgs by navArgs()
     private var customDialog: CustomDialog? = null
+    private var backCallback: OnBackPressedCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +56,8 @@ class OrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupBackNavigationRestriction()
+
         setupClicks()
         initAdapter()
         setupObserver()
@@ -66,25 +70,97 @@ class OrderFragment : Fragment() {
             if (args.sabt == 0) {
                 binding.cbSabt.setChecked(false)
                 binding.cbSabt.setEnabled(true)
+                enableBackNavigation()
             } else {
                 binding.cbSabt.setChecked(true)
                 binding.cbSabt.setEnabled(true)
+                disableBackNavigation()
             }
         } else {
             binding.hfOrder.textTitle = getString(R.string.label_register_order)
             binding.cbSabt.setChecked(false)
             binding.cbSabt.setEnabled(true)
+            enableBackNavigation()
+        }
+    }
+    /**
+     * راه‌اندازی یکپارچه مدیریت بازگشت (هم سخت‌افزاری و هم هدر)
+     */
+    private fun setupBackNavigationRestriction() {
+        // مدیریت دکمه بازگشت سخت‌افزاری
+        backCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackPressAttempt()
+            }
+        }.also {
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, it)
+        }
+
+        // مدیریت دکمه بازگشت هدر - همان رفتار سخت‌افزاری
+        binding.hfOrder.setOnClickImgTwoListener {
+            handleBackPressAttempt()
+        }
+    }
+    /**
+     * بررسی و مدیریت تلاش برای بازگشت (یکپارچه برای هر دو نوع بازگشت)
+     */
+    private fun handleBackPressAttempt() {
+        if (binding.cbSabt.isChecked) {
+            // نمایش هشدار به کاربر با دیالوگ (تجربه کاربری بهتر از اسنک‌بار)
+            CustomDialog().apply {
+                setOnClickNegativeButton { hideProgress() }
+                setOnClickPositiveButton { hideProgress() }
+            }.showDialog(
+                requireActivity(),
+                getString(R.string.label_attention),
+                getString(R.string.msg_cannot_go_back_warning),
+                false,
+                getString(R.string.label_understand),
+                null,
+                false,
+                true
+            )
+        } else {
+            findNavController().navigateUp()
+        }
+    }
+    /**
+     * فعال‌سازی بازگشت (وقتی تیک تکمیل زده نشده)
+     */
+    private fun enableBackNavigation() {
+        backCallback?.isEnabled = true
+        binding.hfOrder.setOnClickImgTwoListener {
+            findNavController().navigateUp()
         }
     }
 
+    /**
+     * غیرفعال‌سازی بازگشت (وقتی تیک تکمیل زده شده)
+     */
+    private fun disableBackNavigation() {
+        backCallback?.isEnabled = false
+        binding.hfOrder.setOnClickImgTwoListener {
+            // نمایش پیام توضیحی
+            CustomDialog().apply {
+                setOnClickNegativeButton { hideProgress() }
+                setOnClickPositiveButton { hideProgress() }
+            }.showDialog(
+                requireActivity(),
+                getString(R.string.label_attention),
+                getString(R.string.msg_cannot_go_back_warning),
+                false,
+                getString(R.string.label_understand),
+                null,
+                false,
+                true
+            )
+        }
+    }
     /**
      *     تنظیم کلیک روی دکمه ورود و بررسی ورودی‌ها
      */
     private fun setupClicks() {
         binding.apply {
-            hfOrder.setOnClickImgTwoListener {
-                findNavController().navigateUp()
-            }
 
             btnDraftOrder.setOnClickListener() {
                 navigateToReportFactor()
@@ -112,9 +188,7 @@ class OrderFragment : Fragment() {
             }
             cbSabt.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    // اعمال تخفیف اگر:
-                    // - فاکتور جدید است (args.sabt == 0) یا
-                    // - تخفیف قبلاً دستی حذف شده است
+                    // فقط اعمال تخفیف و به‌روزرسانی هدر - بدون تغییر رفتار بازگشت
                     if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
                         viewLifecycleOwner.lifecycleScope.launch {
                             factorViewModel.calculateDiscountInsert(
@@ -122,7 +196,7 @@ class OrderFragment : Fragment() {
                                 factorHeader = factorViewModel.factorHeader.value ?: return@launch,
                                 factorDetail = null
                             )
-                            factorViewModel.markDiscountApplied() // ریست فلگ
+                            factorViewModel.markDiscountApplied()
                         }
                     }
                     factorViewModel.updateHeader(sabt = 1)
@@ -133,8 +207,8 @@ class OrderFragment : Fragment() {
                             factorViewModel.updateFactorHeader(it)
                         }
                     }
-
                 } else {
+                    // فقط حذف هدایا و تخفیف‌ها - بدون تغییر رفتار بازگشت
                     factorViewModel.updateHeader(sabt = 0)
                     viewLifecycleOwner.lifecycleScope.launch {
                         val updatedHeader =
@@ -143,31 +217,10 @@ class OrderFragment : Fragment() {
                             factorViewModel.updateFactorHeader(it)
                         }
                         factorViewModel.removeGiftsAndDiscounts(args.factorId)
-                        factorViewModel.markDiscountRemoved() // ست کردن فلگ
+                        factorViewModel.markDiscountRemoved()
                     }
                 }
             }
-/*
-            cbSabt.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    if (args.sabt != 1) {
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            factorViewModel.calculateDiscountInsert(
-                                applyKind = DiscountApplyKind.FactorLevel.ordinal,
-                                factorHeader = factorViewModel.factorHeader.value ?: return@launch,
-                                factorDetail = null
-                            )
-                        }
-                        factorViewModel.updateHeader(sabt = 1)
-
-                    }
-
-                } else {
-                    factorViewModel.updateHeader(sabt = 0)
-                    factorViewModel.removeGiftsAndDiscounts(factorViewModel.factorHeader.value.id)
-                }
-            }
-*/
         }
     }
 
@@ -322,6 +375,7 @@ class OrderFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        backCallback?.remove()
         _binding = null
     }
 }

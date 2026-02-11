@@ -6,9 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.getColorAttr
+import com.partsystem.partvisitapp.core.utils.getColorAttrSafe
 import com.partsystem.partvisitapp.databinding.ItemOrderListBinding
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import java.text.DecimalFormat
@@ -28,6 +31,7 @@ class OfflineOrderListAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorHeaderUiModel) = with(binding) {
+            val context = binding.root.context
 
             if (item.isSending) {
                 tvSyncOrder.hide()
@@ -44,9 +48,21 @@ class OfflineOrderListAdapter(
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
             ivDelete.show()
 
+            tvStatus.text = when (item.sabt) {
+                1 -> context.getString(R.string.label_completed_order_item)
+                else -> context.getString(R.string.label_not_completed_order_item)
+            }
+
+            tvStatus.setTextColor(
+                context.getColorAttrSafe(
+                    if (item.sabt == 1) R.attr.colorSuccess else R.attr.colorWarning,
+                    if (item.sabt == 1) R.color.green_21BF73 else R.color.orange_FF5722
+                )
+            )
+
             root.setOnClickListener { onClick(item) }
 
-            if (showSyncButton && item.hasDetail && item.sabt==1) {
+            if (showSyncButton && item.hasDetail && item.sabt == 1) {
                 clSyncOrder.show()
             } else {
                 clSyncOrder.gone()

@@ -96,7 +96,9 @@
             app:argType="boolean" />
         <argument
             android:name="sabt"
-            app:argType="integer" />
+            app:argType="integer"
+            android:defaultValue="0" />
+
         <argument
             android:name="factorId"
             android:defaultValue="0"
@@ -154,7 +156,9 @@
             app:argType="boolean" />
         <argument
             android:name="sabt"
-            app:argType="integer" />
+            app:argType="integer"
+            android:defaultValue="0" />
+
         <argument
             android:name="factorId"
             android:defaultValue="0"
@@ -184,7 +188,9 @@
             app:argType="integer" />
         <argument
             android:name="sabt"
-            app:argType="integer" />
+            app:argType="integer"
+            android:defaultValue="0" />
+
         <action
             android:id="@+id/action_orderFragment_to_homeFragment"
             app:destination="@id/homeFragment" />

@@ -59,6 +59,17 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvStatus"
+                    style="@style/XSmallBoldTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/x_small_size"
+                    android:text="@string/label_completed_order_item"
+                    app:layout_constraintStart_toStartOf="@+id/btnEditOrder"
+                    app:layout_constraintEnd_toEndOf="@+id/btnEditOrder"
+                    app:layout_constraintTop_toBottomOf="@+id/btnEditOrder" />
+
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"

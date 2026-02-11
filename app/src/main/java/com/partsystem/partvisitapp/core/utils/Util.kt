@@ -77,6 +77,15 @@ fun getColorAttr(ctx: Context, attrId: Int): Int {
     return ContextCompat.getColor(ctx, typedValue.resourceId)
 }
 
+fun Context.getColorAttrSafe(attr: Int, defaultColorRes: Int): Int {
+    val typedValue = TypedValue()
+    return if (theme.resolveAttribute(attr, typedValue, true) && typedValue.resourceId != 0) {
+        ContextCompat.getColor(this, typedValue.resourceId)
+    } else {
+        ContextCompat.getColor(this, defaultColorRes)
+    }
+}
+
 fun Context.getColorFromAttr(attr: Int): Int {
     val typedValue = TypedValue()
     theme.resolveAttribute(attr, typedValue, true)

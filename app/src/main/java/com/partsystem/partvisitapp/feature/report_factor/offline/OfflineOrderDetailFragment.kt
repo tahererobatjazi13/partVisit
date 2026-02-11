@@ -22,6 +22,8 @@ import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.extensions.gregorianToPersian
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
+import com.partsystem.partvisitapp.core.utils.getColorAttr
+import com.partsystem.partvisitapp.core.utils.getColorAttrSafe
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.adapter.OfflineOrderDetailAdapter
@@ -36,6 +38,7 @@ class OfflineOrderDetailFragment : Fragment() {
     private val args: OfflineOrderDetailFragmentArgs by navArgs()
     private val factorViewModel: FactorViewModel by viewModels()
     private val customerViewModel: CustomerViewModel by viewModels()
+    private var currentSabt: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,42 +51,49 @@ class OfflineOrderDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
-        rxBinding()
         setupObserver()
+        rxBinding()
         binding.svMain.gone()
     }
 
     private fun rxBinding() {
         binding.apply {
             hfOrderDetail.setOnClickImgTwoListener {
-                binding.hfOrderDetail.gone()
-                binding.svMain.gone()
                 findNavController().navigateUp()
             }
 
+            //  استفاده از مقدار به‌روزشده currentSabt به جای آرگومان
             btnEditOrder.setOnClickListener {
-               if (args.sabt == 1) {
-                    val bundle = bundleOf(
-                        "factorId" to args.factorId,
-                        "sabt" to args.sabt
-                    )
-                    val navController = requireActivity().findNavController(R.id.mainNavHost)
-                    navController.navigate(R.id.action_global_to_orderFragment, bundle)
-                } else {
-                    val bundle = bundleOf(
-                        "typeCustomer" to true,
-                        "typeOrder" to OrderType.Edit.value,
-                        "customerId" to 0,
-                        "customerName" to "",
-                        "factorId" to args.factorId
-                    )
-
-                    val navController = requireActivity().findNavController(R.id.mainNavHost)
-                    navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
-               }
-
+                when (currentSabt) {
+                    1 -> navigateToOrderFragment()    // فاکتور تکمیل شده → صفحه سفارشات
+                    else -> navigateToHeaderProducts() // فاکتور ناتمام → صفحه هدر
+                }
             }
         }
+    }
+
+    // ناوبری به صفحه سفارشات (برای فاکتورهای کامل‌شده)
+    private fun navigateToOrderFragment() {
+        val bundle = bundleOf(
+            "factorId" to args.factorId,
+            "sabt" to currentSabt // ارسال مقدار فعلی از دیتابیس
+        )
+        val navController = requireActivity().findNavController(R.id.mainNavHost)
+        navController.navigate(R.id.action_global_to_orderFragment, bundle)
+    }
+
+    // ناوبری به صفحه محصولات/هدر (برای فاکتورهای ناتمام)
+    private fun navigateToHeaderProducts() {
+        val bundle = bundleOf(
+            "typeCustomer" to true,
+            "typeOrder" to OrderType.Edit.value,
+            "customerId" to 0,
+            "customerName" to "",
+            "factorId" to args.factorId
+        )
+
+        val navController = requireActivity().findNavController(R.id.mainNavHost)
+        navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
     }
 
     private fun initAdapter() {
@@ -106,6 +116,26 @@ class OfflineOrderDetailFragment : Fragment() {
                         binding.tvCustomerName.text = customer.name
                     }
                 binding.tvDateTime.text = gregorianToPersian(header.createDate.toString())
+                currentSabt = header.sabt
+                // نمایش وضعیت فاکتور در UI
+                binding.tvStatus.text = when (currentSabt) {
+                    1 -> getString(R.string.label_completed_order_item)
+                    else -> getString(R.string.label_not_completed_order_item)
+                }
+
+                binding.tvStatus.setTextColor(
+                    if (currentSabt == 1)
+                        getColorAttr(requireContext(), R.attr.colorSuccess)
+                    else
+                        getColorAttr(requireContext(), R.attr.colorWarning)
+                )
+
+                binding.tvStatus.setTextColor(
+                    requireContext().getColorAttrSafe(
+                        if (currentSabt == 1) R.attr.colorSuccess else R.attr.colorWarning,
+                        if (currentSabt == 1) R.color.green_21BF73 else R.color.orange_FF5722
+                    )
+                )
             }
 
         factorViewModel.getFactorDetailUi(factorId = args.factorId)

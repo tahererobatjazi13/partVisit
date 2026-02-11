@@ -12,6 +12,7 @@
         <!--  colors -->
         <item name="colorShadow">@color/black_33000000</item>
         <item name="colorPassive">@color/white</item>
+        <item name="colorSuccess">@color/green_21BF73</item>
         <item name="colorWarning">@color/orange_FF5722</item>
         <item name="colorRipple">@color/blue_200063F5</item>
 
