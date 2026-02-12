@@ -76,7 +76,8 @@ class OfflineOrderDetailFragment : Fragment() {
     private fun navigateToOrderFragment() {
         val bundle = bundleOf(
             "factorId" to args.factorId,
-            "sabt" to currentSabt // ارسال مقدار فعلی از دیتابیس
+            "sabt" to currentSabt,
+            "isEditingCompletedOrder" to true
         )
         val navController = requireActivity().findNavController(R.id.mainNavHost)
         navController.navigate(R.id.action_global_to_orderFragment, bundle)

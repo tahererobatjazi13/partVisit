@@ -45,6 +45,7 @@ class OrderFragment : Fragment() {
     private val args: OrderFragmentArgs by navArgs()
     private var customDialog: CustomDialog? = null
     private var backCallback: OnBackPressedCallback? = null
+    private var isEditingCompletedOrder = false //  فلگ برای تشخیص حالت ویرایش
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,6 +58,7 @@ class OrderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupBackNavigationRestriction()
+        isEditingCompletedOrder = args.isEditingCompletedOrder
 
         setupClicks()
         initAdapter()
@@ -66,28 +68,21 @@ class OrderFragment : Fragment() {
 
         if (args.factorId > 0) {
             binding.hfOrder.textTitle = getString(R.string.label_edit_order)
-
-            if (args.sabt == 0) {
-                binding.cbSabt.setChecked(false)
-                binding.cbSabt.setEnabled(true)
-                enableBackNavigation()
-            } else {
-                binding.cbSabt.setChecked(true)
-                binding.cbSabt.setEnabled(true)
-                disableBackNavigation()
-            }
+            binding.cbSabt.isChecked = (args.sabt == 1)
+            binding.cbSabt.isEnabled = true
         } else {
             binding.hfOrder.textTitle = getString(R.string.label_register_order)
-            binding.cbSabt.setChecked(false)
-            binding.cbSabt.setEnabled(true)
-            enableBackNavigation()
+            binding.cbSabt.isChecked = false
+            binding.cbSabt.isEnabled = true
         }
     }
+
     /**
      * راه‌اندازی یکپارچه مدیریت بازگشت (هم سخت‌افزاری و هم هدر)
+     * ⚠️ این متد حتماً باید در ابتدای onViewCreated فراخوانی شود
      */
     private fun setupBackNavigationRestriction() {
-        // مدیریت دکمه بازگشت سخت‌افزاری
+        // مدیریت دکمه بازگشت سخت‌افزاری - همیشه فعال باشد
         backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 handleBackPressAttempt()
@@ -102,11 +97,20 @@ class OrderFragment : Fragment() {
         }
     }
     /**
-     * بررسی و مدیریت تلاش برای بازگشت (یکپارچه برای هر دو نوع بازگشت)
+     * منطق هوشمند بازگشت:
+     * - اگر در حالت ویرایش سفارش تکمیل‌شده هستیم → اجازه بازگشت به صفحه جزئیات
+     * - اگر در حالت عادی و تیک تکمیل زده شده → نمایش هشدار
+     * - در غیر این صورت → بازگشت عادی
      */
     private fun handleBackPressAttempt() {
+        // حالت ویرایش سفارش تکمیل ‌شده: همیشه اجازه بازگشت به صفحه جزئیات
+        if (isEditingCompletedOrder) {
+            findNavController().navigateUp()
+            return
+        }
+
+        //  حالت عادی + تیک تکمیل زده شده: مسدود کردن بازگشت
         if (binding.cbSabt.isChecked) {
-            // نمایش هشدار به کاربر با دیالوگ (تجربه کاربری بهتر از اسنک‌بار)
             CustomDialog().apply {
                 setOnClickNegativeButton { hideProgress() }
                 setOnClickPositiveButton { hideProgress() }
@@ -120,9 +124,11 @@ class OrderFragment : Fragment() {
                 false,
                 true
             )
-        } else {
-            findNavController().navigateUp()
+            return
         }
+
+        // بازگشت عادی
+        findNavController().navigateUp()
     }
     /**
      * فعال‌سازی بازگشت (وقتی تیک تکمیل زده نشده)
@@ -156,13 +162,16 @@ class OrderFragment : Fragment() {
             )
         }
     }
+
     /**
      *     تنظیم کلیک روی دکمه ورود و بررسی ورودی‌ها
      */
     private fun setupClicks() {
         binding.apply {
 
-            btnDraftOrder.setOnClickListener() {
+            btnDraftOrder.setOnClickListener {
+                factorViewModel.resetHeader()
+                factorViewModel.enteredProductPage = false
                 navigateToReportFactor()
             }
             bmbSendOrder.setOnClickBtnOneListener {
@@ -186,9 +195,9 @@ class OrderFragment : Fragment() {
                     showWarningDialog()
                 }
             }
+            // ⚠️ بدون هیچ تغییری در رفتار بازگشت - فقط به‌روزرسانی هدر و تخفیف‌ها
             cbSabt.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    // فقط اعمال تخفیف و به‌روزرسانی هدر - بدون تغییر رفتار بازگشت
                     if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
                         viewLifecycleOwner.lifecycleScope.launch {
                             factorViewModel.calculateDiscountInsert(
@@ -201,19 +210,14 @@ class OrderFragment : Fragment() {
                     }
                     factorViewModel.updateHeader(sabt = 1)
                     lifecycleScope.launch {
-                        val updatedHeader =
-                            factorViewModel.factorHeader.value?.copy(sabt = 1)
-                        updatedHeader?.let {
+                        factorViewModel.factorHeader.value?.copy(sabt = 1)?.let {
                             factorViewModel.updateFactorHeader(it)
                         }
                     }
                 } else {
-                    // فقط حذف هدایا و تخفیف‌ها - بدون تغییر رفتار بازگشت
                     factorViewModel.updateHeader(sabt = 0)
                     viewLifecycleOwner.lifecycleScope.launch {
-                        val updatedHeader =
-                            factorViewModel.factorHeader.value?.copy(sabt = 0)
-                        updatedHeader?.let {
+                        factorViewModel.factorHeader.value?.copy(sabt = 0)?.let {
                             factorViewModel.updateFactorHeader(it)
                         }
                         factorViewModel.removeGiftsAndDiscounts(args.factorId)
