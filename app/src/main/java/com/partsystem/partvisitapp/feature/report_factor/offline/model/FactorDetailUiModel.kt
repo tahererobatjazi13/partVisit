@@ -1,7 +1,5 @@
 package com.partsystem.partvisitapp.feature.report_factor.offline.model
 
-import com.partsystem.partvisitapp.core.database.entity.ProductEntity
-import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 
 data class FactorDetailUiModel(
     val id: Int,

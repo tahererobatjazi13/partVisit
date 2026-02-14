@@ -19,7 +19,6 @@ import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
-import com.partsystem.partvisitapp.core.network.modelDto.FactorDetail
 import com.partsystem.partvisitapp.core.utils.ActKind
 import com.partsystem.partvisitapp.core.utils.CalculateUnit2Type
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
@@ -56,8 +55,8 @@ class DiscountRepository @Inject constructor(
         applyKind: Int,
         factorHeader: FactorHeaderEntity,
         factorDetail: FactorDetailEntity?
-    ) = withContext(Dispatchers.IO) {
-        if (factorHeader.patternId == null) return@withContext
+    ) {
+        if (factorHeader.patternId == null) return
 
         val hasGift = false
         val insertCount: Byte = 0
@@ -73,7 +72,7 @@ class DiscountRepository @Inject constructor(
             getDiscounts(applyKind, factorHeader.createDate!!, factorHeader.persianDate!!, true)
         Log.d("Eshantyundiscountssize", discounts.size.toString())
 
-        val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return@withContext
+        val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return
         val discountInclusionKind: Int = pattern.discountInclusionKind!!
 
         // Remove already applied discounts

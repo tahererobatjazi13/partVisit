@@ -251,7 +251,7 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone"
                 app:dotColor="?attr/colorOnPrimary"
-                app:dotSize="12"
+                app:dotSize="10"
                 app:layout_constraintBottom_toBottomOf="@+id/tvConfirm"
                 app:layout_constraintEnd_toEndOf="@+id/tvConfirm"
                 app:layout_constraintStart_toStartOf="@+id/tvConfirm"

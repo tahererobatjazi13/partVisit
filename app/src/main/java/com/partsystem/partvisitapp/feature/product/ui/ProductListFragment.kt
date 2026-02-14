@@ -192,15 +192,17 @@ class ProductListFragment : Fragment() {
                     } else {
                         0
                     }
+                    var dialogRef: AddEditProductDialog? = null
 
                     // 2. نمایش دیالوگ با داده‌های آماده
-                    val dialog = AddEditProductDialog(
+                    dialogRef = AddEditProductDialog(
                         productViewModel,
                         product
                     ) { finalUnit1, finalPackingValue, packingId, _, _ ->
                         // 3. ایجاد یا به‌روزرسانی ردیف در ViewModel
                         lifecycleScope.launch {
-                            val validFactorId = factorViewModel.currentFactorId.value
+                            try {
+                                val validFactorId = factorViewModel.currentFactorId.value
                                 ?: args.factorId.toLong()
 
                             // ایجاد entity با مقادیر محاسبه‌شده
@@ -230,6 +232,12 @@ class ProductListFragment : Fragment() {
                                 vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
                                 tollPercent = product.tollPercent
                             )
+                                // فقط اینجا دیالوگ بسته شود - پس از اتمام کامل تراکنش
+                                dialogRef?.dismiss()
+                            } catch (e: Exception) {
+                                Log.e("ProductList", "Error saving product", e)
+                                Toast.makeText(requireContext(), "خطا در ذخیره محصول", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
 
@@ -238,7 +246,7 @@ class ProductListFragment : Fragment() {
                     fm.findFragmentByTag("AddRawProductDialog")?.let {
                         fm.beginTransaction().remove(it).commitAllowingStateLoss()
                     }
-                    dialog.show(fm, "AddRawProductDialog")
+                    dialogRef.show(fm, "AddRawProductDialog")
                 }
             }
             /*

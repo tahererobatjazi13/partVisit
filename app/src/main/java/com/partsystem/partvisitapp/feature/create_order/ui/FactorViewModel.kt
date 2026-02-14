@@ -2,11 +2,14 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.room.withTransaction
+import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
@@ -29,6 +32,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -37,6 +41,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,6 +50,7 @@ class FactorViewModel @Inject constructor(
 
     private val factorRepository: FactorRepository,
     private val discountRepository: DiscountRepository,
+    private val appDatabase: AppDatabase,
     val productRepository: ProductRepository,
 ) : ViewModel() {
 
@@ -154,6 +160,7 @@ class FactorViewModel @Inject constructor(
 
     val currentFactorId = MutableLiveData<Long>(0L)
     val headerId = MutableLiveData<Int?>()
+
     // فلگ برای ردیابی حذف دستی تخفیف توسط کاربر
     private val _discountManuallyRemoved = MutableStateFlow(false)
     val discountManuallyRemoved = _discountManuallyRemoved.asStateFlow()
@@ -509,6 +516,23 @@ class FactorViewModel @Inject constructor(
             factorDetail = factorDetail
         )
 
+    // در ابتدای کلاس ViewModel
+    private val _productSavingState = MutableStateFlow(false)
+    val isProductSaving: StateFlow<Boolean> = _productSavingState.asStateFlow()
+
+    // متد شروع ذخیره‌سازی
+    fun startProductSaving() {
+        _productSavingState.value = true
+    }
+
+    // متد انتظار برای اتمام
+    suspend fun waitForProductSavingComplete() {
+        // حداکثر 2 ثانیه انتظار (برای جلوگیری از هنگ شدن)
+        withTimeoutOrNull(1000) {
+            snapshotFlow { _productSavingState.value }
+                .first { !it }
+        }
+    }
 
     suspend fun saveProductWithDiscounts(
         detail: FactorDetailEntity,
@@ -517,32 +541,40 @@ class FactorViewModel @Inject constructor(
         vatPercent: Double,
         tollPercent: Double
     ) = withContext(Dispatchers.IO) {
+        try {
+            appDatabase.withTransaction {
 
-        //  ذخیره اولیه ردیف (بدون VAT صحیح)
-        val savedDetailId = factorRepository.addOrUpdateDetail(detail)
-        val savedDetail = detail.copy(id = savedDetailId)
+                //  ذخیره اولیه ردیف (بدون VAT صحیح)
+                val savedDetailId = factorRepository.addOrUpdateDetail(detail)
+                val savedDetail = detail.copy(id = savedDetailId)
 
-        // اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
-        discountRepository.calculateDiscountInsert(
-            applyKind = DiscountApplyKind.ProductLevel.ordinal,
-            factorHeader = factorHeader,
-            factorDetail = savedDetail
-        )
+                // اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
+                discountRepository.calculateDiscountInsert(
+                    applyKind = DiscountApplyKind.ProductLevel.ordinal,
+                    factorHeader = factorHeader,
+                    factorDetail = savedDetail
+                )
 
-        // 3. محاسبه مقادیر
+                // 3. محاسبه مقادیر
 
-        val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
-        val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
+                val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
+                val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
 
-        // 4. محاسبه قیمت پس از تخفیف
-        val priceAfterDiscount = Math.round(savedDetail.price - totalDiscount + totalAddition)
+                // 4. محاسبه قیمت پس از تخفیف
+                val priceAfterDiscount =
+                    Math.round(savedDetail.price - totalDiscount + totalAddition)
 
-        val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
-        val toll = Math.round(tollPercent * priceAfterDiscount).toDouble()
+                val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
+                val toll = Math.round(tollPercent * priceAfterDiscount).toDouble()
 
 
-        // 4. فقط VAT را آپدیت کنید - سایر فیلدها (مثل sortCode) دست نخورده باقی می‌مانند
-        factorRepository.updateVatForDetail(savedDetailId, vat)
+                // 4. فقط VAT را آپدیت کنید - سایر فیلدها (مثل sortCode) دست نخورده باقی می‌مانند
+                factorRepository.updateVatForDetail(savedDetailId, vat)
+            }
+        } finally {
+            // اتمام عملیات - اینجا تمام تغییرات یکجا کامیت شده‌اند
+            _productSavingState.value = false
+        }
     }
 
     /*

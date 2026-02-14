@@ -411,11 +411,10 @@ interface DiscountDao {
         AND p.Id IN (:productIds)
     """
     )
-    fun getProductMatchDiscountGroup(
+    suspend fun getProductMatchDiscountGroup(
         discountId: Int,
         productIds: List<Int>
     ): List<Int>
-
 
     @Query("SELECT COUNT(*) FROM FactorDiscount")
     fun getCount(): LiveData<Int>

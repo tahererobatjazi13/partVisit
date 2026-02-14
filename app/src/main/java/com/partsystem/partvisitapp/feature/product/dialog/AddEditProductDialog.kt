@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
+import kotlinx.coroutines.withContext
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,10 +28,12 @@ import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import com.partsystem.partvisitapp.feature.product.ui.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.floor
+import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class AddEditProductDialog(
@@ -59,6 +61,7 @@ class AddEditProductDialog(
     private var mojoodiConsumed = false
     var finalUnit1 = 0.0
     var finalPackingValue = 0.0
+    private var isProcessing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,6 +78,7 @@ class AddEditProductDialog(
         savedInstanceState: Bundle?
     ): View {
 
+        binding = DialogAddEditProductBinding.inflate(inflater, container, false)
         binding = DialogAddEditProductBinding.inflate(inflater, container, false)
         dialog?.window?.setBackgroundDrawableResource(R.drawable.background_dialog)
         currentProduct = product
@@ -104,6 +108,7 @@ class AddEditProductDialog(
     }
 
     private fun validateAndSaveProduct() {
+        if (isProcessing) return
         val product = currentProduct ?: return
 
         // ذخیره مقادیر اصلی کاربر در کش
@@ -133,10 +138,21 @@ class AddEditProductDialog(
             return
         }
 
+        isProcessing = true
+        binding.clConfirm.isEnabled = false
+        binding.tvConfirm.hide()
+        binding.pbConfirm.show()
         // ذخیره نهایی
         when (currentMojoodiSetting) {
             1 -> {
-                saveProduct(finalUnit1, finalPackingValue, selectedPacking)
+                // ذخیره مستقیم بدون چک موجویی
+                lifecycleScope.launch {
+                    try {
+                        saveProductWithLoading(finalUnit1, finalPackingValue, selectedPacking)
+                    } finally {
+                        isProcessing = false
+                    }
+                }
             }
 
             2, 3 -> {
@@ -149,10 +165,43 @@ class AddEditProductDialog(
             }
 
             else -> {
-                saveProduct(finalUnit1, finalPackingValue, selectedPacking)
+                lifecycleScope.launch {
+                    try {
+                        saveProductWithLoading(finalUnit1, finalPackingValue, selectedPacking)
+                    } finally {
+                        isProcessing = false
+                    }
+                }
             }
         }
     }
+
+    // 3. ایجاد متد جدید برای مدیریت لودینگ
+    private suspend fun saveProductWithLoading(
+        finalUnit1: Double,
+        finalPackingValue: Double,
+        packing: ProductPackingEntity?
+    ) {
+        // کلید اصلی: ابتدا به ViewModel اطلاع دهیم که محاسبات شروع شده
+        factorViewModel.startProductSaving()
+
+        // فراخوانی کال‌بک با تأخیر کوتاه برای اطمینان از نمایش لودینگ
+      //  delay(50)
+
+        val packingId = packing?.packingId ?: 0
+        onSave(
+            finalUnit1,
+            finalPackingValue,
+            packingId,
+            detailId,
+            product.product.id
+        )
+
+        // انتظار برای اتمام کامل محاسبات در ViewModel
+        factorViewModel.waitForProductSavingComplete()
+
+
+      }
 
     private fun saveProduct(
         finalUnit1: Double,
@@ -172,7 +221,8 @@ class AddEditProductDialog(
     }
 
     private fun resetUiState() {
-        binding.tvConfirm.isEnabled = true
+        isProcessing = false
+        binding.clConfirm.isEnabled = true
         binding.tvConfirm.show()
         binding.pbConfirm.gone()
     }
