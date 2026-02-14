@@ -331,6 +331,121 @@ interface DiscountDao {
         factorDetailId: Int?,
         price: Double
     ): Double?
+    // در DAO
+    @Query("""
+    SELECT 
+        CASE 
+            WHEN d.PaymentKind = 1 THEN
+                CASE 
+                    WHEN d.ExecuteKind = 0 THEN ds.Price
+                    ELSE 
+                        CAST(
+                            (CASE ds.UnitKind 
+                                WHEN 0 THEN fdAgg.Unit1Value 
+                                WHEN 1 THEN fdAgg.Unit2Value 
+                                WHEN 2 THEN fdAgg.PackingValue 
+                            END) / NULLIF(ds.Ratio, 0) 
+                        AS INTEGER) * ds.Price
+                END
+            ELSE
+                CASE 
+                    WHEN d.ExecuteKind = 0 THEN :price * ds.Price / 100.0
+                    ELSE 
+                        :price * 
+                        CAST(
+                            (CASE ds.UnitKind 
+                                WHEN 0 THEN fdAgg.Unit1Value 
+                                WHEN 1 THEN fdAgg.Unit2Value 
+                                WHEN 2 THEN fdAgg.PackingValue 
+                            END) / NULLIF(ds.Ratio, 0) 
+                        AS INTEGER) * ds.Price / 100.0
+                END
+        END AS Price
+    FROM DiscountStair ds
+    INNER JOIN Discount d ON ds.DiscountId = d.Id
+    INNER JOIN (
+        SELECT 
+            SUM(fd.Unit1Value) AS Unit1Value,
+            SUM(fd.Unit2Value) AS Unit2Value,
+            SUM(fd.PackingValue) AS PackingValue
+        FROM FactorDetail fd
+        WHERE fd.FactorId = :factorId
+          AND fd.IsGift = 0
+          AND (:factorDetailId IS NULL OR fd.Id = :factorDetailId)
+          AND fd.ProductId IN (:productIds)  -- ✅ فقط وقتی لیست پر است
+    ) fdAgg ON 1=1
+    WHERE ds.DiscountId = :discountId
+      AND (
+            (ds.UnitKind = 0 AND fdAgg.Unit1Value BETWEEN ds.FromPrice AND ds.ToPrice)
+         OR (ds.UnitKind = 1 AND fdAgg.Unit2Value BETWEEN ds.FromPrice AND ds.ToPrice)
+         OR (ds.UnitKind = 2 AND fdAgg.PackingValue BETWEEN ds.FromPrice AND ds.ToPrice)
+      )
+    LIMIT 1
+""")
+    suspend fun getCalculateDiscountByValueWithProducts(
+        factorId: Int,
+        discountId: Int,
+        productIds: List<Int>, // ⚠️ نمی‌تواند null باشد
+        factorDetailId: Int?,
+        price: Double
+    ): Double?
+
+    @Query("""
+    SELECT 
+        CASE 
+            WHEN d.PaymentKind = 1 THEN
+                CASE 
+                    WHEN d.ExecuteKind = 0 THEN ds.Price
+                    ELSE 
+                        CAST(
+                            (CASE ds.UnitKind 
+                                WHEN 0 THEN fdAgg.Unit1Value 
+                                WHEN 1 THEN fdAgg.Unit2Value 
+                                WHEN 2 THEN fdAgg.PackingValue 
+                            END) / NULLIF(ds.Ratio, 0) 
+                        AS INTEGER) * ds.Price
+                END
+            ELSE
+                CASE 
+                    WHEN d.ExecuteKind = 0 THEN :price * ds.Price / 100.0
+                    ELSE 
+                        :price * 
+                        CAST(
+                            (CASE ds.UnitKind 
+                                WHEN 0 THEN fdAgg.Unit1Value 
+                                WHEN 1 THEN fdAgg.Unit2Value 
+                                WHEN 2 THEN fdAgg.PackingValue 
+                            END) / NULLIF(ds.Ratio, 0) 
+                        AS INTEGER) * ds.Price / 100.0
+                END
+        END AS Price
+    FROM DiscountStair ds
+    INNER JOIN Discount d ON ds.DiscountId = d.Id
+    INNER JOIN (
+        SELECT 
+            SUM(fd.Unit1Value) AS Unit1Value,
+            SUM(fd.Unit2Value) AS Unit2Value,
+            SUM(fd.PackingValue) AS PackingValue
+        FROM FactorDetail fd
+        WHERE fd.FactorId = :factorId
+          AND fd.IsGift = 0
+          AND (:factorDetailId IS NULL OR fd.Id = :factorDetailId)
+          -- ❌ بدون شرط ProductId
+    ) fdAgg ON 1=1
+    WHERE ds.DiscountId = :discountId
+      AND (
+            (ds.UnitKind = 0 AND fdAgg.Unit1Value BETWEEN ds.FromPrice AND ds.ToPrice)
+         OR (ds.UnitKind = 1 AND fdAgg.Unit2Value BETWEEN ds.FromPrice AND ds.ToPrice)
+         OR (ds.UnitKind = 2 AND fdAgg.PackingValue BETWEEN ds.FromPrice AND ds.ToPrice)
+      )
+    LIMIT 1
+""")
+    suspend fun getCalculateDiscountByValueWithoutProducts(
+        factorId: Int,
+        discountId: Int,
+        factorDetailId: Int?,
+        price: Double
+    ): Double?
 
     /**
      * دریافت اولین DiscountStair معتبر برای یک discountId و یک مقدار قیمت
