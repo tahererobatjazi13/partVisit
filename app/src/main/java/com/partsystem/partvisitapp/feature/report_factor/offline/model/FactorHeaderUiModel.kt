@@ -6,7 +6,7 @@ data class FactorHeaderUiModel(
     val patternName: String?,
     val persianDate: String,
     val createTime: String,
-    val finalPrice: Long,
+    val finalPrice: Double,
     val hasDetail: Boolean,
     val sabt: Int,
     val isSending: Boolean = false

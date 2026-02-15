@@ -135,7 +135,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "factor level insert&delete"
+git commit -m "final price long"
 git push -u origin master
 git push
 */
