@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.feature.report_factor.offline.adapter
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -44,6 +45,8 @@ class OfflineOrderListAdapter(
             tvOrderNumber.text = item.factorId.toString()
             tvCustomerName.text = item.customerName ?: "-"
             tvPatternName.text = item.patternName ?: "-"
+            Log.d("finalPriceadapter", item.finalPrice.toString())
+
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
             ivDelete.show()

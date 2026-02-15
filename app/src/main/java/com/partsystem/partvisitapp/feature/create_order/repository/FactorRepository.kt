@@ -112,6 +112,7 @@ class FactorRepository @Inject constructor(
         factorDao.getFactorDiscountsLive(factorId, factorDetailId)
 
     suspend fun deleteFactor(factorId: Int) = factorDao.deleteFactor(factorId)
+
     fun getCount() = factorDao.getCount()
 
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity? =
@@ -396,5 +397,15 @@ fun getAllFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
     }
 
 
+    suspend fun getTotalFactorLevelDiscount(factorId: Int): Double? {
+        return factorDao.getTotalFactorLevelDiscount(factorId)
+    }
 
+    suspend fun getTotalProductLevelDiscount(factorId: Int): Double? {
+        return factorDao.getTotalProductLevelDiscount(factorId)
+    }
+
+    suspend fun deleteFactorLevelDiscounts(factorId: Int) {
+        factorDao.deleteFactorLevelDiscounts(factorId)
+    }
 }

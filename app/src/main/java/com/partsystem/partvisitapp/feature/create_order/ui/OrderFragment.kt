@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.SnackBarType
@@ -70,11 +71,18 @@ class OrderFragment : Fragment() {
             binding.hfOrder.textTitle = getString(R.string.label_edit_order)
             binding.cbSabt.isChecked = (args.sabt == 1)
             binding.cbSabt.isEnabled = true
+
+            // 🔑 تنظیم وضعیت اولیه آداپتر بر اساس مقدار ذخیره‌شده
+            orderAdapter.setOrderCompleted(args.sabt == 1)
         } else {
             binding.hfOrder.textTitle = getString(R.string.label_register_order)
             binding.cbSabt.isChecked = false
             binding.cbSabt.isEnabled = true
+
+            // 🔑 وضعیت پیش‌فرض: سفارش تکمیل نشده
+            orderAdapter.setOrderCompleted(false)
         }
+
     }
 
     /**
@@ -96,6 +104,7 @@ class OrderFragment : Fragment() {
             handleBackPressAttempt()
         }
     }
+
     /**
      * منطق هوشمند بازگشت:
      * - اگر در حالت ویرایش سفارش تکمیل‌شده هستیم → اجازه بازگشت به صفحه جزئیات
@@ -130,6 +139,7 @@ class OrderFragment : Fragment() {
         // بازگشت عادی
         findNavController().navigateUp()
     }
+
     /**
      * فعال‌سازی بازگشت (وقتی تیک تکمیل زده نشده)
      */
@@ -185,6 +195,8 @@ class OrderFragment : Fragment() {
                 }
 
                 if (binding.cbSabt.isChecked) {
+                    calculateTotalPrices(currentCartItems)
+
                     // تکمیل سفارش → ارسال به سرور
                     factorViewModel.sendFactor(
                         factorId = args.factorId,
@@ -195,10 +207,13 @@ class OrderFragment : Fragment() {
                     showWarningDialog()
                 }
             }
-            // ⚠️ بدون هیچ تغییری در رفتار بازگشت - فقط به‌روزرسانی هدر و تخفیف‌ها
             cbSabt.setOnCheckedChangeListener { _, isChecked ->
+                // 🔑 اولویت اول: آپدیت رابط کاربری
+                orderAdapter.setOrderCompleted(isChecked)
+
                 if (isChecked) {
-                    if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
+                    // اعمال تخفیف سطح فاکتور
+                    if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value == true) {
                         viewLifecycleOwner.lifecycleScope.launch {
                             factorViewModel.calculateDiscountInsert(
                                 applyKind = DiscountApplyKind.FactorLevel.ordinal,
@@ -206,26 +221,35 @@ class OrderFragment : Fragment() {
                                 factorDetail = null
                             )
                             factorViewModel.markDiscountApplied()
+                            // ✅ پس از اعمال تخفیف، مبالغ را بازحساب کن
+                            calculateTotalPrices(currentCartItems)
                         }
                     }
+                    // آپدیت وضعیت sabt در حافظه
                     factorViewModel.updateHeader(sabt = 1)
-                    lifecycleScope.launch {
-                        factorViewModel.factorHeader.value?.copy(sabt = 1)?.let {
-                            factorViewModel.updateFactorHeader(it)
-                        }
-                    }
                 } else {
-                    factorViewModel.updateHeader(sabt = 0)
+                    // حذف تخفیف‌ها و به‌روزرسانی هدر در یک تراکنش
                     viewLifecycleOwner.lifecycleScope.launch {
-                        factorViewModel.factorHeader.value?.copy(sabt = 0)?.let {
-                            factorViewModel.updateFactorHeader(it)
-                        }
+                        // 1. حذف تخفیف‌های سطح فاکتور و هدایا
                         factorViewModel.removeGiftsAndDiscounts(args.factorId)
                         factorViewModel.markDiscountRemoved()
+
+                        // 2. آپدیت وضعیت sabt در حافظه
+                        factorViewModel.updateHeader(sabt = 0)
+
+                        // 3. ✅ مهم: کمی تأخیر برای اطمینان از اتمام حذف تخفیف‌ها
+                      //  delay(100)
+
+                        // 4. بازحساب مبالغ و ذخیره در دیتابیس
+                        calculateTotalPrices(currentCartItems)
+
+                        // 5. آپدیت نهایی sabt در دیتابیس
+                        factorViewModel.factorHeader.value?.let { header ->
+                            factorViewModel.updateFactorHeader(header.copy(sabt = 0))
+                        }
                     }
                 }
-            }
-        }
+            }        }
     }
 
     private fun showWarningDialog() {
@@ -307,6 +331,23 @@ class OrderFragment : Fragment() {
     private fun initAdapter() {
         orderAdapter = OrderAdapter(
             onDelete = { item ->
+                if (binding.cbSabt.isChecked) {
+                    CustomDialog().apply {
+                        setOnClickNegativeButton { hideProgress() }
+                        setOnClickPositiveButton { hideProgress() }
+                    }.showDialog(
+                        requireActivity(),
+                        getString(R.string.label_attention),
+                        getString(R.string.msg_cannot_delete_when_completed),
+                        false,
+                        getString(R.string.label_understand),
+                        null,
+                        false,
+                        true
+                    )
+                    return@OrderAdapter
+                }
+                // حذف
                 factorViewModel.deleteFactorDetail(item)
             }
         )
@@ -340,31 +381,67 @@ class OrderFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun calculateTotalPrices(items: List<FactorDetailUiModel>?) {
         items ?: return
-        val sumPrice = items.sumOf {
-            it.unit1Rate * it.unit1Value
-        }
-        val sumDiscountPrice = items.sumOf {
-            it.discountPrice
-        }
-        val sumVat = items.sumOf {
-            it.vat
-        }
-        with(binding) {
-            tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
-            tvSumDiscountPrice.text = "${"-" + formatter.format(sumDiscountPrice)} ریال"
-            tvSumVat.text = "${formatter.format(sumVat)} ریال"
-            tvFinalPrice.text = "${formatter.format((sumPrice - sumDiscountPrice) + sumVat)} ریال"
-        }
-        factorViewModel.updateHeader(finalPrice = (sumPrice - sumDiscountPrice) + sumVat)
 
+        // 1. محاسبه پایه (قیمت کل و مالیات)
+        val sumPrice = items.sumOf { it.unit1Rate * it.unit1Value }
+        val sumVat = items.sumOf { it.vat }
+
+        // 2. دریافت تخفیف کل و به‌روزرسانی هدر
         lifecycleScope.launch {
-            val updatedHeader =
-                factorViewModel.factorHeader.value?.copy(finalPrice = (sumPrice - sumDiscountPrice) + sumVat)
-            updatedHeader?.let {
-                factorViewModel.updateFactorHeader(it)
+            val totalDiscount = factorViewModel.getTotalDiscountForFactor(args.factorId)
+            val finalPrice = (sumPrice - totalDiscount) + sumVat
+
+            // 3. آپدیت UI
+            with(binding) {
+                tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
+                tvSumDiscountPrice.text = "${"-" + formatter.format(totalDiscount)} ریال"
+                tvSumVat.text = "${formatter.format(sumVat)} ریال"
+                tvFinalPrice.text = "${formatter.format(finalPrice)} ریال"
             }
+
+            // 🔑 تضمین استفاده از شناسه صحیح هدر
+            val currentHeader = factorViewModel.factorHeader.value
+            val correctHeaderId = if (args.factorId > 0) {
+                args.factorId // در حالت ویرایش همیشه از شناسه آرگومان استفاده کن
+            } else {
+                currentHeader?.id ?: 0
+            }
+
+
+            // ✅ 4. آپدیت اتمیک هدر (بدون کوروتین تو در تو)
+           // val currentHeader = factorViewModel.factorHeader.value ?: return@launch
+
+            // ایجاد کپی با مقادیر جدید
+          /*  val updatedHeader = currentHeader.copy(
+                finalPrice = finalPrice,
+                sabt = currentHeader.sabt // حفظ وضعیت فعلی sabt
+            )*/
+            // ایجاد هدر با شناسه صحیح
+            val updatedHeader = currentHeader?.copy(
+                id = correctHeaderId,
+                finalPrice = finalPrice,
+                sabt = currentHeader.sabt
+            ) ?: FactorHeaderEntity(
+                id = correctHeaderId,
+                finalPrice = finalPrice,
+                sabt = currentHeader.sabt            )
+
+            // ابتدا حافظه را آپدیت کن
+            factorViewModel.updateHeader(
+                finalPrice = finalPrice,
+                sabt = currentHeader.sabt
+            )
+
+            // سپس مستقیماً به دیتابیس بفرست (همان کوروتین)
+            factorViewModel.updateFactorHeader(updatedHeader)
+
+            Log.d(
+                "DEBUG_OrderFragment",
+                "finalPrice updated to DB: $finalPrice for factor ${currentHeader.id}"
+            )
         }
     }
+
 
     private fun navigateToHomeClearOrder() {
         val navController = findNavController()

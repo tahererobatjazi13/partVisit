@@ -134,7 +134,7 @@
     <string name="msg_press_back_button_again_exit">برای خروج دوباره دکمه بازگشت را بزنید</string>
     <string name="msg_order_successfully_sent">سفارش با موفقیت ارسال شد</string>
     <string name="msg_cannot_go_back_warning">پس از زدن تیک تکمیل سفارش، امکان بازگشت به لیست محصولات وجود ندارد. برای ادامه کار، سفارش را ذخیره یا ارسال کنید.</string>
-
+    <string name="msg_cannot_delete_when_completed">در حالت تکمیل سفارش، امکان حذف ردیف وجود ندارد. لطفاً ابتدا تیک تکمیل سفارش را بردارید.</string>
     <!-- Errors -->
     <string name="error_enter_address_server">آدرس سرور را وارد کنید</string>
     <string name="error_network_json_response">مشکل در دریافت اطلاعات از سرور</string>

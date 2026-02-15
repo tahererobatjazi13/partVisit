@@ -169,7 +169,6 @@ class DiscountRepository @Inject constructor(
                 }
 
                 if (existingDiscount != null) {
-
                     // اگر رکورد موجود باشد، آن را ویرایش کنید
                     val factorDiscount = existingDiscount.copy(
                         id = existingDiscount.id,
@@ -181,7 +180,6 @@ class DiscountRepository @Inject constructor(
                     )
                     //   factorDao.insertFactorDiscount(updatedDiscount)
 
-
                     // Set SortCode
                     if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
                         if (factorSortCode == 0) {
@@ -190,6 +188,8 @@ class DiscountRepository @Inject constructor(
                             factorSortCode = existingCount + 1
                         }
                         factorDiscount.sortCode = factorSortCode++
+                        factorDiscount.productId = null
+                        factorDiscount.factorDetailId = null
                     } else {
                         if (productSortCode == 0) {
                             // Important: This should count only for this FactorDetailId!
@@ -278,6 +278,8 @@ class DiscountRepository @Inject constructor(
                             factorSortCode = existingCount + 1
                         }
                         factorDiscount.sortCode = factorSortCode++
+                        factorDiscount.productId = null
+                        factorDiscount.factorDetailId = null
                     } else {
                         if (productSortCode == 0) {
                             // Important: This should count only for this FactorDetailId!
@@ -461,14 +463,17 @@ class DiscountRepository @Inject constructor(
 
         // --- تعیین پایه‌ی محاسبه قیمت ---
         when (discount.priceKind) {
+
             DiscountPriceKind.SalePrice.ordinal -> {
+
                 price = if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
-                    getSumPriceByProductIds(factor.id, productIds)
+                    getSumPrice(factor.id, productIds)
                 } else {
                     Log.d("EshantyunfactorDetailprice", "ok")
 
                     factorDetail?.price ?: 0.0
                 }
+                Log.d("pricepriceprice", price.toString())
             }
 
             DiscountPriceKind.DiscountedPrice.ordinal -> {
@@ -523,7 +528,7 @@ class DiscountRepository @Inject constructor(
             }
 
             DiscountCalculationKind.Stair.ordinal -> {
-                 discountPrice = discount.calculateStairDiscount(price)
+                discountPrice = discount.calculateStairDiscount(price)
             }
 
             DiscountCalculationKind.StairByValue.ordinal -> {
@@ -1298,6 +1303,17 @@ class DiscountRepository @Inject constructor(
         return factorDao.getSumPriceByProductIds(factorId, productIds) ?: 0.0
     }
 
+    // DiscountRepository.kt
+    suspend fun getSumPrice(factorId: Int, productIds: List<Int> = emptyList()): Double {
+        return if (productIds.isEmpty()) {
+            // ⚠️ شبیه کد جاوا: اگر لیست خالی است، همه ردیف‌ها را جمع کن
+            factorDao.getSumPrice(factorId) ?: 0.0
+        } else {
+            factorDao.getSumPriceByProductIds(factorId, productIds) ?: 0.0
+        }
+    }
+
+
     private suspend fun getSumByField(
         factorId: Int,
         productIds: List<Int>,
@@ -1436,4 +1452,30 @@ class DiscountRepository @Inject constructor(
                 false
             }
         }
+
+
+    suspend fun calculatePriceForDiscount(
+        applyKind: Int,
+        factorId: Int,
+        factorDetail: FactorDetailEntity? = null,
+        productIds: List<Int>? = null
+    ): Double {
+        return when (applyKind) {
+            DiscountApplyKind.FactorLevel.ordinal -> {
+                // جمع قیمت کل فاکتور (با فیلتر محصولات اختیاری)
+                factorDao.getSumPrice(
+                    factorId = factorId,
+                    productIds = productIds ?: emptyList()
+                ) ?: 0.0
+            }
+
+            DiscountApplyKind.ProductLevel.ordinal -> {
+                // قیمت از خود ردیف مربوطه گرفته می‌شود
+                factorDetail?.price ?: 0.0
+            }
+
+            else -> 0.0
+        }
+    }
+
 }

@@ -20,10 +20,10 @@ data class FactorDiscountEntity(
     @PrimaryKey
     val id: Int = 0,
     val factorId: Int,
-    var productId: Int,
+    var productId: Int?,
     var sortCode: Int,
     val discountId: Int,
     var price: Double,
-    var factorDetailId: Int,
+    var factorDetailId: Int?,
     val discountPercent: Double
 )

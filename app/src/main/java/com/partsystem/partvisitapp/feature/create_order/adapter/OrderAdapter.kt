@@ -25,9 +25,14 @@ class OrderAdapter(
     private val onDelete: (FactorDetailUiModel) -> Unit,
 ) : ListAdapter<FactorDetailUiModel, OrderAdapter.OrderViewHolder>(OrderDiffCallback()) {
     var backColorGift: Int = 0
+    private var isOrderCompleted = false // فلگ کنترل وضعیت تکمیل سفارش
 
     private val formatter = DecimalFormat("#,###,###,###")
-
+    // متد جدید برای آپدیت وضعیت تکمیل سفارش
+    fun setOrderCompleted(completed: Boolean) {
+        isOrderCompleted = completed
+        notifyDataSetChanged() // به‌روزرسانی کل لیست
+    }
     inner class OrderViewHolder(val binding: ItemOrderDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -47,11 +52,24 @@ class OrderAdapter(
 
             backColorGift = getColorAttr(context, R.attr.colorGift)
 
-            if (item.isGift == 1) {
+            if (isOrderCompleted) {
+                // سطل آشغال در حالت تکمیل سفارش همیشه مخفی است
                 binding.ivDelete.gone()
-                binding.root.setBackgroundColor(backColorGift)
-            } else binding.ivDelete.show()
-
+            } else {
+                // در حالت عادی، فقط ردیف‌های غیرهدیه قابل حذف هستند
+                if (item.isGift == 1) {
+                    binding.ivDelete.gone()
+                    binding.root.setBackgroundColor(backColorGift)
+                } else {
+                    binding.ivDelete.show()
+                    binding.root.setBackgroundColor(
+                        if (bindingAdapterPosition % 2 == 0)
+                            itemView.context.getColorFromAttr(R.attr.colorBasic)
+                        else
+                            itemView.context.getColorFromAttr(R.attr.colorRow)
+                    )
+                }
+            }
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
             tvUnitName.text = item.unit1Name
 
@@ -107,8 +125,11 @@ class OrderAdapter(
                     tvSumPrice.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 tvSumPrice.text = formatter.format(total) + " ریال"
             }
-
-            ivDelete.setOnClickListener { onDelete(item) }
+            ivDelete.setOnClickListener {
+                if (!isOrderCompleted) {
+                    onDelete(item)
+                }
+            }
             itemView.setOnClickListener { onClickDialog(item) }
 
         }

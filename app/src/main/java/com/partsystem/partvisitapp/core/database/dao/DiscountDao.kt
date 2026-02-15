@@ -178,7 +178,7 @@ interface DiscountDao {
     ): List<DiscountFull>
 
 
-    @Query("SELECT COUNT(*) FROM FactorDiscount WHERE id = :factorId")
+    @Query("SELECT COUNT(*) FROM FactorDiscount WHERE factorId = :factorId")
     suspend fun getFactorDiscountCountByFactorId(factorId: Int): Int
 
     @Query("SELECT COUNT(*) FROM FactorDiscount WHERE FactorDetailId = :factorDetailId")

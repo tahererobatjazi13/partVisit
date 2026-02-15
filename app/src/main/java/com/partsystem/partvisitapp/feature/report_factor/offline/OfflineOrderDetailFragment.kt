@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -27,6 +28,7 @@ import com.partsystem.partvisitapp.core.utils.getColorAttrSafe
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.adapter.OfflineOrderDetailAdapter
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class OfflineOrderDetailFragment : Fragment() {
@@ -158,20 +160,33 @@ class OfflineOrderDetailFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun calculateTotalPrices(items: List<FactorDetailUiModel>?) {
         items ?: return
-        val sumPrice = items.sumOf {
-            it.unit1Rate * it.unit1Value
-        }
-        val sumDiscountPrice = items.sumOf {
-            it.discountPrice
-        }
-        val sumVat = items.sumOf {
-            it.vat
-        }
-        with(binding) {
-            tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
-            tvSumDiscountPrice.text = "${"-" + formatter.format(sumDiscountPrice)} ریال"
-            tvSumVat.text = "${formatter.format(sumVat)} ریال"
-            tvFinalPrice.text = "${formatter.format((sumPrice - sumDiscountPrice) + sumVat)} ریال"
+
+        // محاسبه قیمت کل و مالیات
+        val sumPrice = items.sumOf { it.unit1Rate * it.unit1Value }
+        val sumVat = items.sumOf { it.vat }
+
+        //  دریافت تخفیف کل (سطوح ردیف + فاکتور)
+        lifecycleScope.launch {
+            val totalDiscount = factorViewModel.getTotalDiscountForFactor(args.factorId)
+
+            //  محاسبه مبلغ نهایی
+            val finalPrice = (sumPrice - totalDiscount) + sumVat
+
+            // آپدیت UI
+            with(binding) {
+                tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
+                tvSumDiscountPrice.text = "${"-" + formatter.format(totalDiscount)} ریال"
+                tvSumVat.text = "${formatter.format(sumVat)} ریال"
+                tvFinalPrice.text = "${formatter.format(finalPrice)} ریال"
+            }
+
+            // ذخیره مبلغ نهایی در هدر
+            factorViewModel.updateHeader(finalPrice = finalPrice)
+            factorViewModel.factorHeader.value?.let { header ->
+                lifecycleScope.launch {
+                    factorViewModel.updateFactorHeader(header.copy(finalPrice = finalPrice))
+                }
+            }
         }
     }
 

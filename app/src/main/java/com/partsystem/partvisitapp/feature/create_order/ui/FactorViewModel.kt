@@ -137,9 +137,13 @@ class FactorViewModel @Inject constructor(
             .firstOrNull()
     }
 
-    suspend fun updateFactorHeader(header: FactorHeaderEntity) =
-        factorRepository.updateFactorHeader(header)
 
+    fun updateFactorHeader(header: FactorHeaderEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            factorRepository.updateFactorHeader(header)
+            Log.d("DEBUG_FactorViewModel", "Header updated in DB: id=${header.id}, finalPrice=${header.finalPrice}, sabt=${header.sabt}")
+        }
+    }
     ////////////
 
     private val _currentHeader = MutableLiveData<FactorHeaderEntity?>()
@@ -657,5 +661,45 @@ class FactorViewModel @Inject constructor(
                    // DataHolder.isDirty = true (if maintaining legacy pattern)
                }*/
         }
+    }
+    // جمع کل تخفیف‌ها (سطوح ردیف + فاکتور)
+    suspend fun getTotalDiscountForFactor(factorId: Int): Double {
+        return withContext(Dispatchers.IO) {
+            // جمع تخفیف‌های سطح ردیف
+            val productLevelDiscount = factorRepository.getTotalProductLevelDiscount(factorId) ?: 0.0
+
+            // جمع تخفیف‌های سطح فاکتور (فقط ردیف‌هایی که factorDetailId = NULL دارند)
+            val factorLevelDiscount = factorRepository.getTotalFactorLevelDiscount(factorId) ?: 0.0
+
+            productLevelDiscount + factorLevelDiscount
+        }
+    }
+    // حذف فقط تخفیف‌های سطح فاکتور (بدون تأثیر بر تخفیف‌های ردیف)
+    suspend fun removeFactorLevelDiscounts(factorId: Int) {
+        withContext(Dispatchers.IO) {
+            factorRepository.deleteFactorLevelDiscounts(factorId)
+        }
+    }
+
+    suspend fun deleteFactorDetailWithSabtCheck(
+        detail: FactorDetailUiModel,
+        factorId: Int,
+        currentSabt: Int
+    ) {
+        // اگر سفارش تکمیل شده (sabt=1)، ابتدا آن را به حالت پیش‌نویس برگردان
+        if (currentSabt == 1) {
+            // 1. غیرفعال کردن حالت تکمیل
+            updateHeader(sabt = 0)
+            factorHeader.value?.let { header ->
+                updateFactorHeader(header.copy(sabt = 0))
+            }
+
+            // 2. حذف تخفیف‌های سطح فاکتور و هدایا
+            removeGiftsAndDiscounts(factorId)
+            markDiscountRemoved()
+        }
+
+        // 3. حذف ردیف (همیشه انجام شود)
+        deleteFactorDetail(detail)
     }
 }
