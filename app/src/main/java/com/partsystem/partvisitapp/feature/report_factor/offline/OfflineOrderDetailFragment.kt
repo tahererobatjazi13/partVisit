@@ -77,6 +77,7 @@ class OfflineOrderDetailFragment : Fragment() {
     // ناوبری به صفحه سفارشات (برای فاکتورهای کامل‌شده)
     private fun navigateToOrderFragment() {
         val bundle = bundleOf(
+            "typeOrder" to OrderType.Edit.value,
             "factorId" to args.factorId,
             "sabt" to currentSabt,
             "isEditingCompletedOrder" to true

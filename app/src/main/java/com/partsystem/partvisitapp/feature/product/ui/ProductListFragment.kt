@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
-import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.extensions.gone
@@ -185,7 +184,6 @@ class ProductListFragment : Fragment() {
                         null
                     }
 
-
                     // دریافت maxId برای ایجاد ردیف جدید
                     val maxId = if (factorViewModel.getCount().value ?: 0 > 0) {
                         factorViewModel.getMaxFactorDetailId().value ?: 0
@@ -228,7 +226,6 @@ class ProductListFragment : Fragment() {
                             factorViewModel.saveProductWithDiscounts(
                                 detail = detail,
                                 factorHeader = factorHeader,
-                                productRate = productRate,
                                 vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
                                 tollPercent = product.tollPercent
                             )
@@ -249,191 +246,6 @@ class ProductListFragment : Fragment() {
                     dialogRef.show(fm, "AddRawProductDialog")
                 }
             }
-            /*
-                        onClickDialog = { product ->
-                            var productRate = 0.0
-                            var productIdExistingDetail = 0
-                            var maxId = 0
-
-                            */
-            /*    // دریافت نرخ محصول
-                                factorViewModel.getProductByActId(
-                                    product.product.id,
-                                    factorViewModel.factorHeader.value?.actId!!
-                                ).observeForever { product ->
-                                    productRate = product.rate
-                                }*//*
-
-
-                // دریافت نرخ محصول
-                factorViewModel.getProductByActId(
-                    product.product.id,
-                    factorViewModel.factorHeader.value?.actId!!
-                ).observe(viewLifecycleOwner) { product ->
-                    productRate = product.rate
-                }
-
-                factorViewModel.getCount()
-                    .observe(viewLifecycleOwner) { count ->
-                        if (count > 0) {
-                            factorViewModel.getMaxFactorDetailId()
-                                .observe(viewLifecycleOwner) { maxFactorDetailId ->
-                                    maxId = maxFactorDetailId
-                                }
-                        } else maxId = 1
-
-                    }
-                // بررسی وجود ردیف قبلی
-                val existingDetail = factorViewModel.getFactorDetailByFactorIdAndProductId(
-                    factorViewModel.factorHeader.value?.id!!,
-                    product.product.id
-                ).value
-                productIdExistingDetail = existingDetail?.id ?: 0
-
-                val dialog = AddEditProductDialog(
-                    productViewModel,
-                    product
-                ) { finalUnit1, finalPackingValue, packingId, detailId, productId ->
-
-                    if (productIdExistingDetail != 0) {
-                        if (productIdExistingDetail == detailId) {
-                            // ویرایش ردیف موجود
-                            val detail = FactorDetailEntity(
-                                factorId = factorViewModel.factorHeader.value?.id!!,
-                                sortCode = detailId + 1,
-                                anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
-                                productId = product.product.id,
-                                actId = factorViewModel.factorHeader.value?.actId,
-                                unit1Value = finalUnit1,          // مقدار محاسبه‌شده برای دیتابیس
-                                packingValue = finalPackingValue, // مقدار محاسبه‌شده برای دیتابیس
-                                unit2Value = 0.0,
-                                price = Math.round(productRate * finalUnit1).toDouble(),
-                                packingId = packingId,
-                                vat = 0.0,
-                                unit1Rate = productRate,
-                            )
-
-                            detail.vat =
-                                Math.round(product.vatPercent * detail.getPriceAfterDiscount())
-                                    .toDouble()
-
-                            val validFactorId =
-                                factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-
-                            factorViewModel.updateHeader(hasDetail = true)
-
-                            lifecycleScope.launch {
-                                val updatedHeader =
-                                    factorViewModel.factorHeader.value?.copy(hasDetail = true)
-                                updatedHeader?.let {
-                                    factorViewModel.updateFactorHeader(it)
-                                }
-                            }
-
-                            val updatedItem = detail.copy(factorId = validFactorId.toInt())
-                            factorViewModel.addOrUpdateProduct(updatedItem)
-
-                            factorViewModel.onProductConfirmed(
-                                DiscountApplyKind.ProductLevel.ordinal,
-                                factorViewModel.factorHeader.value,
-                                detail
-                            )
-                        } else {
-                            // ایجاد ردیف جدید (وقتی ردیف قدیمی با جزئیات متفاوت وجود دارد)
-                            val detail = FactorDetailEntity(
-                                id = maxId + 1,
-                                factorId = factorViewModel.factorHeader.value?.id!!,
-                                sortCode = maxId + 1,
-                                anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
-                                productId = product.product.id,
-                                actId = factorViewModel.factorHeader.value?.actId,
-                                unit1Value = finalUnit1,          // مقدار محاسبه‌شده برای دیتابیس
-                                packingValue = finalPackingValue, // مقدار محاسبه‌شده برای دیتابیس
-                                unit2Value = 0.0,
-                                price = Math.round(productRate * finalUnit1).toDouble(),
-                                packingId = packingId,
-                                vat = 0.0,
-                                unit1Rate = productRate,
-                            )
-
-                            detail.vat =
-                                Math.round(product.vatPercent * detail.getPriceAfterDiscount())
-                                    .toDouble()
-
-                            val validFactorId =
-                                factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-
-                            factorViewModel.updateHeader(hasDetail = true)
-
-                            lifecycleScope.launch {
-                                val updatedHeader =
-                                    factorViewModel.factorHeader.value?.copy(hasDetail = true)
-                                updatedHeader?.let {
-                                    factorViewModel.updateFactorHeader(it)
-                                }
-                            }
-
-                            val updatedItem = detail.copy(factorId = validFactorId.toInt())
-                            //    factorViewModel.addOrUpdateFactorDetail(updatedItem)
-                            factorViewModel.addOrUpdateProduct(detail)
-
-                            factorViewModel.onProductConfirmed(
-                                DiscountApplyKind.ProductLevel.ordinal,
-                                factorViewModel.factorHeader.value,
-                                detail
-                            )
-                        }
-                    } else {
-                        // ایجاد ردیف کاملاً جدید
-                        val detail = FactorDetailEntity(
-                            id = maxId + 1,
-                            factorId = factorViewModel.factorHeader.value?.id!!,
-                            sortCode = maxId + 1,
-                            anbarId = factorViewModel.factorHeader.value?.defaultAnbarId,
-                            productId = product.product.id,
-                            actId = factorViewModel.factorHeader.value?.actId,
-                            unit1Value = finalUnit1,          // مقدار محاسبه‌شده برای دیتابیس
-                            packingValue = finalPackingValue, // مقدار محاسبه‌شده برای دیتابیس
-                            unit2Value = 0.0,
-                            price = Math.round(productRate * finalUnit1).toDouble(),
-                            packingId = packingId,
-                            vat = 0.0,
-                            unit1Rate = productRate,
-                        )
-
-                        detail.vat = Math.round(product.vatPercent * detail.getPriceAfterDiscount())
-                            .toDouble()
-
-                        val validFactorId =
-                            factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-
-                        factorViewModel.updateHeader(hasDetail = true)
-
-                        lifecycleScope.launch {
-                            val updatedHeader =
-                                factorViewModel.factorHeader.value?.copy(hasDetail = true)
-                            updatedHeader?.let {
-                                factorViewModel.updateFactorHeader(it)
-                            }
-                        }
-                        val updatedItem = detail.copy(factorId = validFactorId.toInt())
-                        //   factorViewModel.addOrUpdateFactorDetail(updatedItem)
-                        factorViewModel.addOrUpdateProduct(detail)
-
-                        factorViewModel.onProductConfirmed(
-                            DiscountApplyKind.ProductLevel.ordinal,
-                            factorViewModel.factorHeader.value,
-                            detail
-                        )
-                    }
-                }
-                val fm = childFragmentManager
-                fm.findFragmentByTag("AddRawProductDialog")?.let {
-                    fm.beginTransaction().remove(it).commit()
-                }
-                dialog.show(fm, "AddRawProductDialog")
-            }
-*/
         )
     }
 

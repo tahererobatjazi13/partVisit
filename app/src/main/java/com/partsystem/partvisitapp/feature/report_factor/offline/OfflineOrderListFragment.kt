@@ -146,9 +146,7 @@ class OfflineOrderListFragment : Fragment() {
 
             setOnClickPositiveButton {
                 factorViewModel.sendFactor(
-                    factorId = item.factorId,
-                    sabt = 1
-                )
+                    factorId = item.factorId)
             }
         }
 

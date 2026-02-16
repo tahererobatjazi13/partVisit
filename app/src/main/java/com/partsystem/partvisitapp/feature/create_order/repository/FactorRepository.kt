@@ -13,7 +13,6 @@ import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.network.ApiService
 import com.partsystem.partvisitapp.core.network.NetworkResult
-import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.ErrorHandler
 import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
 import com.partsystem.partvisitapp.feature.create_order.model.ApiResponse
@@ -60,6 +59,9 @@ class FactorRepository @Inject constructor(
     fun getMaxFactorDetailId(): LiveData<Int> {
         return factorDao.getMaxFactorDetailId()
     }
+    suspend fun getFactorHeaderById(factorId: Int): FactorHeaderEntity? {
+        return factorDao.getFactorHeaderById(factorId)
+    }
 
     // DB ops
     suspend fun saveFactorHeader(header: FactorHeaderEntity): Long {
@@ -102,8 +104,16 @@ class FactorRepository @Inject constructor(
     suspend fun saveFactorGift(gift: FactorGiftInfoEntity): Long = factorDao.insertFactorGift(gift)
     suspend fun getFactorGifts(factorId: Int) = factorDao.getFactorGifts(factorId)
 
-    suspend fun getFactorDiscounts(factorId: Int, factorDetailId: Int): List<FactorDiscountEntity> =
-        factorDao.getFactorDiscounts(factorId, factorDetailId)
+  /*  suspend fun getFactorDiscounts(factorId: Int, factorDetailId: Int?): List<FactorDiscountEntity> =
+        factorDao.getFactorDiscounts(factorId, factorDetailId!!)
+*/
+
+    suspend fun getFactorDiscounts(factorId: Int, factorDetailId: Int?): List<FactorDiscountEntity> {
+        return when {
+            factorDetailId == null -> factorDao.getFactorLevelDiscounts(factorId)
+            else -> factorDao.getDetailLevelDiscounts(factorId, factorDetailId)
+        }
+    }
 
     fun getFactorDiscountsLive(
         factorId: Int,

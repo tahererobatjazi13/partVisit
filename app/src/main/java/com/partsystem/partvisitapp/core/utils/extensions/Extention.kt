@@ -1,18 +1,13 @@
 package com.partsystem.partvisitapp.core.utils.extensions
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.view.View
-import androidx.annotation.RequiresApi
 import com.jakewharton.rxbinding4.view.clicks
 import com.partsystem.partvisitapp.core.utils.persiancalendar.calendar.PersianCalendar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import ir.huri.jcal.JalaliCalendar
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -47,14 +42,6 @@ fun View.setSafeOnClickListener(onClick: (View) -> Unit): Disposable {
 
 fun Double.clean(): String {
     return if (this % 1 == 0.0) {
-        this.toInt().toString()
-    } else {
-        this.toString()
-    }
-}
-
-fun Float.clean(): String {
-    return if (this % 1 == 0f) {
         this.toInt().toString()
     } else {
         this.toString()
@@ -135,7 +122,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "final price long"
+git commit -m "finalDto"
 git push -u origin master
 git push
 */

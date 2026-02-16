@@ -53,6 +53,7 @@ class FactorViewModel @Inject constructor(
     private val appDatabase: AppDatabase,
     val productRepository: ProductRepository,
 ) : ViewModel() {
+    private val _factorHeader = MutableStateFlow<FactorHeaderEntity?>(null)
 
     val factorHeader = MutableLiveData(FactorHeaderEntity())
     val factorDetails = MutableLiveData<MutableList<FactorDetailEntity>>(mutableListOf())
@@ -78,6 +79,15 @@ class FactorViewModel @Inject constructor(
     fun deleteFactor(factorId: Int) = viewModelScope.launch {
         factorRepository.deleteFactor(factorId)
     }
+    /*
+        private val _factorHeader = MutableStateFlow<FactorHeaderEntity?>(null)
+        val factorHeader: StateFlow<FactorHeaderEntity?> = _factorHeader
+    */
+
+    // در FactorViewModel.kt
+    suspend fun getFactorHeaderById(factorId: Int): FactorHeaderEntity? {
+        return factorRepository.getFactorHeaderById(factorId)
+    }
 
     fun updateHeader(
         customerId: Int? = null,
@@ -96,9 +106,8 @@ class FactorViewModel @Inject constructor(
         hasDetail: Boolean? = null,
         finalPrice: Double? = null,
         productSelectionType: String? = null,
-        sabt: Int? = null,
-
-        ) {
+        sabt: Int? = null
+    ) {
         val current = factorHeader.value ?: FactorHeaderEntity()
         factorHeader.value = current.copy(
             customerId = customerId ?: current.customerId,
@@ -117,9 +126,9 @@ class FactorViewModel @Inject constructor(
             hasDetail = hasDetail ?: current.hasDetail,
             finalPrice = finalPrice ?: current.finalPrice,
             productSelectionType = productSelectionType ?: current.productSelectionType,
-            sabt = sabt ?: current.sabt,
-
-            )
+            sabt = sabt ?: current.sabt
+        )
+        _factorHeader.value = factorHeader.value
     }
 
     fun loadProduct(productId: Int, actId: Int): ProductWithPacking? {
@@ -130,28 +139,24 @@ class FactorViewModel @Inject constructor(
         return productRepository.getProductByActId2(productId, actId).asLiveData()
     }
 
-
     suspend fun getProductRate(productId: Int, actId: Int): Double? {
         return productRepository.getProductByActId2(productId, actId)
             .map { it.rate }
             .firstOrNull()
     }
 
-
-    fun updateFactorHeader(header: FactorHeaderEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            factorRepository.updateFactorHeader(header)
-            Log.d("DEBUG_FactorViewModel", "Header updated in DB: id=${header.id}, finalPrice=${header.finalPrice}, sabt=${header.sabt}")
-        }
+    suspend fun updateFactorHeader(header: FactorHeaderEntity) {
+        //  viewModelScope.launch(Dispatchers.IO) {
+        factorRepository.updateFactorHeader(header)
+        //     Log.d("DEBUG_FactorViewModel", "Header updated in DB: id=${header.id}, finalPrice=${header.finalPrice}, sabt=${header.sabt}")
+        // }
     }
-    ////////////
 
     private val _currentHeader = MutableLiveData<FactorHeaderEntity?>()
     val currentHeader: LiveData<FactorHeaderEntity?> = _currentHeader
 
     private val _header = MutableLiveData<FactorHeaderEntity?>()
     val header: LiveData<FactorHeaderEntity?> = _header
-
 
     private val _details = MutableLiveData<List<FactorDetailEntity>>(emptyList())
     val details: LiveData<List<FactorDetailEntity>> = _details
@@ -280,13 +285,13 @@ class FactorViewModel @Inject constructor(
     val sendFactorResult: LiveData<Event<NetworkResult<Int>>> =
         _sendFactorResult
 
-    fun sendFactor(factorId: Int, sabt: Int) {
+    fun sendFactor(factorId: Int) {
         viewModelScope.launch {
 
             updateSendingState(factorId, true)
             _sendFactorResult.value = Event(NetworkResult.Loading)
 
-            val request = buildFinalFactorRequest(factorId, sabt)
+            val request = buildFinalFactorRequest(factorId)
             val body = listOf(request)
             Log.d("FINAL_json1", body.toString())
 
@@ -311,24 +316,28 @@ class FactorViewModel @Inject constructor(
         }
     }
 
-    private suspend fun buildFinalFactorRequest(factorId: Int, sabt: Int): FinalFactorRequestDto {
+    private suspend fun buildFinalFactorRequest(factorId: Int): FinalFactorRequestDto {
         val header = factorRepository.getHeaderByLocalId(factorId.toLong())
             ?: throw IllegalStateException("Header not found")
 
         val details = factorRepository.getAllFactorDetails(header.id).first()
         val gifts = factorRepository.getFactorGifts(header.id)
+        // دریافت تخفیف‌های سطح فاکتور (با factorDetailId = null)
+        val factorLevelDiscounts = factorRepository.getFactorDiscounts(header.id, null)
 
         Log.d("FINAL_header", header.id.toString())
         Log.d("FINAL_details", details.toString())
         Log.d("FINAL_gifts", gifts.toString())
 
+
+
         val finalDetails = details.map { d ->
             // تغییر این خط به صورت suspend
-            val discounts = factorRepository.getFactorDiscounts(
-                header.id,
-                d.id
-            ) // اطمینان از اینکه این متد suspend است
-
+            val detailDiscounts = if (d.id != null) {
+                factorRepository.getFactorDiscounts(header.id, d.id)
+            } else {
+                emptyList()
+            }
             FinalFactorDetailDto(
                 id = d.id,
                 factorId = header.id,
@@ -349,22 +358,28 @@ class FactorViewModel @Inject constructor(
                 isModified = d.isModified,
                 description = d.description,
                 unit1Rate = d.unit1Rate,
-                factorDiscounts = discounts.map { dis ->
+                factorDiscounts = detailDiscounts.map { dis ->
                     FinalFactorDiscountDto(
                         sortCode = dis.sortCode,
                         discountId = dis.discountId,
                         price = dis.price,
-                        factorDetailId = d.id,
                         discountPercent = dis.discountPercent
                     )
                 }
             )
         }
 
-
+        // تبدیل تخفیف‌های سطح فاکتور به DTO
+        val finalDiscounts = factorLevelDiscounts.map { dis ->
+            FinalFactorDiscountDto(
+                sortCode = dis.sortCode,
+                discountId = dis.discountId,
+                price = dis.price,
+                discountPercent = dis.discountPercent
+            )
+        }
         val finalGifts = gifts.map { g ->
             FinalFactorGiftDto(
-
                 productId = g.productId,
                 discountId = g.discountId,
                 price = g.price,
@@ -388,7 +403,7 @@ class FactorViewModel @Inject constructor(
             visitorId = header.visitorId ?: 0,
             distributorId = header.distributorId,
             description = header.description,
-            sabt = sabt,
+            sabt = header.sabt,
             createUserId = header.createUserId ?: 0,
             saleCenterId = header.saleCenterId ?: 0,
             actId = header.actId ?: 0,
@@ -398,6 +413,7 @@ class FactorViewModel @Inject constructor(
             longitude = header.longitude ?: 0.0,
             defaultAnbarId = header.defaultAnbarId ?: 0,
             factorDetails = finalDetails,
+            factorDiscounts = finalDiscounts,
             factorGiftInfos = finalGifts
         )
     }
@@ -445,69 +461,17 @@ class FactorViewModel @Inject constructor(
             .firstOrNull()
     }
 
-//    private val _currentFactorId = MutableLiveData<Int>()
-//    val currentFactorId: LiveData<Int> = _currentFactorId
-//
-//    fun setFactorId(id: Int) {
-//        _currentFactorId.value = id
-//    }
 
 
     fun addOrUpdateProduct(
-        detail: FactorDetailEntity/*,
-        productId: Int,
-        actId: Int?,
-        anbarId: Int?,
-        unit1Value: Double,
-        packingValue: Double,
-        unit2Value: Double,
-        price: Double,
-        packingId: Int,
-        vat: Double,
-        unit1Rate: Double*/
+        detail: FactorDetailEntity
     ) {
-        Log.d("productdetailunit1Value11", detail.unit1Value.toString())
-
-        // val factorId = _currentFactorId.value ?: return
-
         viewModelScope.launch {
-
             factorRepository.addOrUpdateDetail(
                 detail
-                /*    factorId = factorId,
-                    productId = productId,
-                    actId = actId,
-                    anbarId = anbarId,
-                    unit1Value = unit1Value,
-                    packingValue = packingValue,
-                    unit2Value = unit2Value,
-                    price = price,
-                    packingId = packingId,
-                    vat = vat,
-                    unit1Rate = unit1Rate,*/
             )
         }
     }
-
-    /*
-        suspend fun saveProductWithDiscounts(
-            detail: FactorDetailEntity,
-            factorHeader: FactorHeaderEntity,
-            productRate: Double
-        ) {
-            // 1. ابتدا FactorDetail را ذخیره کن و id واقعی آن را بگیر
-            val savedDetailId = factorRepository.addOrUpdateDetail(detail)
-
-            // 2. حالا detail ذخیره شده — id آن معتبر است
-            val savedDetail = detail.copy(id = savedDetailId)
-
-            // 3. حالا می‌توانیم تخفیف را ذخیره کنیم
-            discountRepository.calculateDiscountInsert(
-                applyKind = DiscountApplyKind.ProductLevel.ordinal,
-                factorHeader = factorHeader,
-                factorDetail = savedDetail
-            )
-        }*/
 
     suspend fun calculateDiscountInsert(
         applyKind: Int,
@@ -541,7 +505,6 @@ class FactorViewModel @Inject constructor(
     suspend fun saveProductWithDiscounts(
         detail: FactorDetailEntity,
         factorHeader: FactorHeaderEntity,
-        productRate: Double,
         vatPercent: Double,
         tollPercent: Double
     ) = withContext(Dispatchers.IO) {
@@ -581,92 +544,21 @@ class FactorViewModel @Inject constructor(
         }
     }
 
-    /*
-        suspend fun saveProductWithDiscounts(
-            detail: FactorDetailEntity,
-            factorHeader: FactorHeaderEntity,
-            productRate: Double,
-            vatPercent: Double,
-            tollPercent: Double
-        ) = withContext(Dispatchers.IO) {
-            // 1. ذخیره اولیه ردیف (بدون VAT صحیح)
-            val savedDetailId = factorRepository.addOrUpdateDetail(detail)
-            val savedDetail = detail.copy(id = savedDetailId)
-
-            // 2. اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
-            discountRepository.calculateDiscountInsert(
-                applyKind = DiscountApplyKind.ProductLevel.ordinal,
-                factorHeader = factorHeader,
-                factorDetail = savedDetail
-            )
-
-            // 3. بازیابی مجموع تخفیف‌ها و اضافات از دیتابیس
-            val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
-            val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
-
-            // 4. محاسبه قیمت پس از تخفیف
-            val priceAfterDiscount = Math.round(savedDetail.price - totalDiscount + totalAddition)
-
-
-            val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
-            val toll = Math.round(tollPercent * pri  ceAfterDiscount).toDouble()
-
-            // 6. به‌روزرسانی نهایی ردیف با مقادیر صحیح
-            val updatedDetail = savedDetail.copy(
-                vat = vat
-            )
-
-            factorRepository.updateFactorDetail(updatedDetail)
-        }
-    */
-    /*
-        fun saveProductWithDiscounts(
-            detail: FactorDetailEntity,
-            factorHeader: FactorHeaderEntity,
-            productRate: Double,
-            hasExistingDetail: Boolean
-        ) {
-            viewModelScope.launch {
-                // 1. به‌روزرسانی هدر (یک بار)
-                if (!factorHeader.hasDetail) {
-                    updateFactorHeader(factorHeader.copy(hasDetail = true))
-                }
-
-                // 2. ذخیره‌سازی ردیف (خودکار تشخیص اینزرت/آپدیت)
-                addOrUpdateProduct(detail)
-
-                // 3. محاسبه و ذخیره تخفیف‌ها
-                onProductConfirmed(
-                    applyKind = DiscountApplyKind.ProductLevel.ordinal,
-                    factorHeader = factorHeader,
-                    factorDetail = detail
-                )
-
-                // 4. نوتیفیکیشن موفقیت (اختیاری)
-             //   _uiMessage.value = "محصول با موفقیت ${if (hasExistingDetail) "ویرایش" else "افزوده"} شد"
-            }
-        }*/
-
-
     private val _operationResult = MutableSharedFlow<Boolean>()
     val operationResult = _operationResult.asSharedFlow()
 
     fun removeGiftsAndDiscounts(factorId: Int) {
         viewModelScope.launch {
             val success = discountRepository.removeGiftsAndAutoDiscounts(factorId)
-            //  _operationResult.emit(success)
-
-            /*   if (success) {
-                   // Notify UI to refresh factor data
-                   // DataHolder.isDirty = true (if maintaining legacy pattern)
-               }*/
         }
     }
+
     // جمع کل تخفیف‌ها (سطوح ردیف + فاکتور)
     suspend fun getTotalDiscountForFactor(factorId: Int): Double {
         return withContext(Dispatchers.IO) {
             // جمع تخفیف‌های سطح ردیف
-            val productLevelDiscount = factorRepository.getTotalProductLevelDiscount(factorId) ?: 0.0
+            val productLevelDiscount =
+                factorRepository.getTotalProductLevelDiscount(factorId) ?: 0.0
 
             // جمع تخفیف‌های سطح فاکتور (فقط ردیف‌هایی که factorDetailId = NULL دارند)
             val factorLevelDiscount = factorRepository.getTotalFactorLevelDiscount(factorId) ?: 0.0
@@ -674,6 +566,7 @@ class FactorViewModel @Inject constructor(
             productLevelDiscount + factorLevelDiscount
         }
     }
+
     // حذف فقط تخفیف‌های سطح فاکتور (بدون تأثیر بر تخفیف‌های ردیف)
     suspend fun removeFactorLevelDiscounts(factorId: Int) {
         withContext(Dispatchers.IO) {

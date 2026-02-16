@@ -1,7 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.model
 
 
-
 data class FinalFactorRequestDto(
     val uniqueId: String?,
     val id: Int?,
@@ -29,6 +28,7 @@ data class FinalFactorRequestDto(
     val longitude: Double,
     val defaultAnbarId: Int,
     val factorDetails: List<FinalFactorDetailDto>,
+    val factorDiscounts: List<FinalFactorDiscountDto>,
     val factorGiftInfos: List<FinalFactorGiftDto>
 )
 
@@ -60,10 +60,8 @@ data class FinalFactorDiscountDto(
     val sortCode: Int,
     val discountId: Int,
     val price: Double,
-    val factorDetailId: Int,
     val discountPercent: Double
 )
-
 data class FinalFactorGiftDto(
     val productId: Int,
     val discountId: Int,

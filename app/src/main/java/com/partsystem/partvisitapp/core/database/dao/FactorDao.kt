@@ -70,7 +70,8 @@ interface FactorDao {
     @Query("SELECT * FROM FactorHeader WHERE id = :localId LIMIT 1")
     suspend fun getHeaderByLocalId(localId: Long): FactorHeaderEntity?
 
-
+    @Query("SELECT * FROM FactorHeader WHERE id = :factorId LIMIT 1")
+    suspend fun getFactorHeaderById(factorId: Int): FactorHeaderEntity?
     @Update
     suspend fun updateFactorHeader(header: FactorHeaderEntity)
 
@@ -404,8 +405,13 @@ interface FactorDao {
 
     //@Query("SELECT SUM(Unit1Value) FROM factor_detail_table WHERE FactorId = :factorId AND ProductId = :productId AND IsGift = 0")
 
+    // تخفیف‌های سطح فاکتور (جایی که factorDetailId = NULL)
+    @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId IS NULL")
+    suspend fun getFactorLevelDiscounts(factorId: Int): List<FactorDiscountEntity>
+
+    // تخفیف‌های سطح ردیف (جایی که factorDetailId مقدار دارد)
     @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
-    suspend fun getFactorDiscounts(factorId: Int, factorDetailId: Int): List<FactorDiscountEntity>
+    suspend fun getDetailLevelDiscounts(factorId: Int, factorDetailId: Int): List<FactorDiscountEntity>
 
     @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
     fun getFactorDiscountsLive(factorId: Int, factorDetailId: Int): Flow<List<FactorDiscountEntity>>
