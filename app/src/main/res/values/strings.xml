@@ -1,7 +1,8 @@
 <resources>
 
     <!-- Labels -->
-    <string name="app_name">پارت ویزیت اپ</string>
+    <string name="app_name">partVisit</string>
+    <string name="label_app_name">پارت ویزیت اپ</string>
     <string name="label_product_group">گروه کالا</string>
     <string name="label_product_catalog">کاتالوگ کالا</string>
     <string name="label_orders">سفارشات</string>
@@ -131,6 +132,7 @@
     <string name="msg_sure_delete_orders">آیا برای حذف اطمینان دارید؟</string>
     <string name="msg_log_out">آیا مایل به خروج از حساب کاربری خود می باشید؟</string>
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
+    <string name="msg_success_update">بروزرسانی با موفقیت انجام شد.</string>
     <string name="msg_press_back_button_again_exit">برای خروج دوباره دکمه بازگشت را بزنید</string>
     <string name="msg_order_successfully_sent">سفارش با موفقیت ارسال شد</string>
     <string name="msg_cannot_go_back_warning">پس از زدن تیک تکمیل سفارش، امکان بازگشت به لیست محصولات وجود ندارد. برای ادامه کار، سفارش را ذخیره یا ارسال کنید.</string>
@@ -175,5 +177,7 @@
     لطفا در اولین فرصت نسبت به ارسال آن به سرور اقدام نمایید
     و تا قبل از ارسال به سرور از حساب کاربری خود خارج نشوید.</string>
     <string name="error_cannot_go_back_when_completed">پس از تکمیل سفارش امکان بازگشت وجود ندارد. لطفاً سفارش را پیش نویس یا ارسال کنید.</string>
+    <string name="error_internet_disconnected">ارتباط اینترنت قطع شد. لطفاً دوباره تلاش کنید.</string>
+    <string name="error_update_failed">خطا در بروزرسانی: %1$s</string>
 
 </resources>

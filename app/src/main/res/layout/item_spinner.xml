@@ -15,7 +15,7 @@
         android:gravity="end|center_vertical"
         android:scrollHorizontally="false"
         android:singleLine="true"
-        android:text="@string/app_name"
+        android:text="@string/label_app_name"
         android:textAlignment="viewEnd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

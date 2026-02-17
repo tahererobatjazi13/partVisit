@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/xx_small_size"
         android:padding="@dimen/small_size"
-        android:text="@string/app_name"
+        android:text="@string/label_app_name"
         android:textDirection="rtl" />
 
 </com.google.android.material.card.MaterialCardView>

@@ -122,7 +122,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "finalDto"
+git commit -m "discount price&value"
 git push -u origin master
 git push
 */

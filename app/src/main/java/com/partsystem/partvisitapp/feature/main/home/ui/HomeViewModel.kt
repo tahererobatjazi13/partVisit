@@ -166,6 +166,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+
     fun fetchVat() = fetchTable(homeRepository::fetchAndSaveVat, vat)
     fun fetchSaleCenter() = fetchTable(homeRepository::fetchAndSaveSaleCenter, saleCenter)
     fun fetchDiscount() = fetchTable(homeRepository::fetchAndSaveDiscount, discount)

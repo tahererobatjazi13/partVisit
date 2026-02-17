@@ -131,8 +131,8 @@ class OfflineOrderListFragment : Fragment() {
             true,
             getString(R.string.label_no),
             getString(R.string.label_ok),
-            true,
-            true
+            showPositiveButton = true,
+            showNegativeButton = true
         )
     }
 
@@ -157,8 +157,8 @@ class OfflineOrderListFragment : Fragment() {
             true,
             getString(R.string.label_no),
             getString(R.string.label_ok),
-            true,
-            true
+            showPositiveButton = true,
+            showNegativeButton = true
         )
     }
 
@@ -223,8 +223,8 @@ class OfflineOrderListFragment : Fragment() {
                     true,
                     getString(R.string.label_no),
                     getString(R.string.label_ok),
-                    true,
-                    true
+                    showPositiveButton = true,
+                    showNegativeButton = true
                 )
             }
         }

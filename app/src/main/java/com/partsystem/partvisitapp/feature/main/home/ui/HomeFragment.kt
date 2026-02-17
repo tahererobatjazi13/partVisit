@@ -9,7 +9,6 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -51,7 +50,6 @@ class HomeFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModels()
     private var customDialog: CustomDialog? = null
 
-    private var loadingCount = 0
     private lateinit var loadingDialog: Dialog
     private lateinit var loadingBinding: DialogLoadingBinding
 
@@ -60,6 +58,7 @@ class HomeFragment : Fragment() {
     private var doubleBackToExit = false
     private var customDialogForceUpdate: CustomDialog? = null
     private var syncType = ""
+    private var syncFailed = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -99,6 +98,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupObserver() {
+        syncFailed = false // ریست فلگ در شروع هر سینک
         tasks.clear()
         currentTaskIndex = 0
 
@@ -187,8 +187,17 @@ class HomeFragment : Fragment() {
             loadingMsg = "$syncType تخفیفات ..."
         ) { viewModel.fetchDiscount() }
 
-        // اولین کار را شروع کن
-        runNextTask()
+
+        if (isInternetAvailable(requireContext())) {
+            runNextTask()
+        } else {
+            loadingDialog.dismiss()
+            CustomSnackBar.make(
+                requireView(),
+                getString(R.string.error_network_internet),
+                SnackBarType.Error.value
+            )?.show()
+        }
     }
 
     private fun <T> addTask(
@@ -206,38 +215,64 @@ class HomeFragment : Fragment() {
         loadingMsg: String,
         fetchAction: () -> Unit
     ) {
+        if (syncFailed) return
+
+        liveData.removeObservers(viewLifecycleOwner)
+
         liveData.observe(viewLifecycleOwner) { result ->
             when (result) {
-
-                is NetworkResult.Loading -> {
-                    showOrUpdateLoading(loadingMsg)
-                }
+                is NetworkResult.Loading -> showOrUpdateLoading(loadingMsg)
 
                 is NetworkResult.Success -> {
-
+                    liveData.removeObservers(viewLifecycleOwner)
                     runNextTask()
                 }
 
                 is NetworkResult.Error -> {
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                    runNextTask()
+                    liveData.removeObservers(viewLifecycleOwner)
+                    syncFailed = true
+                    loadingDialog.dismiss()
+
+                    // نمایش یک پیام خطا واحد با تحلیل نوع خطا
+                    val errorMsg = when {
+                        result.message.contains("internet", ignoreCase = true) ||
+                                result.message.contains("network", ignoreCase = true) ||
+                                result.message.contains("اتصال", ignoreCase = true) ||
+                                result.message.contains("شبکه", ignoreCase = true) -> {
+                            requireContext().getString(R.string.error_internet_disconnected)
+                        }
+
+                        else -> {
+                            val safeMessage = result.message.ifEmpty { "خطای ناشناخته" }
+                            requireContext().getString(R.string.error_update_failed, safeMessage)
+                        }
+                    }
+
+                    CustomSnackBar.make(
+                        requireView(),
+                        errorMsg,
+                        SnackBarType.Error.value
+                    )?.show()
+
+                    tasks.clear()
+                    currentTaskIndex = 0
                 }
             }
         }
-
         fetchAction()
     }
 
     private fun runNextTask() {
-        if (currentTaskIndex < tasks.size) {
-            tasks[currentTaskIndex].invoke()
-            currentTaskIndex++
-        } else {
-            // همه کارها تمام شد
-            loadingDialog.dismiss()
-
-            onAllDataUpdatedSuccessfully()
+        if (syncFailed || currentTaskIndex >= tasks.size) {
+            if (!syncFailed) { // موفقیت کامل
+                loadingDialog.dismiss()
+                onAllDataUpdatedSuccessfully()
+            }
+            return
         }
+
+        tasks[currentTaskIndex].invoke()
+        currentTaskIndex++
     }
 
     private fun onAllDataUpdatedSuccessfully() {
@@ -312,8 +347,8 @@ class HomeFragment : Fragment() {
                                     true,
                                     getString(R.string.label_no),
                                     getString(R.string.label_update),
-                                    true,
-                                    true
+                                    showPositiveButton = true,
+                                    showNegativeButton = true
                                 )
                             }
                         }
@@ -351,8 +386,8 @@ class HomeFragment : Fragment() {
                             true,
                             getString(R.string.label_no),
                             getString(R.string.label_ok),
-                            true,
-                            true
+                            showPositiveButton = true,
+                            showNegativeButton = true
                         )
                     }
 
@@ -366,7 +401,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-
     private fun setupClicks() {
         binding.ivSync.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
@@ -378,8 +412,8 @@ class HomeFragment : Fragment() {
                     )?.show()
                     return@launch
                 }
-                syncType = if (isDatabaseEmpty()) "در حال دریافت" else "در حال بروزرسانی"
 
+                syncType = if (isDatabaseEmpty()) "در حال دریافت" else "در حال بروزرسانی"
                 showOrUpdateLoading("$syncType")
                 setupObserver()
             }
@@ -394,7 +428,6 @@ class HomeFragment : Fragment() {
             setOnClickNegativeButton { hideProgress() }
             setOnClickPositiveButton {
                 viewLifecycleOwner.lifecycleScope.launch {
-
                     if (!isInternetAvailable(requireContext())) {
                         CustomSnackBar.make(
                             requireView(),
@@ -406,7 +439,9 @@ class HomeFragment : Fragment() {
 
                     try {
                         syncType = "در حال بروزرسانی"
+                        showOrUpdateLoading("$syncType")
 
+                        // لیست به‌روزرسانی‌های حیاتی با مدیریت خطا
                         val updateSteps = listOf(
                             "مصوبه" to suspend { viewModel.syncAct() },
                             "طرح فروش" to suspend { viewModel.syncPattern() },
@@ -416,24 +451,47 @@ class HomeFragment : Fragment() {
 
                         for ((title, action) in updateSteps) {
                             updateLoadingMessage("$syncType $title ...")
-                            action()
-                            delay(200)
+                            try {
+                                action.invoke()
+                            } catch (e: Exception) {
+                                loadingDialog.dismiss()
+                                CustomSnackBar.make(
+                                    requireView(),
+                                    "خطا در بروزرسانی $title: ${e.message ?: "خطای ناشناخته"}",
+                                    SnackBarType.Error.value
+                                )?.show()
+                                return@launch
+                            }
+                            delay(100)
                         }
 
+                        // تنظیم فلگ‌های حیاتی پس از موفقیت کامل
+                        mainPreferences.setActUpdated()
+                        mainPreferences.setPatternUpdated()
+                        mainPreferences.setProductUpdated()
+                        mainPreferences.setDiscountUpdated()
+
                         loadingDialog.dismiss()
+
+                        openFactorScreen()
+
+                        CustomSnackBar.make(
+                            requireView(),
+                            getString(R.string.msg_success_update),
+                            SnackBarType.Success.value
+                        )?.show()
+
                     } catch (e: Exception) {
                         loadingDialog.dismiss()
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.error_updating_information),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        CustomSnackBar.make(
+                            requireView(),
+                            "خطای سیستمی: ${e.message ?: "لطفاً دوباره تلاش کنید"}",
+                            SnackBarType.Error.value
+                        )?.show()
                     }
                 }
             }
         }
-
-
     }
 
     private fun initLoadingDialog() {
@@ -528,9 +586,17 @@ class HomeFragment : Fragment() {
     }
 
     private suspend fun isDatabaseReady(): Boolean {
-        return db.groupProductDao().getCount() > 0 &&
+        // بررسی وجود داده‌های اصلی + بررسی فلگ‌های امروز
+        val hasBasicData = db.groupProductDao().getCount() > 0 &&
                 db.productDao().getCount() > 0 &&
                 db.customerDao().getCount() > 0
+
+        // اگر داده اصلی وجود دارد، بررسی فلگ‌های امروز
+        return if (hasBasicData) {
+            mainPreferences.hasDownloadedToday()
+        } else {
+            false
+        }
     }
 
     private fun showSyncRequiredMessage() {
@@ -544,7 +610,6 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        // _loadingBinding = null
     }
 
 }

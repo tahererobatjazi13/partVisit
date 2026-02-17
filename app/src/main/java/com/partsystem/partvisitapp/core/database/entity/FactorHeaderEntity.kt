@@ -35,9 +35,72 @@ data class FactorHeaderEntity(
     var defaultAnbarId: Int? = null,
     var latitude: Double? = 0.0,
     var longitude: Double? = 0.0,
-    val productSelectionType: String= "" // "catalog" یا "group"
+    val productSelectionType: String = "" // "catalog" یا "group"
 
 )
+/*
+
+[{
+    "uniqueId" :"304a2614-77dc-4873-ab99-18eb3c07d595",
+    "id" : 9,
+    "formKind" : 17,
+    "centerId" : 0,
+    "createDate" : "2026-02-16",
+    "persianDate" : "1404/11/27",
+    "invoiceCategoryId" : 10,
+    "patternId" : 109,
+    "dueDate" : "2026-02-16",
+    "deliveryDate" : "2026-02-16",
+    "createTime" : "13:28:44",
+    "customerId" : 577,
+    "directionDetailId" : 21284,
+    "visitorId" : 2471,
+    "distributorId" : null,
+    "description" :,
+    "sabt" : 1,
+    "createUserId" : 1,
+    "saleCenterId" : 3,
+    "actId" : 209,
+    "recipientId" : null,
+    "settlementKind" : 0,
+    "latitude" : 0.0,
+    "longitude" : 0.0,
+    "defaultAnbarId" : 6,
+    "factorDetails":[{
+        "id" : 9,
+        "factorId" : 9,
+        "sortCode" : 1,
+        "anbarId" : 6,
+        "productId" : 63,
+        "actId" : 209,
+        "unit1Value" : 80.0,
+        "unit2Value" : 0.0,
+        "price" : 73080000.0,
+        "packingId" : 25,
+        "packingValue" : 13.333333333333334,
+        "vat" : 0.0,
+        "productSerial" : 0,
+        "isGift" : 0,
+        "returnCauseId" : 0,
+        "isCanceled" : 0,
+        "isModified" : 0,
+        "description" :,
+        "unit1Rate" : 913500.0,
+        "factorDiscounts":[{
+        "sortCode" : 2,
+        "discountId" : 186,
+        "price" : 1.0962000.0,
+        "discountPercent" : 0.0
+    }]
+    }]
+
+    , "factorDiscounts" : [{
+        "sortCode" : 3, "discountId" : 185, "price" : 199000.0, "discountPercent" : 0.0
+    }], "factorGiftInfos" : []
+}]
+*/
+
+
 
 /*
 [{
@@ -115,30 +178,30 @@ data class FactorHeaderEntity(
         ]
     }
     ,{
-    "factorId": 10,
-    "id": 3,
-    "sortCode": 3,
-    "anbarId": 6,
-    "productId": 107,
-    "actId": 203,
-    "unit1Value": 1,
-    "unit2Value": 0,
-    "price": 200000.00,
-    "packingId": 3,
-    "packingValue":0.05,
-    "vat": 0,
-    "productSerial": null,
-    "isGift": 1,
-    "unit1Rate": 200000.00,
-    "factorDiscounts": [
-    {
-        "sortCode": 1,
-        "discountId": 107,
-        "price":200000.00,
-        "discountPercent": 0
+        "factorId": 10,
+        "id": 3,
+        "sortCode": 3,
+        "anbarId": 6,
+        "productId": 107,
+        "actId": 203,
+        "unit1Value": 1,
+        "unit2Value": 0,
+        "price": 200000.00,
+        "packingId": 3,
+        "packingValue":0.05,
+        "vat": 0,
+        "productSerial": null,
+        "isGift": 1,
+        "unit1Rate": 200000.00,
+        "factorDiscounts": [
+        {
+            "sortCode": 1,
+            "discountId": 107,
+            "price":200000.00,
+            "discountPercent": 0
+        }
+        ]
     }
-    ]
-}
     ],
     "factorGiftInfos": [
     {
@@ -149,3 +212,5 @@ data class FactorHeaderEntity(
     ]
 }
 ]*/
+
+

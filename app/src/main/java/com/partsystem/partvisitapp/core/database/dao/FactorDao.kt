@@ -89,10 +89,33 @@ interface FactorDao {
        suspend fun deleteHeaderByUniqueId(uniqueId: String)
        */
 
+
+    @Transaction
+    suspend fun deleteFactor(factorId: Int) {
+        // حذف تمام تخفیف‌های مرتبط با فاکتور (هم سطح ردیف و هم سطح فاکتور)
+        deleteAllDiscountsByFactorId(factorId)
+
+        // حذف جوایز
+        deleteFactorGiftInfos(factorId)
+
+        // حذف ردیف‌ها (اختیاری - CASCADE انجام می‌دهد)
+        // deleteFactorDetails(factorId)
+
+        // حذف هدر
+        deleteFactorHeader(factorId)
+    }
+
+    @Query("DELETE FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId IS NULL")
+    suspend fun deleteFactorLevelDiscounts(factorId: Int)
+
+    @Query("DELETE FROM FactorDiscount WHERE factorId = :factorId")
+    suspend fun deleteAllDiscountsByFactorId(factorId: Int)
+
+    @Query("DELETE FROM FactorGiftInfo WHERE factorId = :factorId")
+    suspend fun deleteFactorGiftInfos(factorId: Int)
+
     @Query("DELETE FROM FactorHeader WHERE id = :factorId")
-    suspend fun deleteFactor(factorId: Int)
-
-
+    suspend fun deleteFactorHeader(factorId: Int)
     // Detail
 
 
@@ -384,6 +407,9 @@ interface FactorDao {
     @Upsert
     suspend fun insertFactorDiscount(discount: FactorDiscountEntity)
 
+    @Query("UPDATE FactorDiscount SET price = :price, discountPercent = :discountPercent WHERE id = :id")
+    suspend fun updateFactorDiscount(id: Int, price: Double, discountPercent: Double)
+
 
 //      @Query("SELECT * FROM factor_discount_table WHERE FactorId = :factorId")
 //       suspend fun getFactorDiscounts(factorId: Int): List<FactorDiscountEntity>
@@ -657,6 +683,4 @@ interface FactorDao {
     @Query("SELECT SUM(price) FROM FactorDiscount WHERE factorDetailId IN (SELECT id FROM FactorDetail WHERE factorId = :factorId)")
     suspend fun getTotalProductLevelDiscount(factorId: Int): Double?
 
-    @Query("DELETE FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId IS NULL")
-    suspend fun deleteFactorLevelDiscounts(factorId: Int)
 }

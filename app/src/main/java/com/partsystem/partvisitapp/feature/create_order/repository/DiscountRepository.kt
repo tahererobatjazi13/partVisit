@@ -175,8 +175,8 @@ class DiscountRepository @Inject constructor(
                         factorId = factor.id,
                         discountId = discount.id,
                         sortCode = 0,
-                        price = 0.0,
-                        discountPercent = 0.0 // مقدار جدید
+                        price = existingDiscount.price, // حفظ مبلغ قبلی
+                        discountPercent = existingDiscount.discountPercent //  حفظ درصد قبلی
                     )
                     //   factorDao.insertFactorDiscount(updatedDiscount)
 
@@ -192,7 +192,6 @@ class DiscountRepository @Inject constructor(
                         factorDiscount.factorDetailId = null
                     } else {
                         if (productSortCode == 0) {
-                            // Important: This should count only for this FactorDetailId!
                             val existingCount = discountDao.getFactorDiscountCountByFactorDetailId(
                                 factorDetail?.id ?: -1
                             )
@@ -200,10 +199,10 @@ class DiscountRepository @Inject constructor(
                         }
                         factorDiscount.sortCode = productSortCode++
                         factorDiscount.productId = factorDetail!!.productId
+                        factorDiscount.factorDetailId = factorDetail.id
                     }
 
                     // Calculate discount amount
-
                     calculate(
                         discount,
                         factorDiscount,
@@ -213,6 +212,17 @@ class DiscountRepository @Inject constructor(
                         factorDetail,
                         repository
                     )
+
+                    //  جمع کردن مبلغ تخفیف جدید با مبلغ قبلی
+                    val newTotalPrice = existingDiscount.price + factorDiscount.price
+                    Log.d("newTotalPrice", newTotalPrice.toString())
+
+                    // آپدیت رکورد موجود در دیتابیس
+                    factorDao.updateFactorDiscount(
+                        id = existingDiscount.id,
+                        price = newTotalPrice,
+                        discountPercent = factorDiscount.discountPercent
+                    )
                     insertCount++
 
                     // Skip adding to factor if it's Eshantyun or Gift (they create separate FactorDetail)
@@ -220,12 +230,12 @@ class DiscountRepository @Inject constructor(
                         discount.calculationKind != DiscountCalculationKind.Gift.ordinal
                     ) {
 
-                        if (factorDiscount.price > 0) {
+                    /*    if (factorDiscount.price > 0) {
                             Log.d("Eshantyuneshantyun44444", "ok")
 
                             // Insert into DB and update local factor if needed
                             factorDao.insertFactorDiscount(factorDiscount)
-                        }
+                        }*/
 
                         // Handle FactorGiftInfo for Factor-Level discounts
                         if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
@@ -871,8 +881,7 @@ class DiscountRepository @Inject constructor(
                 }
             }
         }
-        Log.d("EshantyunfactorDiscount", discountPrice.toString())
-
+        Log.d("discountPrice1111", discountPrice.toString())
         // --- نهایی‌سازی ---
         factorDiscount.price = kotlin.math.round(discountPrice)
     }

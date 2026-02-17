@@ -30,6 +30,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
+
     @Inject
     lateinit var mainPreferences: MainPreferences
 
@@ -226,6 +227,20 @@ class LoginActivity : AppCompatActivity() {
     private fun initPasswordToggle() {
         binding.tilPassword.endIconMode = TextInputLayout.END_ICON_NONE
 
+        binding.tiePassword.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.root.post {
+                    binding.root.smoothScrollTo(0, binding.tilPassword.bottom)
+                }
+            }
+        }
+        binding.tieUserName.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.root.post {
+                    binding.root.smoothScrollTo(0, binding.tilUserName.bottom)
+                }
+            }
+        }
         binding.tiePassword.addTextChangedListener {
             binding.tilPassword.endIconMode =
                 if (!it.isNullOrEmpty()) TextInputLayout.END_ICON_PASSWORD_TOGGLE
