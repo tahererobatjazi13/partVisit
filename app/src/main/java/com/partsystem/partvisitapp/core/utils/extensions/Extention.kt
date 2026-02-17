@@ -122,8 +122,9 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "discount price&value"
+git commit -m "discount row seprate"
 git push -u origin master
+git push
 git push
 */
 

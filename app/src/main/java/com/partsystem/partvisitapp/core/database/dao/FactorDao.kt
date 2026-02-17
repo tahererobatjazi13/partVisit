@@ -72,6 +72,7 @@ interface FactorDao {
 
     @Query("SELECT * FROM FactorHeader WHERE id = :factorId LIMIT 1")
     suspend fun getFactorHeaderById(factorId: Int): FactorHeaderEntity?
+
     @Update
     suspend fun updateFactorHeader(header: FactorHeaderEntity)
 
@@ -116,6 +117,11 @@ interface FactorDao {
 
     @Query("DELETE FROM FactorHeader WHERE id = :factorId")
     suspend fun deleteFactorHeader(factorId: Int)
+
+    // حذف تخفیف‌های سطح ردیف
+    @Query("DELETE FROM FactorDiscount WHERE factorDetailId = :factorDetailId")
+    suspend fun deleteDiscountsByFactorDetailId(factorDetailId: Int)
+
     // Detail
 
 
@@ -437,7 +443,10 @@ interface FactorDao {
 
     // تخفیف‌های سطح ردیف (جایی که factorDetailId مقدار دارد)
     @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
-    suspend fun getDetailLevelDiscounts(factorId: Int, factorDetailId: Int): List<FactorDiscountEntity>
+    suspend fun getDetailLevelDiscounts(
+        factorId: Int,
+        factorDetailId: Int
+    ): List<FactorDiscountEntity>
 
     @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
     fun getFactorDiscountsLive(factorId: Int, factorDetailId: Int): Flow<List<FactorDiscountEntity>>
@@ -448,18 +457,18 @@ interface FactorDao {
     @Query("SELECT COUNT(*) FROM FactorDetail")
     fun getCount(): LiveData<Int>
 
-/*
-    @Query(
+    /*
+        @Query(
+            """
+            SELECT SUM(Price)
+            FROM FactorDetail
+            WHERE FactorId = :factorId
+              AND IsGift = 0
+              AND ProductId IN (:productIds)
         """
-        SELECT SUM(Price) 
-        FROM FactorDetail 
-        WHERE FactorId = :factorId 
-          AND IsGift = 0 
-          AND ProductId IN (:productIds)
-    """
-    )
-    suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double?
-*/
+        )
+        suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double?
+    */
 
 
     // FactorDao.kt
@@ -485,24 +494,26 @@ interface FactorDao {
     suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double?
 
 
-        // جمع قیمت برای سطح فاکتور (با فیلتر محصولات اختیاری)
-        @Query("""
+    // جمع قیمت برای سطح فاکتور (با فیلتر محصولات اختیاری)
+    @Query(
+        """
         SELECT SUM(Price) 
         FROM FactorDetail 
         WHERE factorId = :factorId 
           AND isGift = 0 
           AND (:filterByProducts = 0 OR productId IN (:productIds))
-    """)
-        suspend fun getSumPrice(
-            factorId: Int,
-            productIds: List<Int> = emptyList(),
-            filterByProducts: Int = if (productIds.isEmpty()) 0 else 1
-        ): Double?
+    """
+    )
+    suspend fun getSumPrice(
+        factorId: Int,
+        productIds: List<Int> = emptyList(),
+        filterByProducts: Int = if (productIds.isEmpty()) 0 else 1
+    ): Double?
 
 
-
-        // جمع سایر فیلدها (Unit1Value, PackingValue, etc.)
-        @Query("""
+    // جمع سایر فیلدها (Unit1Value, PackingValue, etc.)
+    @Query(
+        """
         SELECT SUM(CASE 
             WHEN :fieldName = 'Unit1Value' THEN unit1Value
             WHEN :fieldName = 'Unit2Value' THEN unit2Value
@@ -513,13 +524,14 @@ interface FactorDao {
         WHERE factorId = :factorId 
           AND isGift = 0 
           AND (:filterByProducts = 0 OR productId IN (:productIds))
-    """)
-        suspend fun getSumField(
-            factorId: Int,
-            fieldName: String,
-            productIds: List<Int> = emptyList(),
-            filterByProducts: Int = if (productIds.isEmpty()) 0 else 1
-        ): Double?
+    """
+    )
+    suspend fun getSumField(
+        factorId: Int,
+        fieldName: String,
+        productIds: List<Int> = emptyList(),
+        filterByProducts: Int = if (productIds.isEmpty()) 0 else 1
+    ): Double?
 
 
     @Query(

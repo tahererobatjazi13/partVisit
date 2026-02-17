@@ -65,7 +65,17 @@ class DiscountRepository @Inject constructor(
         val productSortCode = 0
         Log.d("EshantyuncreateDate", factorHeader.createDate!!)
 
-
+        // ✅ حذف تمام تخفیف‌های قبلی برای این ردیف یا فاکتور
+        when (applyKind) {
+            DiscountApplyKind.ProductLevel.ordinal -> {
+                if (factorDetail != null) {
+                    factorDao.deleteDiscountsByFactorDetailId(factorDetail.id)
+                }
+            }
+            DiscountApplyKind.FactorLevel.ordinal -> {
+                factorDao.deleteFactorLevelDiscounts(factorHeader.id)
+            }
+        }
         //region Init
 
         var discounts =
@@ -155,6 +165,85 @@ class DiscountRepository @Inject constructor(
             Log.d("productOfDiscount", productOfDiscount.toString())
 
             if (productOfDiscount) {
+                // ✅ همیشه رکورد جدید ایجاد کن (چون تخفیف‌های قبلی حذف شده‌اند)
+                val maxFactorDiscountId = getMaxFactorDiscountId()
+                val factorDiscount = FactorDiscountEntity(
+                    id = maxFactorDiscountId + 1,
+                    factorId = factor.id,
+                    discountId = discount.id,
+                    productId = if (applyKind == DiscountApplyKind.ProductLevel.ordinal) factorDetail?.productId else null,
+                    factorDetailId = if (applyKind == DiscountApplyKind.ProductLevel.ordinal) factorDetail?.id else null,
+                    sortCode = 0,
+                    price = 0.0,
+                    discountPercent = 0.0
+                )
+
+                // Set SortCode
+                if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
+                    if (factorSortCode == 0) {
+                        val existingCount = discountDao.getFactorDiscountCountByFactorId(factor.id)
+                        factorSortCode = existingCount + 1
+                    }
+                    factorDiscount.sortCode = factorSortCode++
+                    factorDiscount.productId = null
+                    factorDiscount.factorDetailId = null
+                } else {
+                    if (productSortCode == 0) {
+                        val existingCount = discountDao.getFactorDiscountCountByFactorDetailId(
+                            factorDetail?.id ?: -1
+                        )
+                        productSortCode = existingCount + 1
+                    }
+                    factorDiscount.sortCode = productSortCode++
+                    factorDiscount.productId = factorDetail!!.productId
+                    factorDiscount.factorDetailId = factorDetail.id
+                }
+
+                // Calculate discount amount
+                calculate(
+                    discount,
+                    factorDiscount,
+                    productIds,
+                    applyKind,
+                    factor,
+                    factorDetail,
+                    repository
+                )
+
+                insertCount++
+
+                // Insert into DB
+                if (discount.calculationKind != DiscountCalculationKind.Eshantyun.ordinal &&
+                    discount.calculationKind != DiscountCalculationKind.Gift.ordinal
+                ) {
+                    if (factorDiscount.price > 0) {
+                        factorDao.insertFactorDiscount(factorDiscount)
+                    }
+
+                    // Handle FactorGiftInfo for Factor-Level discounts
+                    if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
+                        val allValue = getSumUnit1ValueByProductIds(factor.id, productIds)
+                        if (allValue > 0) {
+                            var maxId = repository.getMaxFactorGiftInfoId()
+                            for (productId in productIds) {
+                                val unitValue = repository.getSumUnit1ValueByProduct(factor.id, productId)
+                                val giftInfo = FactorGiftInfoEntity(
+                                    id = ++maxId,
+                                    factorId = factor.id,
+                                    discountId = discount.id,
+                                    price = kotlin.math.round((factorDiscount.price * unitValue) / allValue),
+                                    productId = productId
+                                )
+                                factorDao.insertFactorGift(giftInfo)
+                            }
+                        }
+                    }
+                } else {
+                    hasGift = true
+                }
+            }
+
+      /*      if (productOfDiscount) {
                 Log.d("Eshantyun", "okkkk222")
                 Log.d("EshantyunproductOfDiscount", productOfDiscount.toString())
 
@@ -230,12 +319,12 @@ class DiscountRepository @Inject constructor(
                         discount.calculationKind != DiscountCalculationKind.Gift.ordinal
                     ) {
 
-                    /*    if (factorDiscount.price > 0) {
+                    *//*    if (factorDiscount.price > 0) {
                             Log.d("Eshantyuneshantyun44444", "ok")
 
                             // Insert into DB and update local factor if needed
                             factorDao.insertFactorDiscount(factorDiscount)
-                        }*/
+                        }*//*
 
                         // Handle FactorGiftInfo for Factor-Level discounts
                         if (applyKind == DiscountApplyKind.FactorLevel.ordinal) {
@@ -357,7 +446,7 @@ class DiscountRepository @Inject constructor(
                         //repository.recalculateProductDiscounts(factor.id, factorDetail.id)
                     }
                 }
-            }
+            }*/
         }
     }
 
