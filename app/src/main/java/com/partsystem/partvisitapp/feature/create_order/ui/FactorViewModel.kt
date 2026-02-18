@@ -79,12 +79,7 @@ class FactorViewModel @Inject constructor(
     fun deleteFactor(factorId: Int) = viewModelScope.launch {
         factorRepository.deleteFactor(factorId)
     }
-    /*
-        private val _factorHeader = MutableStateFlow<FactorHeaderEntity?>(null)
-        val factorHeader: StateFlow<FactorHeaderEntity?> = _factorHeader
-    */
 
-    // در FactorViewModel.kt
     suspend fun getFactorHeaderById(factorId: Int): FactorHeaderEntity? {
         return factorRepository.getFactorHeaderById(factorId)
     }
@@ -146,10 +141,7 @@ class FactorViewModel @Inject constructor(
     }
 
     suspend fun updateFactorHeader(header: FactorHeaderEntity) {
-        //  viewModelScope.launch(Dispatchers.IO) {
         factorRepository.updateFactorHeader(header)
-        //     Log.d("DEBUG_FactorViewModel", "Header updated in DB: id=${header.id}, finalPrice=${header.finalPrice}, sabt=${header.sabt}")
-        // }
     }
 
     private val _currentHeader = MutableLiveData<FactorHeaderEntity?>()
@@ -244,28 +236,14 @@ class FactorViewModel @Inject constructor(
         }
     }
 
-   /* fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
-        factorRepository.getFactorDetailUi(factorId)
-    */
     fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
-       factorRepository.getFactorDetailUiWithAggregatedDiscounts(factorId).asLiveData()
+        factorRepository.getFactorDetailUiWithAggregatedDiscounts(factorId).asLiveData()
 
     fun getFactorItemCount(factorId: Int): LiveData<Int> =
         factorRepository.getFactorItemCount(factorId)
 
     fun getFactorDetails(factorId: Int): LiveData<List<FactorDetailEntity>> {
         return factorRepository.getFactorDetails(factorId).asLiveData()
-    }
-
-    fun getAllFactorDetails(): LiveData<List<FactorDetailEntity>> {
-        return factorRepository.getAllFactorDetails().asLiveData()
-    }
-
-    fun getFactorDiscountsLive(
-        factorId: Int,
-        factorDetailId: Int
-    ): LiveData<List<FactorDiscountEntity>> {
-        return factorRepository.getFactorDiscountsLive(factorId, factorDetailId).asLiveData()
     }
 
     val productInputCache =
@@ -315,7 +293,6 @@ class FactorViewModel @Inject constructor(
 
                 else -> {}
             }
-
         }
     }
 
@@ -331,7 +308,6 @@ class FactorViewModel @Inject constructor(
         Log.d("FINAL_header", header.id.toString())
         Log.d("FINAL_details", details.toString())
         Log.d("FINAL_gifts", gifts.toString())
-
 
 
         val finalDetails = details.map { d ->
@@ -421,27 +397,6 @@ class FactorViewModel @Inject constructor(
         )
     }
 
-    fun onProductConfirmed(
-        applyKind: Int,
-        factorHeader: FactorHeaderEntity,
-        factorDetail: FactorDetailEntity
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            // Insert or update factor detail
-            // factorDao.insertFactorDetail(factorDetail)
-
-            // Calculate product-level discount
-            discountRepository.calculateDiscountInsert(
-                applyKind = applyKind,
-                factorHeader = factorHeader,
-                factorDetail = factorDetail
-            )
-
-            // Recalculate totals
-            // updateFactorTotals(factorId)
-        }
-    }
-
     fun getMaxFactorDetailId(): LiveData<Int> {
         return factorRepository.getMaxFactorDetailId()
     }
@@ -464,18 +419,6 @@ class FactorViewModel @Inject constructor(
             .firstOrNull()
     }
 
-
-
-    fun addOrUpdateProduct(
-        detail: FactorDetailEntity
-    ) {
-        viewModelScope.launch {
-            factorRepository.addOrUpdateDetail(
-                detail
-            )
-        }
-    }
-
     suspend fun calculateDiscountInsert(
         applyKind: Int,
         factorHeader: FactorHeaderEntity,
@@ -487,7 +430,6 @@ class FactorViewModel @Inject constructor(
             factorDetail = factorDetail
         )
 
-    // در ابتدای کلاس ViewModel
     private val _productSavingState = MutableStateFlow(false)
     val isProductSaving: StateFlow<Boolean> = _productSavingState.asStateFlow()
 

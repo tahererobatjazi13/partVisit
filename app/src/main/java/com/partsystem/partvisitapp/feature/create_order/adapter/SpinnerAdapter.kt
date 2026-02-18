@@ -18,8 +18,8 @@ class SpinnerAdapter(
 ) : ArrayAdapter<String>(context, R.layout.item_spinner, items) {
 
     private val inflater = LayoutInflater.from(context)
-    var backColorOne: Int = 0
-    var backColorTwo: Int = 0
+    private var backColorOne: Int = 0
+    private var backColorTwo: Int = 0
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = bindView(position, convertView, parent, false)

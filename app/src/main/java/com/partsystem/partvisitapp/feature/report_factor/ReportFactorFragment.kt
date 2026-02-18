@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.report_factor
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -115,27 +116,37 @@ class ReportFactorFragment : Fragment() {
     }
 
     private fun setActiveTab(unsent: Boolean) {
-        if (unsent) {
-            binding.tabUnsent.setTextColor(
-                ContextCompat.getColor(requireContext(), R.color.white)
-            )
-            binding.tabSent.setTextColor(
-                ContextCompat.getColor(requireContext(), R.color.black)
-            )
-            binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_active)
-            binding.tabSent.setBackgroundResource(R.drawable.bg_tab_inactive)
+        // تشخیص تم تاریک
+        val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+
+        if (isDarkMode) {
+            // در تم تاریک: هر دو تب متن سفید دارند
+            binding.tabUnsent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            binding.tabSent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+
+            // پس‌زمینه‌ها بر اساس وضعیت فعال/غیرفعال
+            if (unsent) {
+                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_active)
+                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_inactive)
+            } else {
+                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_inactive)
+                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_active)
+            }
         } else {
-            binding.tabUnsent.setTextColor(
-                ContextCompat.getColor(requireContext(), R.color.black)
-            )
-            binding.tabSent.setTextColor(
-                ContextCompat.getColor(requireContext(), R.color.white)
-            )
-            binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_inactive)
-            binding.tabSent.setBackgroundResource(R.drawable.bg_tab_active)
+            // در تم روشن: رفتار قبلی
+            if (unsent) {
+                binding.tabUnsent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                binding.tabSent.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_active)
+                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_inactive)
+            } else {
+                binding.tabUnsent.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                binding.tabSent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_inactive)
+                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_active)
+            }
         }
     }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

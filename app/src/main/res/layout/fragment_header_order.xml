@@ -531,6 +531,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/medium_size"
                 android:background="@drawable/background_dialog"
+                android:backgroundTint="?attr/colorBasic"
                 android:gravity="top|start"
                 android:hint="@string/label_order_description"
                 android:inputType="textMultiLine"

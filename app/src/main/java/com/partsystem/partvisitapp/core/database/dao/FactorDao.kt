@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FactorDao {
 
-
     @Update
     fun updateFactor(factor: FactorHeaderEntity)
 
@@ -25,18 +24,6 @@ interface FactorDao {
 
     @Query("SELECT * FROM FactorHeader WHERE id = :id")
     fun getFactorById(id: Int): FactorHeaderEntity?
-
-    @Query("SELECT * FROM FactorHeader")
-    suspend fun getAllFactors(): List<FactorHeaderEntity>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFactorDetail(details: List<FactorDetailEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdate(detail: FactorDetailEntity)
-
-    @Update
-    suspend fun updateFactorDetail(item: FactorDetailEntity)
 
     @Query("SELECT * FROM FactorDetail")
     fun getAllFactorDetail(): LiveData<List<FactorDetailEntity>>
@@ -82,15 +69,6 @@ interface FactorDao {
     @Query("SELECT * FROM FactorHeader WHERE uniqueId = :uniqueId LIMIT 1")
     suspend fun getHeaderByUniqueId(uniqueId: String): FactorHeaderEntity?
 
-
-    @Query("SELECT * FROM FactorHeader ORDER BY id DESC ")
-    fun getAllHeaders(): Flow<List<FactorHeaderEntity>>
-
-    /*   @Query("DELETE FROM factor_header_table WHERE uniqueId = :uniqueId")
-       suspend fun deleteHeaderByUniqueId(uniqueId: String)
-       */
-
-
     @Transaction
     suspend fun deleteFactor(factorId: Int) {
         // حذف تمام تخفیف‌های مرتبط با فاکتور (هم سطح ردیف و هم سطح فاکتور)
@@ -123,28 +101,14 @@ interface FactorDao {
     suspend fun deleteDiscountsByFactorDetailId(factorDetailId: Int)
 
     // Detail
-
-
     @Query("SELECT MAX(Id) FROM FactorDetail")
     fun getMaxFactorDetailId(): LiveData<Int>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorDetail(detail: FactorDetailEntity): Long
 
-
     @Delete
     suspend fun deleteDetail(detail: FactorDetailEntity)
-
-    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
-    suspend fun getDetailsForHeader(factorId: String): List<FactorDetailEntity>
-    /*
-
-        @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId AND productId = :productId")
-        fun getFactorDetailByFactorIdAndProductId(
-            factorId: Int,
-            productId: Int
-        ): Flow<FactorDetailEntity>
-    */
 
     @Query(
         """
@@ -178,9 +142,6 @@ interface FactorDao {
     fun getFactorItemCount(factorId: Int): LiveData<Int>
 
 
-    @Query("SELECT * FROM FactorDetail ")
-    fun getAllFactorDetails(): Flow<List<FactorDetailEntity>>
-
     @Query(
         """
         SELECT * FROM FactorDetail 
@@ -200,80 +161,25 @@ interface FactorDao {
     )
     fun getAllFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>>
 
-    /*
-        @Upsert
-        suspend fun upsert(detail: FactorDetailEntity)
-    */
 
-    /* @Query("SELECT IFNULL(MAX(SortCode), 0) FROM factor_detail_table WHERE FactorId = :factorId")
-     suspend fun getMaxSortCode(factorId: Int): Int
- */
-
-    //  دریافت بعدین sortCode برای فاکتور جاری
+    // دریافت بعدین sortCode برای فاکتور جاری
     @Query("SELECT COALESCE(MAX(sortCode), 0) FROM FactorDetail WHERE factorId = :factorId")
     suspend fun getMaxSortCode(factorId: Int): Int
 
 
-    // در FactorDao.kt
     @Query("UPDATE FactorDetail SET vat = :vat WHERE id = :id")
     suspend fun updateVat(id: Int, vat: Double)
 
-    // 🔑 Upsert ترانزکشنی (اگر وجود داشت آپدیت، در غیر اینصورت اینزرت با sortCode جدید)
-    /*  @Transaction
-      suspend fun upsertFactorDetail(detail: FactorDetailEntity) {
-          // چک کردن وجود ردیف با همان فاکتور و محصول
-          val existing = getDetailByFactorAndProduct(
-              detail.factorId,
-              detail.productId
-          )
-
-
-          if (existing != null) {
-              // آپدیت ردیف موجود (بدون تغییر sortCode)
-              update(
-                  detail.copy(
-                      id = existing.id,
-                      sortCode = existing.sortCode // حفظ sortCode قبلی
-                  )
-              )
-          } else {
-              // اینزرت ردیف جدید با sortCode بعدی
-              val nextSortCode = getMaxSortCode(detail.factorId) + 1
-              insert(detail.copy(id = 0, sortCode = nextSortCode)) // id=0 برای اتوژنریت
-          }
-      }
-
-      @Insert(onConflict = OnConflictStrategy.REPLACE)
-      suspend fun insert(detail: FactorDetailEntity): Long
-
-      @Update
-      suspend fun update(detail: FactorDetailEntity)*/
-
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(detail: FactorDetailEntity): Long // rowId
+    suspend fun insert(detail: FactorDetailEntity): Long
 
     @Update
     suspend fun update(detail: FactorDetailEntity)
-
-    /*    @Transaction
-        suspend fun upsertFactorDetail(detail: FactorDetailEntity): Long {
-            val existing = getDetailByFactorAndProduct(detail.factorId, detail.productId)
-            return if (existing != null) {
-                update(existing.copy( id = existing.id,
-                    sortCode = existing.sortCode))
-                existing.id.toLong()
-            } else {
-                val nextSort = getMaxSortCode(detail.factorId) + 1
-                insert(detail.copy(id = 0, sortCode = nextSort)) // id=0 → Room auto-generate
-            }
-        }*/
 
     @Transaction
     suspend fun upsertFactorDetail(detail: FactorDetailEntity): Long {
         val existing = getDetailByFactorAndProduct(detail.factorId, detail.productId)
         return if (existing != null) {
-            // ✅ از داده‌های جدید (detail) استفاده کنید و فقط id و sortCode را از موجود کپی کنید
             val updated = detail.copy(
                 id = existing.id,
                 sortCode = existing.sortCode
@@ -312,51 +218,6 @@ interface FactorDao {
 
     @Query(
         """
-    DELETE FROM FactorDetail 
-    WHERE factorId = :factorId
-    """
-    )
-    suspend fun clearFactor(factorId: Int)
-
-    /*
-        @Query(
-            """
-        SELECT
-            fd.factorId,
-            fd.productId,
-            p.name AS productName,
-            p.unitName AS unit1Name,
-            pp.packingName AS packingName,
-            pp.unit1Value AS unitPerPack,
-            fdi.price AS discountPrice,
-            fd.id,
-            fd.unit1Value,
-            fd.unit2Value,
-            fd.packingId,
-            fd.packingValue,
-            fd.isGift,
-            fd.unit1Rate,
-            fd.vat,
-            fdi.price
-
-        FROM FactorDetail fd
-        LEFT JOIN Product p
-            ON fd.productId = p.id
-        LEFT JOIN ProductPacking pp
-            ON fd.packingId = pp.packingCode
-           AND fd.productId = pp.productId
-            LEFT JOIN FactorDiscount fdi
-            ON fd.id = fdi.factorDetailId
-        WHERE fd.factorId = :factorId
-        ORDER BY fd.sortCode
-    """
-        )
-        fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailUiModel>>
-    */
-
-
-    @Query(
-        """
     SELECT
         fd.factorId,
         fd.productId,
@@ -383,7 +244,6 @@ interface FactorDao {
     LEFT JOIN FactorDiscount fdi
         ON fd.id = fdi.factorDetailId
     WHERE fd.factorId = :factorId
-      AND fd.isGift = 0
     GROUP BY fd.id
     ORDER BY fd.sortCode
     """
@@ -417,63 +277,18 @@ interface FactorDao {
     )
     fun getFactorHeaderDbList(): Flow<List<FactorHeaderDbModel>>
 
-//
-//    @Query(
-//        """
-//    SELECT
-//        fh.id AS factorId,
-//        fh.customerId,
-//        c.name AS customerName,
-//        fh.patternId,
-//        p.name AS patternName,
-//        fh.persianDate,
-//        fh.createTime,
-//        fh.finalPrice,
-//        CASE
-//            WHEN COUNT(fd.factorId) > 0 THEN 1
-//            ELSE 0
-//        END AS hasDetail
-//    FROM factor_header_table fh
-//    LEFT JOIN customer_table c ON fh.customerId = c.id
-//    LEFT JOIN pattern_table p ON fh.patternId = p.id
-//    LEFT JOIN factor_detail_table fd ON fd.factorId = fh.id
-//    GROUP BY fh.id
-//    ORDER BY fh.id DESC
-//    """
-//    )
-//    fun getFactorHeaderUiList(): Flow<List<FactorHeaderDbModel>>
-
-    // Discounts
-
-    /*  @Insert(onConflict = OnConflictStrategy.REPLACE)
-      suspend fun insertFactorDiscount(discount: FactorDiscountEntity): Long
-  */
     @Upsert
     suspend fun insertFactorDiscount(discount: FactorDiscountEntity)
 
     @Query("UPDATE FactorDiscount SET price = :price, discountPercent = :discountPercent WHERE id = :id")
     suspend fun updateFactorDiscount(id: Int, price: Double, discountPercent: Double)
 
-
-//      @Query("SELECT * FROM factor_discount_table WHERE FactorId = :factorId")
-//       suspend fun getFactorDiscounts(factorId: Int): List<FactorDiscountEntity>
-//
-
-    /*  @Query("SELECT * FROM factor_discount_table WHERE factorId = :factorId")
-      suspend fun getDiscountsForHeader(factorId: String): List<FactorDiscountEntity>
-
-      @Query("DELETE FROM factor_discount_table WHERE factorId = :factorId")
-      suspend fun deleteDiscountsForHeader(factorId: String)*/
-
     // Gift
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorGift(gifts: FactorGiftInfoEntity): Long
 
-
     @Query("SELECT * FROM FactorGiftInfo WHERE factorId = :factorId")
     suspend fun getFactorGifts(factorId: Int): List<FactorGiftInfoEntity>
-
-    //@Query("SELECT SUM(Unit1Value) FROM factor_detail_table WHERE FactorId = :factorId AND ProductId = :productId AND IsGift = 0")
 
     // تخفیف‌های سطح فاکتور (جایی که factorDetailId = NULL)
     @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId IS NULL")
@@ -486,30 +301,9 @@ interface FactorDao {
         factorDetailId: Int
     ): List<FactorDiscountEntity>
 
-    @Query("SELECT * FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId = :factorDetailId")
-    fun getFactorDiscountsLive(factorId: Int, factorDetailId: Int): Flow<List<FactorDiscountEntity>>
-    /*
-        @Query("DELETE FROM factor_gift_info_table WHERE id = :headerId")
-        suspend fun deleteHeader(headerId: Long)*/
-
     @Query("SELECT COUNT(*) FROM FactorDetail")
     fun getCount(): LiveData<Int>
 
-    /*
-        @Query(
-            """
-            SELECT SUM(Price)
-            FROM FactorDetail
-            WHERE FactorId = :factorId
-              AND IsGift = 0
-              AND ProductId IN (:productIds)
-        """
-        )
-        suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double?
-    */
-
-
-    // FactorDao.kt
     @Query(
         """
     SELECT SUM(Price) 
@@ -532,7 +326,6 @@ interface FactorDao {
     suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double?
 
 
-    // جمع قیمت برای سطح فاکتور (با فیلتر محصولات اختیاری)
     @Query(
         """
         SELECT SUM(Price) 
@@ -549,7 +342,6 @@ interface FactorDao {
     ): Double?
 
 
-    // جمع سایر فیلدها (Unit1Value, PackingValue, etc.)
     @Query(
         """
         SELECT SUM(CASE 
@@ -605,7 +397,6 @@ interface FactorDao {
     """
     )
     suspend fun getSumUnit1ValueByFactorId(factorId: Int): Double
-
 
     @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
     suspend fun getDetailsByFactorId(factorId: Int): List<FactorDetailEntity>
@@ -701,7 +492,6 @@ interface FactorDao {
     }
 
 
-    // در FactorDao
     @Query(
         """
     SELECT IFNULL(SUM(fd.Price), 0) 
@@ -723,7 +513,6 @@ interface FactorDao {
 """
     )
     suspend fun getTotalAdditionForDetail(detailId: Int): Double?
-
 
     // جمع تخفیف‌های سطح فاکتور
     @Query("SELECT SUM(price) FROM FactorDiscount WHERE factorId = :factorId AND factorDetailId IS NULL")

@@ -21,6 +21,7 @@
         <item name="colorIcon">@color/black_141313</item>
         <item name="colorBasic">@color/black_18181a</item>
         <item name="colorBackSurface">@color/gray_242328</item>
+        <item name="colorBack">@color/gray_242328</item>
         <item name="colorBox">@color/blue_200063F5</item>
         <item name="colorRow">@color/black_141313</item>
         <item name="colorItem">@color/black_141313</item>

@@ -9,6 +9,7 @@
     <attr name="colorWarning" format="color" />
     <attr name="colorHeaderFooter" format="color" />
     <attr name="colorPassive" format="color" />
+    <attr name="colorOnPrimary" format="color" />
     <attr name="colorOnPrimarySurface" format="color" />
     <attr name="colorText" format="color" />
     <attr name="colorGift" format="color" />
@@ -23,6 +24,7 @@
     <attr name="colorLine" format="color" />
     <attr name="colorHeader" format="color" />
     <attr name="colorBackSurface" format="color" />
+    <attr name="colorBack" format="color" />
 
     <declare-styleable name="TryAgain">
         <attr name="message" format="string" />

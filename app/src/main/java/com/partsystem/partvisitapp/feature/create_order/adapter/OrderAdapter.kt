@@ -57,6 +57,9 @@ class OrderAdapter(
             if (isOrderCompleted) {
                 // سطل آشغال در حالت تکمیل سفارش همیشه مخفی است
                 binding.ivDelete.gone()
+                if (item.isGift == 1) {
+                    binding.root.setBackgroundColor(backColorGift)
+                }
             } else {
                 // در حالت عادی، فقط ردیف‌های غیرهدیه قابل حذف هستند
                 if (item.isGift == 1) {
@@ -64,14 +67,9 @@ class OrderAdapter(
                     binding.root.setBackgroundColor(backColorGift)
                 } else {
                     binding.ivDelete.show()
-                    binding.root.setBackgroundColor(
-                        if (bindingAdapterPosition % 2 == 0)
-                            itemView.context.getColorFromAttr(R.attr.colorBasic)
-                        else
-                            itemView.context.getColorFromAttr(R.attr.colorRow)
-                    )
                 }
             }
+
             tvProductName.text = "${bindingAdapterPosition + 1}_ ${item.productName}"
             tvUnitName.text = item.unit1Name
 

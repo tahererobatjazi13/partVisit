@@ -65,7 +65,7 @@ class DiscountRepository @Inject constructor(
         val productSortCode = 0
         Log.d("EshantyuncreateDate", factorHeader.createDate!!)
 
-        // ✅ حذف تمام تخفیف‌های قبلی برای این ردیف یا فاکتور
+        // حذف تمام تخفیف‌های قبلی برای این ردیف یا فاکتور
         when (applyKind) {
             DiscountApplyKind.ProductLevel.ordinal -> {
                 if (factorDetail != null) {
@@ -165,7 +165,7 @@ class DiscountRepository @Inject constructor(
             Log.d("productOfDiscount", productOfDiscount.toString())
 
             if (productOfDiscount) {
-                // ✅ همیشه رکورد جدید ایجاد کن (چون تخفیف‌های قبلی حذف شده‌اند)
+                // همیشه رکورد جدید ایجاد کن (چون تخفیف‌های قبلی حذف شده‌اند)
                 val maxFactorDiscountId = getMaxFactorDiscountId()
                 val factorDiscount = FactorDiscountEntity(
                     id = maxFactorDiscountId + 1,
@@ -1404,7 +1404,7 @@ class DiscountRepository @Inject constructor(
     // DiscountRepository.kt
     suspend fun getSumPrice(factorId: Int, productIds: List<Int> = emptyList()): Double {
         return if (productIds.isEmpty()) {
-            // ⚠️ شبیه کد جاوا: اگر لیست خالی است، همه ردیف‌ها را جمع کن
+            // اگر لیست خالی است، همه ردیف‌ها را جمع کن
             factorDao.getSumPrice(factorId) ?: 0.0
         } else {
             factorDao.getSumPriceByProductIds(factorId, productIds) ?: 0.0

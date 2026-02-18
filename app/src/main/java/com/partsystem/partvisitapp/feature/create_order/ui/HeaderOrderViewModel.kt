@@ -29,39 +29,15 @@ class HeaderOrderViewModel @Inject constructor(
     private val _currentFactor = MutableLiveData<FactorHeaderEntity>()
     val currentFactor: LiveData<FactorHeaderEntity> get() = _currentFactor
 
-    fun setFactor(factor: FactorHeaderEntity) {
-        _currentFactor.value = factor
-    }
-
-    fun updateFactor(factor: FactorHeaderEntity) = viewModelScope.launch {
-        repository.update(factor)
-        _currentFactor.postValue(factor)
-    }
-
-//    fun insertFactor(factor: FactorHeaderEntity) = viewModelScope.launch {
-//        val id = repository.insert(factor)
-//        // factor.id = id.toInt()
-//        _currentFactor.postValue(factor)
-//    }
-
-    private val _customerDirections = MutableLiveData<List<CustomerDirectionEntity>>()
-    val customerDirections: LiveData<List<CustomerDirectionEntity>> = _customerDirections
 
     fun getCustomerDirectionsByCustomer(customerId: Int): LiveData<List<CustomerDirectionEntity>> {
         return repository.getCustomerDirectionsByCustomer(customerId).asLiveData()
     }
-    /*   fun getInvoiceCategory(customerId: Int): LiveData<List<InvoiceCategoryEntity>> {
-           return repository.getInvoiceCategory(customerId).asLiveData()
-       }*/
 
     fun getInvoiceCategory(userId: Int): LiveData<List<InvoiceCategoryEntity>> {
         return repository.getInvoiceCategory(userId).asLiveData()
     }
 
-    /*  fun getPattern(): LiveData<List<PatternEntity>> {
-          return repository.getPattern().asLiveData()
-      }
-  */
     fun getAct(): LiveData<List<ActEntity>> {
         return repository.getAct().asLiveData()
     }
@@ -69,7 +45,6 @@ class HeaderOrderViewModel @Inject constructor(
     private val _pattern = MutableLiveData<PatternEntity?>()
     val pattern: LiveData<PatternEntity?> get() = _pattern
 
-// در HeaderOrderViewModel
     private val _selectedPattern = MutableLiveData<PatternEntity?>()
     val selectedPattern: LiveData<PatternEntity?> = _selectedPattern
 
@@ -80,9 +55,6 @@ class HeaderOrderViewModel @Inject constructor(
         }
     }
 
-
-    fun getPatternById(id: Int): LiveData<PatternEntity> =
-        repository.getPatternById(id)
 
     private val _patterns = MutableLiveData<List<PatternEntity>>()
     val patterns: LiveData<List<PatternEntity>> = _patterns
@@ -127,7 +99,6 @@ class HeaderOrderViewModel @Inject constructor(
 
     private val _validationEvent = MutableLiveData<Event<Unit>>()
     val validationEvent: LiveData<Event<Unit>> get() = _validationEvent
-
 
     private val _errorMessageRes = MutableLiveData<Int?>()
     val errorMessageRes: LiveData<Int?> get() = _errorMessageRes
@@ -196,5 +167,4 @@ class HeaderOrderViewModel @Inject constructor(
             _defaultAnbarId.value = anbarId
         }
     }
-
 }
