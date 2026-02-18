@@ -134,13 +134,13 @@
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbSabt"
-                    style="@style/SmallBoldTextStyle"
+                    style="@style/MediumBoldTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end|center_vertical"
                     android:gravity="end|center_vertical"
                     android:layoutDirection="rtl"
-                    android:text="@string/label_complete_order"
+                    android:text="@string/label_register"
                     android:textColor="@color/colorPrimary" />
 
                 <com.google.android.material.textview.MaterialTextView

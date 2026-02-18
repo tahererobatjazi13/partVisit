@@ -122,24 +122,6 @@ class OfflineOrderDetailFragment : Fragment() {
                 binding.tvDateTime.text = gregorianToPersian(header.createDate.toString())
                 currentSabt = header.sabt
                 // نمایش وضعیت فاکتور در UI
-                binding.tvStatus.text = when (currentSabt) {
-                    1 -> getString(R.string.label_completed_order_item)
-                    else -> getString(R.string.label_not_completed_order_item)
-                }
-
-                binding.tvStatus.setTextColor(
-                    if (currentSabt == 1)
-                        getColorAttr(requireContext(), R.attr.colorSuccess)
-                    else
-                        getColorAttr(requireContext(), R.attr.colorWarning)
-                )
-
-                binding.tvStatus.setTextColor(
-                    requireContext().getColorAttrSafe(
-                        if (currentSabt == 1) R.attr.colorSuccess else R.attr.colorWarning,
-                        if (currentSabt == 1) R.color.green_21BF73 else R.color.orange_FF5722
-                    )
-                )
             }
 
         factorViewModel.getFactorDetailUi(factorId = args.factorId)

@@ -86,8 +86,6 @@
     <string name="label_send_order">ثبت و ارسال نهایی سفارش</string>
     <string name="label_send_online_order">ارسال آنلاین سفارش</string>
     <string name="label_draft_order">پیش نویس سفارش</string>
-    <string name="label_completed_order_item">سفارش تکمیل شده</string>
-    <string name="label_not_completed_order_item">سفارش تکمیل نشده</string>
     <string name="label_draft_order_item">سفارش پیش نویس</string>
     <string name="label_edit_order">ویرایش سفارش</string>
     <string name="label_order_description">توضیحات سفارش...</string>
@@ -99,7 +97,6 @@
     <string name="label_payment_type">نحوه تسویه:</string>
     <string name="label_cancel">لغو</string>
     <string name="label_register">ثبت</string>
-    <string name="label_complete_order">تکمیل سفارش</string>
     <string name="label_packing_type">نوع بسته بندی: </string>
     <string name="app_price_item">12000ریال</string>
     <string name="label_sync_order">ارسال سفارش</string>

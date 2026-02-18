@@ -122,9 +122,8 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "clean code"
+git commit -m "sabt item"
 git push -u origin master
-
 git push
 */
 

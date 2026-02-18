@@ -76,6 +76,17 @@ class OfflineOrderListFragment : Fragment() {
             offlineOrderListAdapter = OfflineOrderListAdapter(
                 showSyncButton = true,
                 onDelete = { item -> showDeleteDialog(item) },
+                onSabtChanged = { item, isChecked ->
+                    //setOnCheckedChangeListener آپدیت مدل و ارسال لیست جدید به آداپتور
+                    val updatedItem = item.copy(sabt = if (isChecked) 1 else 0)
+
+                    // اگر از LiveData/StateFlow استفاده می‌کنید:
+                    // viewModel.updateFactorSabt(updatedItem)
+
+                    // یا اگر لیست را دستی مدیریت می‌کنید:
+                    // val newList = currentList.map { if (it.factorId == item.factorId) updatedItem else it }
+                    // adapter.setData(newList)
+                },
                 onSync = { item ->
                     selectedFactor = item
                     showSendDialog(item)

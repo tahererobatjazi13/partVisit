@@ -7,11 +7,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.core.utils.getColorAttrSafe
 import com.partsystem.partvisitapp.databinding.ItemOrderListBinding
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 import java.text.DecimalFormat
@@ -19,12 +17,14 @@ import java.text.DecimalFormat
 class OfflineOrderListAdapter(
     private val showSyncButton: Boolean = false,
     private val onDelete: (FactorHeaderUiModel) -> Unit,
+    private val onSabtChanged: (FactorHeaderUiModel, Boolean) -> Unit,
     private val onSync: (FactorHeaderUiModel) -> Unit,
     private val onClick: (FactorHeaderUiModel) -> Unit = {}
 ) : ListAdapter<FactorHeaderUiModel, OfflineOrderListAdapter.OfflineOrderListViewHolder>(
     OfflineOrderListDiffCallback()
 ) {
     private val formatter = DecimalFormat("#,###")
+    private val discountPercent = 0.0
 
     inner class OfflineOrderListViewHolder(private val binding: ItemOrderListBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -46,22 +46,24 @@ class OfflineOrderListAdapter(
             tvPatternName.text = item.patternName ?: "-"
             Log.d("finalPriceadapter", item.finalPrice.toString())
 
+            val displayPrice = if (item.sabt == 1) {
+                item.finalPrice * (1 - discountPercent) // اعمال تخفیف
+            } else {
+                item.finalPrice
+            }
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
             ivDelete.show()
 
-            tvStatus.text = when (item.sabt) {
-                1 -> context.getString(R.string.label_completed_order_item)
-                else -> context.getString(R.string.label_not_completed_order_item)
+
+            cbSabt.isChecked = item.sabt == 1
+            cbSabt.isEnabled = !item.isSending // غیرفعال هنگام ارسال
+            cbSabt.setOnCheckedChangeListener { _, isChecked ->
+                // جلوگیری از لوپ هنگام بایند کردن
+                if (item.sabt != if (isChecked) 1 else 0) {
+                    onSabtChanged(item, isChecked)
+                }
             }
-
-            tvStatus.setTextColor(
-                context.getColorAttrSafe(
-                    if (item.sabt == 1) R.attr.colorSuccess else R.attr.colorWarning,
-                    if (item.sabt == 1) R.color.green_21BF73 else R.color.orange_FF5722
-                )
-            )
-
             root.setOnClickListener { onClick(item) }
 
             if (showSyncButton && item.hasDetail && item.sabt == 1) {
