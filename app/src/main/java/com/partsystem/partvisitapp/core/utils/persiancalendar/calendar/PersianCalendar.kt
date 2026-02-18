@@ -5,9 +5,7 @@ import com.partsystem.partvisitapp.core.utils.persiancalendar.utils.todayCalenda
 import java.util.*
 import kotlin.math.floor
 
-/**
- * Persian calendar class to handle dates the way we need
- */
+
 class PersianCalendar() : GregorianCalendar() {
 
     var year = 0

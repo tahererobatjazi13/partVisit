@@ -48,7 +48,9 @@
                 android:singleLine="true"
                 app:drawableLeftCompat="@drawable/ic_menu_arrow_down"
                 tools:ignore="RtlHardcoded,RtlSymmetry" />
+
         </LinearLayout>
+
     </LinearLayout>
 
     <FrameLayout

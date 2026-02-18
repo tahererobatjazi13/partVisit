@@ -1,7 +1,6 @@
 package com.partsystem.partvisitapp.feature.main.home.repository
 
 import android.content.Context
-import android.util.Log
 import com.partsystem.partvisitapp.core.database.dao.ActDao
 import com.partsystem.partvisitapp.core.database.dao.ApplicationSettingDao
 import com.partsystem.partvisitapp.core.database.dao.AssignDirectionCustomerDao
@@ -10,7 +9,6 @@ import com.partsystem.partvisitapp.core.database.dao.CustomerDirectionDao
 import com.partsystem.partvisitapp.core.database.dao.DiscountDao
 import com.partsystem.partvisitapp.core.database.dao.GroupProductDao
 import com.partsystem.partvisitapp.core.database.dao.InvoiceCategoryDao
-import com.partsystem.partvisitapp.core.database.dao.MojoodiDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDao
 import com.partsystem.partvisitapp.core.database.dao.PatternDetailDao
 import com.partsystem.partvisitapp.core.database.dao.ProductDao
@@ -70,8 +68,6 @@ class HomeRepository @Inject constructor(
     private val vatDao: VatDao,
     private val saleCenterDao: SaleCenterDao,
     private val discountDao: DiscountDao,
-    private val mojoodiDao: MojoodiDao,
-
     @ApplicationContext private val context: Context
 ) {
 

@@ -26,7 +26,6 @@ import java.util.ArrayList
 import kotlin.collections.LinkedHashSet
 
 
-/** A [Dialog] with a header, [MaterialCalendar], and set of actions. */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class MaterialDatePicker<S> : DialogFragment() {
 

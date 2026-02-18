@@ -22,14 +22,14 @@ class SettingsRepository @Inject constructor(
         private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode_enabled")
     }
 
-    /** خواندن حالت دارک مود از DataStore */
+    //خواندن حالت دارک مود از DataStore
     val darkModeFlow: Flow<Boolean> = context.settingsDataStore.data
         .catch { e ->
             if (e is IOException) emit(emptyPreferences()) else throw e
         }
         .map { prefs -> prefs[DARK_MODE_KEY] ?: false }
 
-    /** ذخیره حالت دارک مود */
+    // ذخیره حالت دارک مود
     suspend fun setDarkMode(enabled: Boolean) {
         context.settingsDataStore.edit { prefs ->
             prefs[DARK_MODE_KEY] = enabled

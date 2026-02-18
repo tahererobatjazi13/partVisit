@@ -2,14 +2,7 @@ package com.partsystem.partvisitapp.core.utils.persiancalendar
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.partsystem.partvisitapp.core.utils.persiancalendar.utils.todayCalendar
 
-/**
- * A [CalendarConstraints.DateValidator] that enables dates from a given point forward.
- * Defaults to the current moment in device time forward using
- * [DateValidatorPointForward.now], but can be set to any point, as UTC milliseconds, using
- * [DateValidatorPointForward.from].
- */
 class DateValidatorPointForward private constructor(private val point: Long) :
     CalendarConstraints.DateValidator {
 
@@ -42,23 +35,10 @@ class DateValidatorPointForward private constructor(private val point: Long) :
 
     companion object {
 
-        /**
-         * Returns a [CalendarConstraints.DateValidator] which enables days from `point`, in
-         * UTC milliseconds, forward.
-         */
         fun from(point: Long): DateValidatorPointForward {
             return DateValidatorPointForward(point)
         }
 
-        /**
-         * Returns a [CalendarConstraints.DateValidator] enabled from the current moment in device
-         * time forward.
-         */
-        fun now(): DateValidatorPointForward {
-            return from(todayCalendar.timeInMillis)
-        }
-
-        /** Part of [Parcelable] requirements. Do not use.  */
         @JvmField
         val CREATOR: Parcelable.Creator<DateValidatorPointForward> =
             object :

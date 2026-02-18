@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -112,6 +113,7 @@ class HeaderOrderFragment : Fragment() {
         setupClicks()
         setWidth()
     }
+
     private fun initAdapter() {
         val defaultAdapter =
             SpinnerAdapter(requireContext(), mutableListOf(getString(R.string.label_please_select)))
@@ -119,15 +121,6 @@ class HeaderOrderFragment : Fragment() {
         binding.spPattern.adapter = defaultAdapter
         binding.spAct.adapter = defaultAdapter
         binding.spCustomerDirection.adapter = defaultAdapter
-    }
-
-    private fun initCustomer() {
-        if (args.typeCustomer && args.customerId != 0) {
-            loadCustomerData(args.customerId, args.customerName)
-            // اطمینان از مقداردهی saleCenterId در هر حالت
-
-
-        }
     }
 
     private fun setupSpinners() {
@@ -253,7 +246,7 @@ class HeaderOrderFragment : Fragment() {
                             position > 0 -> {
                                 val act = allAct[position - 1]
                                 factorViewModel.updateHeader(actId = act.id)
-                                Log.d("factorHeaderctId1", act.id!!.toString())
+                                Log.d("factorHeaderctId1", act.id.toString())
                             }
 
                             position == 0 -> {
@@ -290,14 +283,14 @@ class HeaderOrderFragment : Fragment() {
         header.createDate?.let { binding.tvDate.text = gregorianToPersian(it) }
         header.dueDate?.let { binding.tvDuoDate.text = gregorianToPersian(it) }
         header.deliveryDate?.let { binding.tvDeliveryDate.text = gregorianToPersian(it) }
-        binding.etDescription.setText(header.description ?: "")
+        binding.etDescription.setText(header.description)
 
         // بارگذاری مقادیر پیش‌فرض
         saleCenterId = header.saleCenterId ?: mainPreferences.saleCenterId.firstOrNull() ?: 0
         userId = mainPreferences.id.firstOrNull() ?: 0
         visitorId = mainPreferences.personnelId.firstOrNull() ?: 0
 
-        // 🔑 بارگذاری مشتری با استفاده از observe (نه .value)
+        // بارگذاری مشتری با استفاده از observe (نه .value)
         header.customerId?.let { customerId ->
             // ابتدا نام را از آرگومان‌ها یا کش نمایش دهیم
             if (args.typeCustomer && args.customerId != 0 && args.customerName.isNotEmpty()) {
@@ -305,18 +298,19 @@ class HeaderOrderFragment : Fragment() {
                 loadCustomerData(args.customerId, args.customerName)
             } else {
                 // بارگذاری نام مشتری از دیتابیس
-                customerViewModel.getCustomerById(customerId).observe(viewLifecycleOwner) { customer ->
-                    if (customer != null) {
-                        binding.tvCustomerName.text = customer.name
-                        loadCustomerData(customerId, customer.name)
-                    } else {
-                        binding.tvCustomerName.text = getString(R.string.msg_no_customer)
+                customerViewModel.getCustomerById(customerId)
+                    .observe(viewLifecycleOwner) { customer ->
+                        if (customer != null) {
+                            binding.tvCustomerName.text = customer.name
+                            loadCustomerData(customerId, customer.name)
+                        } else {
+                            binding.tvCustomerName.text = getString(R.string.msg_no_customer)
+                        }
                     }
-                }
             }
         }
 
-        // 🔑 بارگذاری دسته‌بندی صورتحساب اگر وجود دارد
+        // بارگذاری دسته‌بندی صورتحساب اگر وجود دارد
         header.invoiceCategoryId?.let { categoryId ->
             // اطمینان از بارگذاری لیست دسته‌بندی‌ها
             headerOrderViewModel.getInvoiceCategory(userId).observe(viewLifecycleOwner) { list ->
@@ -328,22 +322,25 @@ class HeaderOrderFragment : Fragment() {
                     binding.spInvoiceCategory.adapter = SpinnerAdapter(requireContext(), items)
 
                     // ست کردن مقدار انتخابی
-                    binding.spInvoiceCategory.setSelectionById(categoryId, allInvoiceCategory) { it.id }
+                    binding.spInvoiceCategory.setSelectionById(
+                        categoryId,
+                        allInvoiceCategory
+                    ) { it.id }
 
-                    // 🔑 بارگذاری الگوها پس از انتخاب دسته‌بندی
+                    // بارگذاری الگوها پس از انتخاب دسته‌بندی
                     header.customerId?.let { customerId ->
                         headerOrderViewModel.loadPatterns(
                             customer = customerId,
                             centerId = saleCenterId,
                             invoiceCategoryId = categoryId,
-                            settlementKind = header.settlementKind ?: 0,
+                            settlementKind = header.settlementKind,
                             date = header.persianDate ?: getTodayPersianDate()
                         )
                     }
                 }
             }
         }
-        // 🔑 بارگذاری الگو و آکت از طریق observe (نه فراخوانی مستقیم)
+        // بارگذاری الگو و آکت از طریق observe (نه فراخوانی مستقیم)
         header.patternId?.let { patternId ->
             // اطمینان از بارگذاری لیست الگوها قبل از ست کردن انتخاب
             headerOrderViewModel.patterns.observe(viewLifecycleOwner) { patterns ->
@@ -357,7 +354,7 @@ class HeaderOrderFragment : Fragment() {
                     // ست کردن مقدار انتخابی
                     binding.spPattern.setSelectionById(patternId, allPattern) { it.id }
 
-                    // 🔑 بارگذاری آکت‌ها پس از انتخاب الگو
+                    // بارگذاری آکت‌ها پس از انتخاب الگو
                     headerOrderViewModel.loadActs(
                         patternId = patternId,
                         actKind = ActKind.Product.ordinal
@@ -372,7 +369,7 @@ class HeaderOrderFragment : Fragment() {
             }
         }
 
-        // 🔑 بارگذاری آکت انتخاب شده
+        // بارگذاری آکت انتخاب شده
         header.actId?.let { actId ->
             headerOrderViewModel.acts.observe(viewLifecycleOwner) { acts ->
                 if (acts.isNotEmpty()) {
@@ -393,31 +390,30 @@ class HeaderOrderFragment : Fragment() {
             headerOrderViewModel.fetchDefaultAnbarId(saleCenterId)
             viewLifecycleOwner.lifecycleScope.launch {
                 headerOrderViewModel.defaultAnbarId.firstOrNull()?.let { anbarId ->
-                    if (anbarId != null) {
-                        factorViewModel.updateHeader(defaultAnbarId = anbarId)
-                    }
+                    factorViewModel.updateHeader(defaultAnbarId = anbarId)
                 }
             }
         }
-          /*
-        // 🔑 بارگذاری داده‌های تکمیلی فقط اگر هدر کامل نیست
-        if (header.invoiceCategoryId != null && header.customerId != null) {
-            headerOrderViewModel.loadPatterns(
-                customer = header.customerId!!,
-                centerId = saleCenterId,
-                invoiceCategoryId = header.invoiceCategoryId!!,
-                settlementKind = header.settlementKind ?: 0,
-                date = header.persianDate ?: getTodayPersianDate()
-            )
-        }
+        /*
+      // بارگذاری داده‌های تکمیلی فقط اگر هدر کامل نیست
+      if (header.invoiceCategoryId != null && header.customerId != null) {
+          headerOrderViewModel.loadPatterns(
+              customer = header.customerId!!,
+              centerId = saleCenterId,
+              invoiceCategoryId = header.invoiceCategoryId!!,
+              settlementKind = header.settlementKind ?: 0,
+              date = header.persianDate ?: getTodayPersianDate()
+          )
+      }
 
-        if (header.patternId != null) {
-            headerOrderViewModel.loadActs(
-                patternId = header.patternId!!,
-                actKind = ActKind.Product.ordinal
-            )
-        }*/
+      if (header.patternId != null) {
+          headerOrderViewModel.loadActs(
+              patternId = header.patternId!!,
+              actKind = ActKind.Product.ordinal
+          )
+      }*/
     }
+
     private fun createNewHeader() {
         viewLifecycleOwner.lifecycleScope.launch {
             val current = factorViewModel.factorHeader.value
@@ -461,7 +457,7 @@ class HeaderOrderFragment : Fragment() {
                 }
             }
 
-            // 🔑 انتخاب خودکار اولین مشتری (در حالت جدید و نه ویرایش)
+            // انتخاب خودکار اولین مشتری (در حالت جدید و نه ویرایش)
             if (!isEditMode && !args.typeCustomer) {
                 customerViewModel.filteredCustomers.value?.firstOrNull()?.let { firstCustomer ->
                     binding.tvCustomerName.text = firstCustomer.name
@@ -476,6 +472,7 @@ class HeaderOrderFragment : Fragment() {
             }
         }
     }
+
     private fun loadCustomerData(customerId: Int, customerName: String) {
         binding.tvCustomerName.text = customerName
         factorViewModel.updateHeader(customerId = customerId)
@@ -507,7 +504,8 @@ class HeaderOrderFragment : Fragment() {
                     delay(100) // تأخیر برای اطمینان از آماده بودن اسپینر
 
                     // اولویت ۱: از هدر فعلی ویومدل بخوان
-                    val directionIdFromHeader = factorViewModel.factorHeader.value?.directionDetailId
+                    val directionIdFromHeader =
+                        factorViewModel.factorHeader.value?.directionDetailId
 
                     // اولویت ۲: اگر در ویومدل نبود، از هدر ویرایشی بخوان
                     val directionId = directionIdFromHeader ?: editingHeader?.directionDetailId
@@ -562,14 +560,14 @@ class HeaderOrderFragment : Fragment() {
             header.deliveryDate?.let { binding.tvDeliveryDate.text = gregorianToPersian(it) }
         }
 
-        // 🔑 دریافت لیست مشتریان بدون شرط اضافی
+        // دریافت لیست مشتریان بدون شرط اضافی
         if (controlVisit) {
             customerViewModel.loadCustomersWithSchedule(persianDate)
         } else {
             customerViewModel.loadCustomersWithoutSchedule()
         }
 
-        // 🔑 انتخاب خودکار اولین مشتری فقط در حالت جدید (نه ویرایش)
+        // انتخاب خودکار اولین مشتری فقط در حالت جدید (نه ویرایش)
         customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
             if (isEditMode) return@observe
 
@@ -621,7 +619,7 @@ class HeaderOrderFragment : Fragment() {
             setActSpinnerSelection(actId)
         }
 
-        // 🔑 بارگذاری آکت‌ها با ست کردن انتخاب پس از بارگذاری کامل
+        // بارگذاری آکت‌ها با ست کردن انتخاب پس از بارگذاری کامل
         headerOrderViewModel.acts.observe(viewLifecycleOwner) { acts ->
             allAct.clear()
             allAct.addAll(acts)
@@ -756,6 +754,7 @@ class HeaderOrderFragment : Fragment() {
 
             picker.addOnPositiveButtonClickListener(object :
                 MaterialPickerOnPositiveButtonClickListener<Long?> {
+                @SuppressLint("DefaultLocale")
                 override fun onPositiveButtonClick(selection: Long?) {
                     selection?.let {
                         val date = PersianCalendar(it)
@@ -863,7 +862,7 @@ class HeaderOrderFragment : Fragment() {
             .observe(viewLifecycleOwner) { header ->
                 editingHeader = header
                 factorViewModel.factorHeader.value = header
-                // 🔑 اطمینان از ست شدن directionDetailId در ویومدل
+                // اطمینان از ست شدن directionDetailId در ویومدل
                 if (header.directionDetailId != null && header.directionDetailId != 0) {
                     factorViewModel.updateHeader(directionDetailId = header.directionDetailId)
                 }
@@ -923,7 +922,7 @@ class HeaderOrderFragment : Fragment() {
                         customer = header.customerId!!,
                         centerId = saleCenterId,
                         invoiceCategoryId = categoryId,
-                        settlementKind = header.settlementKind ?: 0,
+                        settlementKind = header.settlementKind,
                         date = header.persianDate ?: getTodayPersianDate()
                     )
                 }
@@ -1073,7 +1072,7 @@ class HeaderOrderFragment : Fragment() {
                     )
 
                     val finalFactorId: Long =
-                        if (currentHeader.id != null && currentHeader.id > 0) {
+                        if (currentHeader.id > 0) {
                             factorViewModel.updateFactorHeader(updatedHeader)
                             factorViewModel.factorHeader.postValue(updatedHeader)
                             currentHeader.id.toLong()
@@ -1109,7 +1108,7 @@ class HeaderOrderFragment : Fragment() {
                     )
 
                     val finalFactorId: Long =
-                        if (currentHeader.id != null && currentHeader.id > 0) {
+                        if (currentHeader.id > 0) {
                             factorViewModel.updateFactorHeader(updatedHeader)
                             factorViewModel.factorHeader.postValue(updatedHeader)
                             currentHeader.id.toLong()

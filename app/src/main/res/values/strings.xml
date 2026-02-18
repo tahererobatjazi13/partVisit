@@ -2,7 +2,7 @@
 
     <!-- Labels -->
     <string name="app_name">partVisit</string>
-    <string name="label_app_name">پارت ویزیت اپ</string>
+    <string name="label_app_name">پارت ویزیت</string>
     <string name="label_product_group">گروه کالا</string>
     <string name="label_product_catalog">کاتالوگ کالا</string>
     <string name="label_orders">سفارشات</string>

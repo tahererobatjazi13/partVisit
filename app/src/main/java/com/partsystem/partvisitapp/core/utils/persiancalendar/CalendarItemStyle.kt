@@ -1,20 +1,3 @@
-/*
- * Copyright 2020 Rahman Mohammadi
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package com.partsystem.partvisitapp.core.utils.persiancalendar
 
 import android.content.Context
@@ -27,10 +10,10 @@ import androidx.annotation.StyleRes
 import androidx.core.content.ContextCompat
 import androidx.core.util.Preconditions
 import androidx.core.view.ViewCompat
+import com.google.android.material.textview.MaterialTextView
 import com.partsystem.partvisitapp.BuildConfig
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.persiancalendar.utils.getColorStateList
-
 
 class CalendarItemStyle private constructor(
     backgroundColor: ColorStateList?,
@@ -49,7 +32,7 @@ class CalendarItemStyle private constructor(
     private val itemShape: Int
     private val cornerRadius: Float
 
-    fun styleItem(item: SimpleTextView) {
+    fun styleItem(item: MaterialTextView) {
         val shape = GradientDrawable()
         shape.shape = if (itemShape == 0) GradientDrawable.OVAL else GradientDrawable.RECTANGLE
 
@@ -57,7 +40,12 @@ class CalendarItemStyle private constructor(
         mask.shape = if (itemShape == 0) GradientDrawable.OVAL else GradientDrawable.RECTANGLE
 
         shape.color = backgroundColor
-        mask.color = ColorStateList.valueOf(ContextCompat.getColor(item.context, R.color.default_day_ripple_color))
+        mask.color = ColorStateList.valueOf(
+            ContextCompat.getColor(
+                item.context,
+                R.color.default_day_ripple_color
+            )
+        )
 
         shape.setStroke(strokeWidth, strokeColor)
 
@@ -69,8 +57,9 @@ class CalendarItemStyle private constructor(
         if (textColor == null) {
             if (BuildConfig.DEBUG) {
                 Log.w(
-                    CalendarItemStyle::class::java.name,"Text color is null using white instead!" +
-                        "\n looks like you haven't specified a color for attribute: textColor of this item")
+                    CalendarItemStyle::class::java.name, "Text color is null using white instead!" +
+                            "\n looks like you haven't specified a color for attribute: textColor of this item"
+                )
             }
 
             item.setTextColor(Color.WHITE)
@@ -78,20 +67,16 @@ class CalendarItemStyle private constructor(
             item.setTextColor(textColor)
 
         val d: Drawable
-        d = RippleDrawable(textColor?.withAlpha(30) ?: ColorStateList.valueOf(Color.WHITE).withAlpha(30),
-            shape, mask)
+        d = RippleDrawable(
+            textColor?.withAlpha(30) ?: ColorStateList.valueOf(Color.WHITE).withAlpha(30),
+            shape, mask
+        )
 
         ViewCompat.setBackground(
             item,
             InsetDrawable(d, insets.left, insets.top, insets.right, insets.bottom)
         )
     }
-
-    val leftInset: Int
-        get() = insets.left
-
-    val rightInset: Int
-        get() = insets.right
 
     val topInset: Int
         get() = insets.top
@@ -100,11 +85,9 @@ class CalendarItemStyle private constructor(
         get() = insets.bottom
 
     companion object {
-        /**
-         * Creates a [CalendarItemStyle] using the provided [ ][R.styleable.PersianMaterialCalendarItem].
-         */
         fun create(
-            context: Context, @StyleRes materialCalendarItemStyle: Int): CalendarItemStyle {
+            context: Context, @StyleRes materialCalendarItemStyle: Int
+        ): CalendarItemStyle {
             Preconditions.checkArgument(
                 materialCalendarItemStyle != 0,
                 "Cannot create a CalendarItemStyle with a styleResId of 0"
@@ -159,7 +142,8 @@ class CalendarItemStyle private constructor(
                 strokeWidth,
                 itemShape,
                 cornerRadius,
-                insets)
+                insets
+            )
         }
     }
 

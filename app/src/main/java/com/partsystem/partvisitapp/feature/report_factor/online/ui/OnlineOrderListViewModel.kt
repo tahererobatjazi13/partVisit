@@ -84,8 +84,7 @@ class OnlineOrderListViewModel @Inject constructor(
 
     // یک تابع اکستنشن برای فیلتر تمیز
     private fun ReportFactorDto.matchesQuery(q: String): Boolean =
-        customerName?.contains(q, ignoreCase = true) == true ||
-                id?.toString()?.contains(q) == true
+        customerName.contains(q, ignoreCase = true) || id.toString().contains(q)
 
 
 }

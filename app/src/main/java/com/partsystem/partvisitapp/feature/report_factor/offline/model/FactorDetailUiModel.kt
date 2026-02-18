@@ -1,6 +1,5 @@
 package com.partsystem.partvisitapp.feature.report_factor.offline.model
 
-
 data class FactorDetailUiModel(
     val id: Int,
     val factorId: Int,
@@ -16,8 +15,10 @@ data class FactorDetailUiModel(
     val unit1Rate: Double,
     val vat: Double,
     val isGift: Int,
-    val discountPrice: Int,
+    val discountPrice: Double,
+    val sortCode: Int? = null
 )
+
 //
 //data class FactorDetailUiModel(
 //    val product: ProductEntity,

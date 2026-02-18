@@ -7,14 +7,11 @@ import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.*
-import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.ImageProductType
 import com.partsystem.partvisitapp.feature.create_order.model.MojoodiDto
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -106,17 +103,6 @@ class ProductViewModel @Inject constructor(
             list.filter { it.product.name?.contains(query, ignoreCase = true) == true }
         }
     }
-
- /*   private val _mojoodi = MutableStateFlow<MojoodiEntity?>(null)
-    val mojoodi: StateFlow<MojoodiEntity?> get() = _mojoodi
-
-    fun loadMojoodi(anbarId: Int, productId: Int, persianDate: String) {
-        viewModelScope.launch {
-            repository.fetchAndSaveMojoodi(anbarId, productId, persianDate)
-            val data = repository.getMojoodi(anbarId, productId)
-            _mojoodi.value = data
-        }
-    }*/
 
     private val _checkMojoodi =
         MutableLiveData<NetworkResult<List<MojoodiDto>>?>()

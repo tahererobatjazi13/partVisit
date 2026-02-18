@@ -244,8 +244,11 @@ class FactorViewModel @Inject constructor(
         }
     }
 
-    fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
+   /* fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
         factorRepository.getFactorDetailUi(factorId)
+    */
+    fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
+       factorRepository.getFactorDetailUiWithAggregatedDiscounts(factorId).asLiveData()
 
     fun getFactorItemCount(factorId: Int): LiveData<Int> =
         factorRepository.getFactorItemCount(factorId)

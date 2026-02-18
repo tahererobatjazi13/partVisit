@@ -28,11 +28,13 @@ class OrderAdapter(
     private var isOrderCompleted = false // فلگ کنترل وضعیت تکمیل سفارش
 
     private val formatter = DecimalFormat("#,###,###,###")
-    // متد جدید برای آپدیت وضعیت تکمیل سفارش
+
+    @SuppressLint("NotifyDataSetChanged")
     fun setOrderCompleted(completed: Boolean) {
         isOrderCompleted = completed
-        notifyDataSetChanged() // به‌روزرسانی کل لیست
+        notifyDataSetChanged()
     }
+
     inner class OrderViewHolder(val binding: ItemOrderDetailBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -86,7 +88,7 @@ class OrderAdapter(
             tvUnitValue.text = item.unit1Value.clean()
             val total = item.unit1Rate * item.unit1Value
 
-            if (item.vat != null && item.vat > 0) {
+            if (item.vat > 0) {
 
                 clVat.show()
 
@@ -104,7 +106,7 @@ class OrderAdapter(
                 clVat.gone()
             }
 
-            if (item.discountPrice != null && item.discountPrice > 0) {
+            if (item.discountPrice > 0) {
                 clDiscountPrice.show()
                 tvSumPrice.show()
 

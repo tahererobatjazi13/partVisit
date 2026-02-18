@@ -42,8 +42,7 @@
     <color name="yellow_FFA000">#FFA000</color>
     <color name="yellow_FFD54F">#FFD54F</color>
     <color name="color_success">#4CAF50</color>
-/////////////////////
-    <color name="default_header_color">#00897B</color>
+    /////////////////////
     <color name="default_day_ripple_color">#59000000</color>
 
 </resources>

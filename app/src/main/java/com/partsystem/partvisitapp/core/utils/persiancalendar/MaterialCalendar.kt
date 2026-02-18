@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
+import android.widget.BaseAdapter
 import android.widget.GridView
 import androidx.annotation.Px
 import androidx.annotation.VisibleForTesting
@@ -23,7 +24,10 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
+import com.google.android.material.textview.MaterialTextView
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.utils.persiancalendar.calendar.PersianCalendar.Companion.DAYS_IN_WEEK
+import com.partsystem.partvisitapp.core.utils.persiancalendar.utils.getAbbrDayName
 import com.partsystem.partvisitapp.core.utils.persiancalendar.utils.iranCalendar
 import kotlin.math.abs
 
@@ -392,6 +396,33 @@ class MaterialCalendar<S> : PickerFragment<S>() {
         @Px
         fun getDayHeight(context: Context): Int {
             return context.resources.getDimensionPixelSize(R.dimen.calendar_day_height)
+        }
+    }
+    internal class DaysOfWeekAdapter : BaseAdapter() {
+
+        override fun getItem(position: Int): Int? {
+            return if (position > DAYS_IN_WEEK) {
+                null
+            } else position
+        }
+
+        override fun getItemId(position: Int): Long = 0
+
+        override fun getCount(): Int = DAYS_IN_WEEK + 1
+
+        override fun getView(
+            position: Int,
+            convertView: View?,
+            parent: ViewGroup
+        ): View? {
+            var dayOfWeek = convertView
+            if (dayOfWeek == null) {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                dayOfWeek = layoutInflater.inflate(R.layout.calendar_day_of_week, parent, false)
+            }
+
+            (dayOfWeek as MaterialTextView).text = getAbbrDayName(position)
+            return dayOfWeek
         }
     }
 

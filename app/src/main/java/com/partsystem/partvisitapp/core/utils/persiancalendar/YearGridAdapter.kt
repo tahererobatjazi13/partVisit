@@ -1,16 +1,19 @@
 package com.partsystem.partvisitapp.core.utils.persiancalendar
 
+import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textview.MaterialTextView
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.persiancalendar.utils.todayCalendar
 
 internal class YearGridAdapter(private val materialCalendar: MaterialCalendar<*>) :
     RecyclerView.Adapter<YearGridAdapter.ViewHolder>() {
 
-    class ViewHolder internal constructor(val textView: SimpleTextView) :
+    class ViewHolder internal constructor(val textView: MaterialTextView) :
         RecyclerView.ViewHolder(textView)
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -18,7 +21,7 @@ internal class YearGridAdapter(private val materialCalendar: MaterialCalendar<*>
             R.layout.calendar_year,
             viewGroup,
             false
-        ) as SimpleTextView
+        ) as MaterialTextView
         return ViewHolder(yearTextView)
     }
 
@@ -27,7 +30,7 @@ internal class YearGridAdapter(private val materialCalendar: MaterialCalendar<*>
         position: Int
     ) {
         val year = getYearForPosition(position)
-        viewHolder.textView.setText(year)
+        viewHolder.textView.text = year.toString()
         val styles = materialCalendar.calendarStyle
         val calendar = todayCalendar
         var style = if (calendar.year == year) styles.todayYear else styles.year
@@ -38,6 +41,9 @@ internal class YearGridAdapter(private val materialCalendar: MaterialCalendar<*>
         }
 
         style.styleItem(viewHolder.textView)
+
+        setThemeTextColor(viewHolder.textView, viewHolder.textView.context)
+
         viewHolder.textView.setOnClickListener(createYearClickListener(year))
     }
 
@@ -59,5 +65,17 @@ internal class YearGridAdapter(private val materialCalendar: MaterialCalendar<*>
 
     private fun getYearForPosition(position: Int): Int {
         return materialCalendar.calendarConstraints.start.year + position
+    }
+
+    private fun setThemeTextColor(view: MaterialTextView, context: Context) {
+        val typedArray = context.theme.obtainStyledAttributes(
+            intArrayOf(android.R.attr.textColorPrimary)
+        )
+        try {
+            val color = typedArray.getColor(0, Color.BLACK)
+            view.setTextColor(color)
+        } finally {
+            typedArray.recycle()
+        }
     }
 }

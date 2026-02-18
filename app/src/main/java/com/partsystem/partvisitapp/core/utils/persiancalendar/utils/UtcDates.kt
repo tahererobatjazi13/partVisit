@@ -4,9 +4,7 @@ import com.partsystem.partvisitapp.core.utils.persiancalendar.calendar.PersianCa
 import java.util.*
 import java.util.Calendar.*
 
-/**
- * Iran's timezone code
- */
+
 private const val IRST = "IRST"
 
 /**
@@ -55,11 +53,7 @@ fun getDayCopy(rawCalendar: Calendar): PersianCalendar {
     return irCalendar
 }
 
-/**
- * Sets date to midnight 00:00:00:00
- * @param rawDate date in millis
- * @return midnight date in millis
- */
+
 fun canonicalYearMonthDay(rawDate: Long): Long {
     val calendar = PersianCalendar()
     calendar.timeInMillis = rawDate

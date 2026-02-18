@@ -66,7 +66,7 @@ class OfflineOrderDetailAdapter :
             val total = item.unit1Rate * item.unit1Value
 
             clDiscountPrice.gone()
-            if (item.vat != null && item.vat > 0) {
+            if (item.vat > 0) {
                 clVat.show()
 
                 tvVat.text = formatter.format(item.vat) + " مالیات"
@@ -82,7 +82,7 @@ class OfflineOrderDetailAdapter :
                 clVat.gone()
             }
 
-            if (item.discountPrice != null && item.discountPrice > 0) {
+            if (item.discountPrice > 0) {
 
                 clDiscountPrice.show()
                 tvSumPrice.show()

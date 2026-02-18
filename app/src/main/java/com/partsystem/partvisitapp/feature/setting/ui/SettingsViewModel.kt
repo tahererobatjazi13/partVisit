@@ -14,14 +14,14 @@ class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository
 ) : ViewModel() {
 
-    /** حالت دارک مود به‌صورت StateFlow برای UI */
+    // حالت دارک مود به‌صورت StateFlow برای UI
     val isDarkMode = repository.darkModeFlow.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         false
     )
 
-    /** تغییر حالت دارک مود */
+    // تغییر حالت دارک مود
     fun setDarkMode(enabled: Boolean) {
         viewModelScope.launch {
             repository.setDarkMode(enabled)

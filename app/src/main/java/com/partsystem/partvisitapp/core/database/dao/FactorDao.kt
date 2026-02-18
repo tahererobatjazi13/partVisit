@@ -318,16 +318,52 @@ interface FactorDao {
     )
     suspend fun clearFactor(factorId: Int)
 
+    /*
+        @Query(
+            """
+        SELECT
+            fd.factorId,
+            fd.productId,
+            p.name AS productName,
+            p.unitName AS unit1Name,
+            pp.packingName AS packingName,
+            pp.unit1Value AS unitPerPack,
+            fdi.price AS discountPrice,
+            fd.id,
+            fd.unit1Value,
+            fd.unit2Value,
+            fd.packingId,
+            fd.packingValue,
+            fd.isGift,
+            fd.unit1Rate,
+            fd.vat,
+            fdi.price
+
+        FROM FactorDetail fd
+        LEFT JOIN Product p
+            ON fd.productId = p.id
+        LEFT JOIN ProductPacking pp
+            ON fd.packingId = pp.packingCode
+           AND fd.productId = pp.productId
+            LEFT JOIN FactorDiscount fdi
+            ON fd.id = fdi.factorDetailId
+        WHERE fd.factorId = :factorId
+        ORDER BY fd.sortCode
+    """
+        )
+        fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailUiModel>>
+    */
+
+
     @Query(
         """
-    SELECT 
+    SELECT
         fd.factorId,
         fd.productId,
         p.name AS productName,
         p.unitName AS unit1Name,
         pp.packingName AS packingName,
         pp.unit1Value AS unitPerPack,
-        fdi.price AS discountPrice,
         fd.id,
         fd.unit1Value,
         fd.unit2Value,
@@ -336,19 +372,21 @@ interface FactorDao {
         fd.isGift,
         fd.unit1Rate,
         fd.vat,
-        fdi.price
-        
+        fd.sortCode,
+        COALESCE(SUM(fdi.price), 0) AS discountPrice  -- جمع تخفیف‌ها
     FROM FactorDetail fd
-    LEFT JOIN Product p 
+    LEFT JOIN Product p
         ON fd.productId = p.id
-    LEFT JOIN ProductPacking pp 
+    LEFT JOIN ProductPacking pp
         ON fd.packingId = pp.packingCode
-       AND fd.productId = pp.productId
-        LEFT JOIN FactorDiscount fdi 
+        AND fd.productId = pp.productId
+    LEFT JOIN FactorDiscount fdi
         ON fd.id = fdi.factorDetailId
     WHERE fd.factorId = :factorId
+      AND fd.isGift = 0
+    GROUP BY fd.id
     ORDER BY fd.sortCode
-"""
+    """
     )
     fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailUiModel>>
 

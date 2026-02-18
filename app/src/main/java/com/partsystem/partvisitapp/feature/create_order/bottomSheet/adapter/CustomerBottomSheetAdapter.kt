@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.bottomSheet.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -34,9 +35,9 @@ class CustomerBottomSheetAdapter(
 
     inner class CustomerViewHolder(private val binding: ItemBottomSheetBinding) :
         RecyclerView.ViewHolder(binding.root) {
+        @SuppressLint("SetTextI18n")
         fun bind(customer: CustomerEntity) = with(binding) {
             tvName.text = "${bindingAdapterPosition + 1}_  ${customer.name}"
-            //tvName.text = customer.name
             ivItem.gone()
 
             itemView.setOnClickListener {

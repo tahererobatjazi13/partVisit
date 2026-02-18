@@ -84,7 +84,10 @@ class ProductListFragment : Fragment() {
             }
             binding.hfProduct.setOnClickImgOneListener {
                 val action =
-                    ProductListFragmentDirections.actionProductListFragmentToOrderFragment(args.factorId,args.sabt)
+                    ProductListFragmentDirections.actionProductListFragmentToOrderFragment(
+                        args.factorId,
+                        args.sabt
+                    )
                 findNavController().navigate(action)
             }
 
@@ -157,14 +160,16 @@ class ProductListFragment : Fragment() {
                     .actionProductListFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
 
-            }, onClickDialog = { product ->
+            },
+
+            onClickDialog = { product ->
                 // 1. تمام داده‌های مورد نیاز را به صورت suspend جمع‌آوری کنید
                 lifecycleScope.launch {
                     val factorHeader = factorViewModel.factorHeader.value ?: return@launch
 
-                    val productWithRate =
+                    val productRate =
                         factorViewModel.getProductRate(product.product.id, factorHeader.actId!!)
-                    if (productWithRate == null) {
+                    if (productRate == null) {
                         Toast.makeText(
                             requireContext(),
                             "خطا در دریافت اطلاعات محصول",
@@ -172,12 +177,12 @@ class ProductListFragment : Fragment() {
                         ).show()
                         return@launch
                     }
-                    val productRate = productWithRate
+                    //  val productRate = productWithRate
 
                     // بررسی وجود ردیف قبلی
                     val existingDetail = try {
                         factorViewModel.getExistingFactorDetail(
-                            factorHeader.id!!,
+                            factorHeader.id,
                             product.product.id
                         )
                     } catch (e: Exception) {
@@ -185,7 +190,7 @@ class ProductListFragment : Fragment() {
                     }
 
                     // دریافت maxId برای ایجاد ردیف جدید
-                    val maxId = if (factorViewModel.getCount().value ?: 0 > 0) {
+                    val maxId = if ((factorViewModel.getCount().value ?: 0) > 0) {
                         factorViewModel.getMaxFactorDetailId().value ?: 0
                     } else {
                         0
@@ -201,39 +206,43 @@ class ProductListFragment : Fragment() {
                         lifecycleScope.launch {
                             try {
                                 val validFactorId = factorViewModel.currentFactorId.value
-                                ?: args.factorId.toLong()
+                                    ?: args.factorId.toLong()
 
-                            // ایجاد entity با مقادیر محاسبه‌شده
-                            val detail = FactorDetailEntity(
-                                id = existingDetail?.id ?: (maxId + 1),
-                                factorId = validFactorId.toInt(),
-                                sortCode = 0,
-                                anbarId = factorHeader.defaultAnbarId,
-                                productId = product.product.id,
-                                actId = factorHeader.actId,
-                                unit1Value = finalUnit1,
-                                packingValue = finalPackingValue,
-                                unit2Value = 0.0,
-                                price = Math.round(productRate * finalUnit1).toDouble(),
-                                packingId = packingId,
-                                vat = 0.0,
-                                unit1Rate = productRate,
-                                isGift = 0
-                            )
+                                // ایجاد entity با مقادیر محاسبه‌شده
+                                val detail = FactorDetailEntity(
+                                    id = existingDetail?.id ?: (maxId + 1),
+                                    factorId = validFactorId.toInt(),
+                                    sortCode = 0,
+                                    anbarId = factorHeader.defaultAnbarId,
+                                    productId = product.product.id,
+                                    actId = factorHeader.actId,
+                                    unit1Value = finalUnit1,
+                                    packingValue = finalPackingValue,
+                                    unit2Value = 0.0,
+                                    price = Math.round(productRate * finalUnit1).toDouble(),
+                                    packingId = packingId,
+                                    vat = 0.0,
+                                    unit1Rate = productRate,
+                                    isGift = 0
+                                )
 
-                            // ذخیره‌سازی و محاسبه تخفیف در ViewModel
+                                // ذخیره‌سازی و محاسبه تخفیف در ViewModel
 
-                            factorViewModel.saveProductWithDiscounts(
-                                detail = detail,
-                                factorHeader = factorHeader,
-                                vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
-                                tollPercent = product.tollPercent
-                            )
+                                factorViewModel.saveProductWithDiscounts(
+                                    detail = detail,
+                                    factorHeader = factorHeader,
+                                    vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
+                                    tollPercent = product.tollPercent
+                                )
                                 // فقط اینجا دیالوگ بسته شود - پس از اتمام کامل تراکنش
                                 dialogRef?.dismiss()
                             } catch (e: Exception) {
                                 Log.e("ProductList", "Error saving product", e)
-                                Toast.makeText(requireContext(), "خطا در ذخیره محصول", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    requireContext(),
+                                    "خطا در ذخیره محصول",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     }

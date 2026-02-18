@@ -16,13 +16,13 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivLogo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/_180sdp"
+            android:layout_height="@dimen/_110sdp"
             android:layout_marginTop="?attr/actionBarSize"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_logo" />
+            app:srcCompat="@drawable/ic_logo_part" />
 
         <!-- محتوای فرم -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -158,4 +158,5 @@
             app:textBtnOne="@string/label_setting" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </ScrollView>

@@ -22,6 +22,7 @@ import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHea
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -201,9 +202,21 @@ fun getAllFactorDetails(factorId: Int): Flow<List<FactorDetailEntity>> =
         }
     }
 
-    fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
+  /*  fun getFactorDetailUi(factorId: Int): LiveData<List<FactorDetailUiModel>> =
         factorDao.getFactorDetailUi(factorId).asLiveData()
-
+*/
+    fun getFactorDetailUiWithAggregatedDiscounts(factorId: Int): Flow<List<FactorDetailUiModel>> {
+        return factorDao.getFactorDetailUi(factorId).map { details ->
+            details.groupBy { it.id } // گروه‌بندی بر اساس ID ردیف
+                .map { (detailId, items) ->
+                    val firstItem = items.first()
+                    firstItem.copy(
+                        discountPrice = items.sumOf { it.discountPrice ?: 0.0 } // جمع تخفیف‌ها
+                    )
+                }
+                .sortedBy { it.sortCode }
+        }
+    }
     fun getAllHeaderUi(): Flow<List<FactorHeaderDbModel>> =
         factorDao.getFactorHeaderDbList()
 

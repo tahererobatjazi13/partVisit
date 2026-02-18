@@ -11,7 +11,6 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.core.utils.getColorAttr
 import com.partsystem.partvisitapp.core.utils.getColorAttrSafe
 import com.partsystem.partvisitapp.databinding.ItemOrderListBinding
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel

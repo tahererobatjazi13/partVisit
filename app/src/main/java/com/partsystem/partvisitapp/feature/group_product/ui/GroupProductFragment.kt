@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
-import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.gone
@@ -29,7 +28,6 @@ import com.partsystem.partvisitapp.feature.group_product.adapter.MainGroupAdapte
 import com.partsystem.partvisitapp.feature.group_product.adapter.SubGroupAdapter
 import com.partsystem.partvisitapp.feature.product.adapter.ProductListAdapter
 import com.partsystem.partvisitapp.feature.product.dialog.AddEditProductDialog
-import com.partsystem.partvisitapp.feature.product.ui.ProductListFragmentDirections
 import com.partsystem.partvisitapp.feature.product.ui.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -143,20 +141,20 @@ class GroupProductFragment : Fragment() {
                 val updatedItem = item.copy(factorId = validFactorId.toInt())
                 factorViewModel.addOrUpdateFactorDetail(updatedItem)
             },
-
             onClickDetail = { product ->
-                val action = ProductListFragmentDirections
-                    .actionProductListFragmentToProductDetailFragment(productId = product.id)
+                val action = GroupProductFragmentDirections
+                    .actionGroupProductFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
+
             },
             onClickDialog = { product ->
                 // 1. تمام داده‌های مورد نیاز را به صورت suspend جمع‌آوری کنید
                 lifecycleScope.launch {
                     val factorHeader = factorViewModel.factorHeader.value ?: return@launch
 
-                    val productWithRate =
+                    val productRate =
                         factorViewModel.getProductRate(product.product.id, factorHeader.actId!!)
-                    if (productWithRate == null) {
+                    if (productRate == null) {
                         Toast.makeText(
                             requireContext(),
                             "خطا در دریافت اطلاعات محصول",
@@ -164,66 +162,72 @@ class GroupProductFragment : Fragment() {
                         ).show()
                         return@launch
                     }
-                    val productRate = productWithRate
 
                     // بررسی وجود ردیف قبلی
                     val existingDetail = try {
                         factorViewModel.getExistingFactorDetail(
-                            factorHeader.id!!,
+                            factorHeader.id,
                             product.product.id
                         )
                     } catch (e: Exception) {
                         null
                     }
 
-
                     // دریافت maxId برای ایجاد ردیف جدید
-                    val maxId = if (factorViewModel.getCount().value ?: 0 > 0) {
+                    val maxId = if ((factorViewModel.getCount().value ?: 0) > 0) {
                         factorViewModel.getMaxFactorDetailId().value ?: 0
                     } else {
                         0
                     }
+                    var dialogRef: AddEditProductDialog? = null
 
                     // 2. نمایش دیالوگ با داده‌های آماده
-                    val dialog = AddEditProductDialog(
+                    dialogRef = AddEditProductDialog(
                         productViewModel,
                         product
                     ) { finalUnit1, finalPackingValue, packingId, _, _ ->
                         // 3. ایجاد یا به‌روزرسانی ردیف در ViewModel
                         lifecycleScope.launch {
-                            val validFactorId = factorViewModel.currentFactorId.value
-                                ?: args.factorId.toLong()
+                            try {
+                                val validFactorId = factorViewModel.currentFactorId.value
+                                    ?: args.factorId.toLong()
 
-                            // ایجاد entity با مقادیر محاسبه‌شده
-                            val detail = FactorDetailEntity(
-                                id = existingDetail?.id ?: (maxId + 1),
-                                factorId = validFactorId.toInt(),
-                                sortCode = existingDetail?.sortCode ?: (maxId + 1),
-                                anbarId = factorHeader.defaultAnbarId,
-                                productId = product.product.id,
-                                actId = factorHeader.actId,
-                                unit1Value = finalUnit1,
-                                packingValue = finalPackingValue,
-                                unit2Value = 0.0,
-                                price = Math.round(productRate * finalUnit1).toDouble(),
-                                packingId = packingId,
-                                vat = 0.0,
-                                unit1Rate = productRate,
-                                isGift = 0
-                            )
+                                // ایجاد entity با مقادیر محاسبه‌شده
+                                val detail = FactorDetailEntity(
+                                    id = existingDetail?.id ?: (maxId + 1),
+                                    factorId = validFactorId.toInt(),
+                                    sortCode = 0,
+                                    anbarId = factorHeader.defaultAnbarId,
+                                    productId = product.product.id,
+                                    actId = factorHeader.actId,
+                                    unit1Value = finalUnit1,
+                                    packingValue = finalPackingValue,
+                                    unit2Value = 0.0,
+                                    price = Math.round(productRate * finalUnit1).toDouble(),
+                                    packingId = packingId,
+                                    vat = 0.0,
+                                    unit1Rate = productRate,
+                                    isGift = 0
+                                )
 
-                            // محاسبه VAT
-                            detail.vat =
-                                Math.round(product.vatPercent * detail.getPriceAfterDiscount())
-                                    .toDouble()
+                                // ذخیره‌سازی و محاسبه تخفیف در ViewModel
 
-                            /*     // ذخیره‌سازی و محاسبه تخفیف در ViewModel
-                                 factorViewModel.saveProductWithDiscounts(
-                                     detail = detail,
-                                     factorHeader = factorHeader,
-                                     productRate = productRate*//*,
-                                hasExistingDetail = existingDetail != null*//*
-                            )*/
+                                factorViewModel.saveProductWithDiscounts(
+                                    detail = detail,
+                                    factorHeader = factorHeader,
+                                    vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
+                                    tollPercent = product.tollPercent
+                                )
+                                // فقط اینجا دیالوگ بسته شود - پس از اتمام کامل تراکنش
+                                dialogRef?.dismiss()
+                            } catch (e: Exception) {
+                                Log.e("ProductList", "Error saving product", e)
+                                Toast.makeText(
+                                    requireContext(),
+                                    "خطا در ذخیره محصول",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
 
@@ -232,7 +236,7 @@ class GroupProductFragment : Fragment() {
                     fm.findFragmentByTag("AddRawProductDialog")?.let {
                         fm.beginTransaction().remove(it).commitAllowingStateLoss()
                     }
-                    dialog.show(fm, "AddRawProductDialog")
+                    dialogRef.show(fm, "AddRawProductDialog")
                 }
             }
         )

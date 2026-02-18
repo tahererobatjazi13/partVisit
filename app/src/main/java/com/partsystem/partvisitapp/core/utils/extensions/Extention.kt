@@ -122,7 +122,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "discount row seprate"
+git commit -m "reformat code"
 git push -u origin master
 git push
 git push

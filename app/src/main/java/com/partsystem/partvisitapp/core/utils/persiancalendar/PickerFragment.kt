@@ -14,11 +14,6 @@ abstract class PickerFragment<S> : Fragment() {
         return onSelectionChangedListeners.add(listener)
     }
 
-    /** Removes a listener for selection changes. */
-    fun removeOnSelectionChangedListener(listener: OnSelectionChangedListener<S>?): Boolean {
-        return onSelectionChangedListeners.remove(listener)
-    }
-
     /** Removes all listeners for selection changes. */
     fun clearOnSelectionChangedListeners() {
         onSelectionChangedListeners.clear()

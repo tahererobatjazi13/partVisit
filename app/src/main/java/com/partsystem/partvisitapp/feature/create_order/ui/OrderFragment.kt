@@ -16,7 +16,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
-import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.SnackBarType
@@ -176,7 +175,7 @@ class OrderFragment : Fragment() {
                 orderAdapter.setOrderCompleted(isChecked)
 
                 if (isChecked) {
-                    if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value == true) {
+                    if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
                         viewLifecycleOwner.lifecycleScope.launch {
                             // نکته: برای محاسبه تخفیف، هدر فعلی از دیتابیس لود شود
                             val headerForDiscount = if (args.factorId > 0) {

@@ -21,6 +21,7 @@
     <com.google.android.material.card.MaterialCardView
         style="@style/RoundedCardViewStyle"
         android:layout_width="match_parent"
+        android:id="@+id/svTheme"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/medium_size"
         app:layout_constraintEnd_toEndOf="parent"
@@ -44,6 +45,7 @@
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/swTheme"
+                app:trackTint="@color/switch_track_tint"
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
