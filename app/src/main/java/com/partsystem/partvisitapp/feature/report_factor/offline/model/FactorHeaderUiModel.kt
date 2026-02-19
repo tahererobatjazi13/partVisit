@@ -8,6 +8,7 @@ data class FactorHeaderUiModel(
     val createTime: String,
     val finalPrice: Double,
     val hasDetail: Boolean,
+    val actId: Int,
     val sabt: Int,
     val isSending: Boolean = false
 )

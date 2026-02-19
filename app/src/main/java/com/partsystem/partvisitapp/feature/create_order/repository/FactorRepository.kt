@@ -3,6 +3,7 @@ package com.partsystem.partvisitapp.feature.create_order.repository
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.room.Query
 import androidx.room.withTransaction
 import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
@@ -48,6 +49,14 @@ class FactorRepository @Inject constructor(
 
     suspend fun updateFactorHeader(header: FactorHeaderEntity) {
         factorDao.updateFactorHeader(header)
+    }
+
+    suspend fun updateHasDetail(factorId: Int, hasDetail: Boolean) {
+        factorDao.updateHasDetail(factorId, hasDetail)
+    }
+
+    suspend fun getDetailCountForFactor(factorId: Int): Int {
+        return factorDao.getDetailCountForFactor(factorId)
     }
 
     suspend fun updateHeader(header: FactorHeaderEntity) = factorDao.updateHeader(header)
@@ -151,6 +160,8 @@ class FactorRepository @Inject constructor(
         }
     }
 
+    suspend fun getFactorDetailsRaw(factorId: Int): List<FactorDetailEntity> =
+        factorDao.getFactorDetailsRaw(factorId)
 
     fun getFactorDetailUiWithAggregatedDiscounts(factorId: Int): Flow<List<FactorDetailUiModel>> {
         return factorDao.getFactorDetailUi(factorId).map { details ->

@@ -2,6 +2,7 @@ package com.partsystem.partvisitapp.feature.report_factor.offline
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,6 +42,7 @@ class OfflineOrderDetailFragment : Fragment() {
     private val factorViewModel: FactorViewModel by viewModels()
     private val customerViewModel: CustomerViewModel by viewModels()
     private var currentSabt: Int = 0
+    private var hasDetails: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -64,11 +66,14 @@ class OfflineOrderDetailFragment : Fragment() {
                 findNavController().navigateUp()
             }
 
-            //  استفاده از مقدار به‌روزشده currentSabt به جای آرگومان
             btnEditOrder.setOnClickListener {
                 when (currentSabt) {
                     1 -> navigateToOrderFragment()    // فاکتور تکمیل شده → صفحه سفارشات
-                    else -> navigateToHeaderProducts() // فاکتور ناتمام → صفحه هدر
+                    else -> if (!hasDetails) {
+                        navigateToHeaderProducts()
+                    } else {
+                        navigateToProducts()
+                    }
                 }
             }
         }
@@ -100,6 +105,19 @@ class OfflineOrderDetailFragment : Fragment() {
         navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
     }
 
+    private fun navigateToProducts() {
+        val bundle = bundleOf(
+            "fromFactor" to true,
+            "actId" to args.actId,
+            "typeOrder" to OrderType.Edit.value,
+            "factorId" to args.factorId
+        )
+        Log.d("factorfactorId", args.factorId.toString())
+
+        val navController = requireActivity().findNavController(R.id.mainNavHost)
+        navController.navigate(R.id.action_global_to_productListFragment, bundle)
+    }
+
     private fun initAdapter() {
         binding.rvOrderDetail.apply {
             layoutManager =
@@ -126,6 +144,7 @@ class OfflineOrderDetailFragment : Fragment() {
 
         factorViewModel.getFactorDetailUi(factorId = args.factorId)
             .observe(viewLifecycleOwner) { details ->
+                hasDetails = !details.isNullOrEmpty()
 
                 if (details.isNullOrEmpty()) {
                     binding.info.show()

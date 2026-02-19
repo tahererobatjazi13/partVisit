@@ -28,6 +28,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.isInternetAvailable
 import com.partsystem.partvisitapp.databinding.DialogLoadingBinding
 import com.partsystem.partvisitapp.databinding.FragmentHomeBinding
+import com.partsystem.partvisitapp.feature.main.home.ui.adapter.HomeMenuAdapter
 import com.partsystem.partvisitapp.feature.splash.SplashActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay

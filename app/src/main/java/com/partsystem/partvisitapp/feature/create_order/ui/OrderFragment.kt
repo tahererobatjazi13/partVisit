@@ -229,7 +229,7 @@ class OrderFragment : Fragment() {
 
         customDialog?.showDialog(
             activity,
-            getString(R.string.error_order_not_completed),
+            getString(R.string.error_order_not_sabt),
             getString(R.string.error_save_order_draft),
             true,
             getString(R.string.label_close),

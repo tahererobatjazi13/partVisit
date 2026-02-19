@@ -58,6 +58,12 @@ class ProductListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+       /* if (args.fromFactor) {
+            val currentHeaderId = factorViewModel.factorHeader.value?.id
+            if (currentHeaderId == null || currentHeaderId != args.factorId) {
+                factorViewModel.loadFactorHeader(args.factorId)
+            }
+        }*/
         init()
         setupClicks()
         initAdapter()
@@ -267,17 +273,19 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartData() {
-        val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        val viewModelId = factorViewModel.currentFactorId.value ?: 0L
+        val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
+
         if (validFactorId <= 0) return
 
         factorViewModel.getFactorDetails(validFactorId.toInt())
             .observe(viewLifecycleOwner) { details ->
-                // 🔑 فیلتر نهایی: فقط ردیف‌های عادی (غیر هدیه)
+                // فیلتر نهایی: فقط ردیف‌های عادی (غیر هدیه)
                 val nonGiftDetails = details.filter { it.isGift != 1 }
 
                 val values = mutableMapOf<Int, Pair<Double, Double>>()
                 nonGiftDetails.forEach { detail ->
-                    // ✅ فقط از کش بخوان یا تجزیه کن برای ردیف‌های عادی
+                    // فقط از کش بخوان یا تجزیه کن برای ردیف‌های عادی
                     val cached = factorViewModel.productInputCache[detail.productId]
                     if (cached != null) {
                         values[detail.productId] = cached
@@ -330,9 +338,8 @@ class ProductListFragment : Fragment() {
         if (args.fromFactor) {
             productViewModel.loadProductsWithAct(
                 groupProductId = null,
-                actId = factorViewModel.factorHeader.value?.actId
+                actId = factorViewModel.factorHeader.value?.actId ?: args.actId
             )
-            Log.d("factoractId", factorViewModel.factorHeader.value?.actId.toString())
 
             productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
                 val images = productViewModel.productImages.value ?: emptyMap()
@@ -399,8 +406,8 @@ class ProductListFragment : Fragment() {
 
     private fun observeCartBadge() {
         if (args.fromFactor) {
-
-            val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+            val viewModelId = factorViewModel.currentFactorId.value ?: 0L
+            val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
             if (validFactorId <= 0) return
 
             factorViewModel.getFactorItemCount(validFactorId.toInt())

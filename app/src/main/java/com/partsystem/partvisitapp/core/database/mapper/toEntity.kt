@@ -17,6 +17,7 @@ import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindsEnti
 import com.partsystem.partvisitapp.core.database.entity.DiscountProductKindInclusionsEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountStairsEntity
 import com.partsystem.partvisitapp.core.database.entity.DiscountUsersEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.MojoodiEntity
@@ -64,6 +65,7 @@ import com.partsystem.partvisitapp.feature.main.home.model.DiscountProductKindsD
 import com.partsystem.partvisitapp.feature.main.home.model.DiscountProductsDto
 import com.partsystem.partvisitapp.feature.main.home.model.DiscountStairsDto
 import com.partsystem.partvisitapp.feature.main.home.model.DiscountUsersDto
+import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHeaderUiModel
 
 fun ApplicationSettingDto.toEntity() = ApplicationSettingEntity(
     id = id,

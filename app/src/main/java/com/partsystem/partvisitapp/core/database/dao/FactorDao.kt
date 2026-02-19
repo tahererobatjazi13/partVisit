@@ -47,6 +47,11 @@ interface FactorDao {
 ////////////////
 
     // Header
+    @Query("UPDATE FactorHeader SET hasDetail = :hasDetail WHERE id = :factorId")
+    suspend fun updateHasDetail(factorId: Int, hasDetail: Boolean)
+
+    @Query("SELECT COUNT(*) FROM FactorDetail WHERE factorId = :factorId")
+    suspend fun getDetailCountForFactor(factorId: Int): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFactorHeader(header: FactorHeaderEntity): Long
@@ -250,6 +255,8 @@ interface FactorDao {
     )
     fun getFactorDetailUi(factorId: Int): Flow<List<FactorDetailUiModel>>
 
+    @Query("SELECT * FROM FactorDetail WHERE factorId = :factorId")
+    suspend fun getFactorDetailsRaw(factorId: Int): List<FactorDetailEntity>
 
     @Query(
         """
@@ -262,6 +269,7 @@ interface FactorDao {
         fh.persianDate,
         fh.createTime,
         fh.finalPrice,
+        fh.actId,
         fh.sabt,
         CASE 
             WHEN COUNT(fd.factorId) > 0 THEN 1 

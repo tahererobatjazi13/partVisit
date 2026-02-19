@@ -72,20 +72,15 @@ class OfflineOrderListFragment : Fragment() {
         binding.rvOrderList.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-
             offlineOrderListAdapter = OfflineOrderListAdapter(
                 showSyncButton = true,
                 onDelete = { item -> showDeleteDialog(item) },
                 onSabtChanged = { item, isChecked ->
-                    //setOnCheckedChangeListener آپدیت مدل و ارسال لیست جدید به آداپتور
-                    val updatedItem = item.copy(sabt = if (isChecked) 1 else 0)
 
-                    // اگر از LiveData/StateFlow استفاده می‌کنید:
-                    // viewModel.updateFactorSabt(updatedItem)
-
-                    // یا اگر لیست را دستی مدیریت می‌کنید:
-                    // val newList = currentList.map { if (it.factorId == item.factorId) updatedItem else it }
-                    // adapter.setData(newList)
+                    factorViewModel.updateSabtFromOfflineList(
+                        factorId = item.factorId,
+                        sabt = if (isChecked) 1 else 0
+                    )
                 },
                 onSync = { item ->
                     selectedFactor = item
@@ -96,7 +91,7 @@ class OfflineOrderListFragment : Fragment() {
                 if (factors.hasDetail) {
                     val action =
                         OfflineOrderListFragmentDirections.actionOfflineOrderListFragmentToOfflineOrderDetailFragment(
-                            factors.factorId,factors.sabt
+                            factors.factorId, factors.sabt,factors.actId
                         )
                     findNavController().navigate(action)
                 } else {
@@ -157,7 +152,8 @@ class OfflineOrderListFragment : Fragment() {
 
             setOnClickPositiveButton {
                 factorViewModel.sendFactor(
-                    factorId = item.factorId)
+                    factorId = item.factorId
+                )
             }
         }
 
@@ -272,7 +268,7 @@ class OfflineOrderListFragment : Fragment() {
                 if (query.isEmpty()) searchIcon else clearIcon,
                 null
             )
-            /*binding.btnSyncAllOrder.visibility =
+            /* binding.btnSyncAllOrder.visibility =
                 if (query.isNullOrEmpty() && offlineOrderListAdapter.itemCount > 2)
                     View.VISIBLE
                 else

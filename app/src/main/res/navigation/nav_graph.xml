@@ -158,7 +158,10 @@
             android:name="sabt"
             app:argType="integer"
             android:defaultValue="0" />
-
+        <argument
+            android:name="actId"
+            android:defaultValue="0"
+            app:argType="reference" />
         <argument
             android:name="factorId"
             android:defaultValue="0"
@@ -206,6 +209,9 @@
     <action
         android:id="@+id/action_global_to_headerOrderFragment"
         app:destination="@id/headerOrderFragment" />
+    <action
+        android:id="@+id/action_global_to_productListFragment"
+        app:destination="@id/productListFragment" />
     <action
         android:id="@+id/action_global_to_orderFragment"
         app:destination="@id/orderFragment" />

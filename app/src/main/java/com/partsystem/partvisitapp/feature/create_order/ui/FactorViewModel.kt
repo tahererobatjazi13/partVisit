@@ -73,6 +73,15 @@ class FactorViewModel @Inject constructor(
     fun deleteFactorDetail(item: FactorDetailUiModel) {
         viewModelScope.launch {
             factorRepository.deleteFactorDetail(item.productId!!)
+            val detailCount =
+                factorRepository.getDetailCountForFactor(item.factorId)
+
+            val hasDetail = detailCount > 0
+
+            factorRepository.updateHasDetail(
+                item.factorId,
+                hasDetail
+            )
         }
     }
 
@@ -199,6 +208,7 @@ class FactorViewModel @Inject constructor(
                         createTime = it.createTime,
                         finalPrice = it.finalPrice,
                         hasDetail = it.hasDetail,
+                        actId = it.actId,
                         sabt = it.sabt,
                         isSending = false
                     )
@@ -482,6 +492,11 @@ class FactorViewModel @Inject constructor(
 
                 // 4. فقط VAT را آپدیت کنید - سایر فیلدها (مثل sortCode) دست نخورده باقی می‌مانند
                 factorRepository.updateVatForDetail(savedDetailId, vat)
+
+                factorRepository.updateHasDetail(
+                    factorHeader.id,
+                    true
+                )
             }
         } finally {
             // اتمام عملیات - اینجا تمام تغییرات یکجا کامیت شده‌اند
@@ -492,10 +507,9 @@ class FactorViewModel @Inject constructor(
     private val _operationResult = MutableSharedFlow<Boolean>()
     val operationResult = _operationResult.asSharedFlow()
 
-    fun removeGiftsAndDiscounts(factorId: Int) {
-        viewModelScope.launch {
-            val success = discountRepository.removeGiftsAndAutoDiscounts(factorId)
-        }
+
+    suspend fun removeGiftsAndDiscounts(factorId: Int) {
+        discountRepository.removeGiftsAndAutoDiscounts(factorId)
     }
 
     // جمع کل تخفیف‌ها (سطوح ردیف + فاکتور)
@@ -540,4 +554,56 @@ class FactorViewModel @Inject constructor(
         // 3. حذف ردیف (همیشه انجام شود)
         deleteFactorDetail(detail)
     }
+
+    fun updateSabtFromOfflineList(
+        factorId: Int,
+        sabt: Int
+    ) = viewModelScope.launch {
+
+        val header = getFactorHeaderById(factorId) ?: return@launch
+
+        if (sabt == 1) {
+            // ثبت سفارش
+            calculateDiscountInsert(
+                applyKind = DiscountApplyKind.FactorLevel.ordinal,
+                factorHeader = header,
+                factorDetail = null
+            )
+        } else {
+            // لغو ثبت
+            removeGiftsAndDiscounts(factorId)
+        }
+
+
+        val details = factorRepository.getFactorDetailsRaw(factorId)
+        var sumPrice = 0.0
+        var sumVat = 0.0
+
+        for (item in details) {
+            sumPrice += item.unit1Rate * item.unit1Value
+            sumVat += item.vat
+        }
+
+        val totalDiscount = getTotalDiscountForFactor(factorId)
+
+        val finalPrice = (sumPrice - totalDiscount) + sumVat
+        Log.d("OfflineListsumPrice", sumPrice.toString())
+        Log.d("OfflineListsumVat", sumVat.toString())
+        Log.d("OfflineListtotalDiscount", totalDiscount.toString())
+        Log.d("OfflineListfinalPrice", finalPrice.toString())
+
+        updateFactorHeader(
+            header.copy(
+                sabt = sabt,
+                finalPrice = finalPrice
+            )
+        )
+
+        // لیست آفلاین رو رفرش کن
+      //  loadOfflineHeaders()
+    }
+
+
+
+
 }

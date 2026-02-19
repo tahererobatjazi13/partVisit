@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.product.ui
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -84,6 +85,8 @@ class ProductViewModel @Inject constructor(
     val filteredWithActList: LiveData<List<ProductWithPacking>> = _filteredWithActList
 
     fun loadProductsWithAct(groupProductId: Int? = null, actId: Int? = null) {
+        Log.d("factoractId", actId.toString())
+
         viewModelScope.launch {
             repository.getProducts(groupProductId, actId).collect { list ->
                 _productWithActList.value = list

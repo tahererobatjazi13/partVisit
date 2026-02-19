@@ -1,7 +1,8 @@
-package com.partsystem.partvisitapp.feature.main.home.ui
+package com.partsystem.partvisitapp.feature.main.home.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.databinding.ItemHomeMenuBinding
 import com.partsystem.partvisitapp.feature.main.home.model.HomeMenuItem

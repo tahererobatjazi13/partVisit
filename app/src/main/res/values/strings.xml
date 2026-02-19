@@ -132,8 +132,8 @@
     <string name="msg_success_update">بروزرسانی با موفقیت انجام شد.</string>
     <string name="msg_press_back_button_again_exit">برای خروج دوباره دکمه بازگشت را بزنید</string>
     <string name="msg_order_successfully_sent">سفارش با موفقیت ارسال شد</string>
-    <string name="msg_cannot_go_back_warning">پس از زدن تیک تکمیل سفارش، امکان بازگشت به لیست محصولات وجود ندارد. برای ادامه کار، سفارش را ذخیره یا ارسال کنید.</string>
-    <string name="msg_cannot_delete_when_completed">در حالت تکمیل سفارش، امکان حذف ردیف وجود ندارد. لطفاً ابتدا تیک تکمیل سفارش را بردارید.</string>
+    <string name="msg_cannot_go_back_warning">پس از زدن تیک ثبت ، امکان بازگشت به لیست محصولات وجود ندارد. برای ادامه کار، سفارش را ذخیره یا ارسال کنید.</string>
+    <string name="msg_cannot_delete_when_completed">در حالت ثبت ، امکان حذف ردیف وجود ندارد. لطفاً ابتدا تیک ثبت را بردارید.</string>
     <!-- Errors -->
     <string name="error_enter_address_server">آدرس سرور را وارد کنید</string>
     <string name="error_network_json_response">مشکل در دریافت اطلاعات از سرور</string>
@@ -168,12 +168,12 @@
     <string name="error_receiving_product_pattern_act_mandatory">دریافت اطلاعات محصول، طرح و مصوبه اجباری است.</string>
     <string name="error_click_sync_button_download_information">ابتدا دکمه سینک بالای صفحه را بزنید تا اطلاعات دانلود شود</string>
     <string name="error_no_row_for_order">برای سفارش مورد نظر ردیفی وجود ندارد</string>
-    <string name="error_order_not_completed">سفارش تکمیل نشده است.</string>
+    <string name="error_order_not_sabt">سفارش ثبت نشده است.</string>
     <string name="error_save_order_draft">
     این سفارش به صورت پیش نویس در تبلت شما ذخیره می شود
     لطفا در اولین فرصت نسبت به ارسال آن به سرور اقدام نمایید
     و تا قبل از ارسال به سرور از حساب کاربری خود خارج نشوید.</string>
-    <string name="error_cannot_go_back_when_completed">پس از تکمیل سفارش امکان بازگشت وجود ندارد. لطفاً سفارش را پیش نویس یا ارسال کنید.</string>
+    <string name="error_cannot_go_back_when_completed">پس از ثبت سفارش امکان بازگشت وجود ندارد. لطفاً سفارش را پیش نویس یا ارسال کنید.</string>
     <string name="error_internet_disconnected">ارتباط اینترنت قطع شد. لطفاً دوباره تلاش کنید.</string>
     <string name="error_update_failed">خطا در بروزرسانی: %1$s</string>
 

@@ -24,7 +24,6 @@ class OfflineOrderListAdapter(
     OfflineOrderListDiffCallback()
 ) {
     private val formatter = DecimalFormat("#,###")
-    private val discountPercent = 0.0
 
     inner class OfflineOrderListViewHolder(private val binding: ItemOrderListBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -34,11 +33,11 @@ class OfflineOrderListAdapter(
             val context = binding.root.context
 
             if (item.isSending) {
-                tvSyncOrder.hide()
+                clSyncOrder.hide()
                 pbSyncOrder.show()
             } else {
                 pbSyncOrder.gone()
-                tvSyncOrder.show()
+                clSyncOrder.show()
             }
 
             tvOrderNumber.text = item.factorId.toString()
@@ -46,30 +45,31 @@ class OfflineOrderListAdapter(
             tvPatternName.text = item.patternName ?: "-"
             Log.d("finalPriceadapter", item.finalPrice.toString())
 
-            val displayPrice = if (item.sabt == 1) {
-                item.finalPrice * (1 - discountPercent) // اعمال تخفیف
-            } else {
-                item.finalPrice
-            }
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
             ivDelete.show()
 
+            // نمایش/مخفی کردن چک‌باکس ثبت بر اساس hasDetail
+            if (item.hasDetail) {
+                cbSabt.show()
+                cbSabt.isEnabled = !item.isSending
 
-            cbSabt.isChecked = item.sabt == 1
-            cbSabt.isEnabled = !item.isSending // غیرفعال هنگام ارسال
-            cbSabt.setOnCheckedChangeListener { _, isChecked ->
-                // جلوگیری از لوپ هنگام بایند کردن
-                if (item.sabt != if (isChecked) 1 else 0) {
+                cbSabt.setOnCheckedChangeListener(null)
+                cbSabt.isChecked = item.sabt == 1
+                cbSabt.setOnCheckedChangeListener { _, isChecked ->
                     onSabtChanged(item, isChecked)
                 }
+            } else {
+                cbSabt.hide()
+                cbSabt.setOnCheckedChangeListener(null)
             }
+
             root.setOnClickListener { onClick(item) }
 
             if (showSyncButton && item.hasDetail && item.sabt == 1) {
                 clSyncOrder.show()
             } else {
-                clSyncOrder.gone()
+                clSyncOrder.hide()
             }
 
             ivDelete.setOnClickListener {

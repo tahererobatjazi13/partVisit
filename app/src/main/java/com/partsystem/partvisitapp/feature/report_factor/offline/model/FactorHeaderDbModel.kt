@@ -10,5 +10,6 @@ data class FactorHeaderDbModel(
     val createTime: String,
     val finalPrice: Double,
     val hasDetail: Boolean,
+    val actId: Int,
     val sabt: Int
 )
