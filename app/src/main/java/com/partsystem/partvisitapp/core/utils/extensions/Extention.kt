@@ -122,7 +122,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "layout direction"
+git commit -m "layout header"
 git push -u origin master
 git push
 */

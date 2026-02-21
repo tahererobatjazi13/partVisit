@@ -81,6 +81,8 @@ class HeaderOrderFragment : Fragment() {
     private var saleCenterId: Int = 0
     private var pendingNavigation: String = ""
     private var isBottomSheetShowing = false
+    private var isFromCustomerDetail = false
+    private var isCustomerLoaded = false
 
     private val isEditMode get() = args.factorId > 0
     private var editingHeader: FactorHeaderEntity? = null
@@ -101,6 +103,13 @@ class HeaderOrderFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
         setupSpinners()
+        isFromCustomerDetail = args.typeCustomer && args.customerId != 0
+
+        // اگر از دیتیل مشتری آمده‌ایم، همین الان isCustomerLoaded را true کن
+        if (isFromCustomerDetail && args.customerId != 0 && args.customerName.isNotEmpty()) {
+            isCustomerLoaded = true
+            loadCustomerData(args.customerId,args.customerName)
+        }
         observeData()
 
         if (isEditMode) {
@@ -113,7 +122,21 @@ class HeaderOrderFragment : Fragment() {
         setupClicks()
         setWidth()
     }
+    private fun handleCustomerFromArgs() {
+        if (args.customerId != 0 && args.customerName.isNotEmpty()) {
+            // ۱. نمایش نام در UI
+            binding.tvCustomerName.text = args.customerName
 
+            // ۲. آپدیت هدر در ViewModel
+            factorViewModel.updateHeader(customerId = args.customerId)
+
+            // ۳. لود اطلاعات تکمیلی مشتری (مسیرها و...)
+            loadCustomerData(args.customerId, args.customerName)
+
+            // ۴. ثبت وضعیت لود شدن
+            isCustomerLoaded = true
+        }
+    }
     private fun initAdapter() {
         val defaultAdapter =
             SpinnerAdapter(requireContext(), mutableListOf(getString(R.string.label_please_select)))
@@ -292,24 +315,26 @@ class HeaderOrderFragment : Fragment() {
 
         // بارگذاری مشتری با استفاده از observe (نه .value)
         header.customerId?.let { customerId ->
-            // ابتدا نام را از آرگومان‌ها یا کش نمایش دهیم
-            if (args.typeCustomer && args.customerId != 0 && args.customerName.isNotEmpty()) {
+            // اولویت: اگر از دیتیل مشتری آمده‌ایم و customerId مطابقت دارد
+            if (isFromCustomerDetail && args.customerId == customerId && args.customerName.isNotEmpty()) {
                 binding.tvCustomerName.text = args.customerName
                 loadCustomerData(args.customerId, args.customerName)
-            } else {
-                // بارگذاری نام مشتری از دیتابیس
+                isCustomerLoaded = true
+            }
+            // در غیر این صورت، از دیتابیس لود کن
+            else if (!isCustomerLoaded) {
                 customerViewModel.getCustomerById(customerId)
                     .observe(viewLifecycleOwner) { customer ->
                         if (customer != null) {
                             binding.tvCustomerName.text = customer.name
                             loadCustomerData(customerId, customer.name)
+                            isCustomerLoaded = true
                         } else {
                             binding.tvCustomerName.text = getString(R.string.msg_no_customer)
                         }
                     }
             }
         }
-
         // بارگذاری دسته‌بندی صورتحساب اگر وجود دارد
         header.invoiceCategoryId?.let { categoryId ->
             // اطمینان از بارگذاری لیست دسته‌بندی‌ها
@@ -430,6 +455,11 @@ class HeaderOrderFragment : Fragment() {
             userId = mainPreferences.id.firstOrNull() ?: 0
             visitorId = mainPreferences.personnelId.firstOrNull() ?: 0
 
+            val initialCustomerId = if (isFromCustomerDetail && args.customerId != 0) {
+                args.customerId
+            } else {
+                null
+            }
             val newHeader = FactorHeaderEntity(
                 uniqueId = getGUID(),
                 saleCenterId = saleCenterId,
@@ -444,6 +474,8 @@ class HeaderOrderFragment : Fragment() {
                 createUserId = userId,
                 visitorId = visitorId,
                 sabt = 0,
+                customerId = initialCustomerId
+
             )
 
             factorViewModel.factorHeader.value = newHeader
@@ -456,19 +488,19 @@ class HeaderOrderFragment : Fragment() {
                     factorViewModel.updateHeader(defaultAnbarId = anbarId)
                 }
             }
-
-            // انتخاب خودکار اولین مشتری (در حالت جدید و نه ویرایش)
-            if (!isEditMode && !args.typeCustomer) {
+            if (isFromCustomerDetail && args.customerId != 0 && args.customerName.isNotEmpty()) {
+                binding.tvCustomerName.text = args.customerName
+                loadCustomerData(args.customerId, args.customerName)
+                isCustomerLoaded = true
+            }
+            // ✅ در غیر این صورت، اولین مشتری لیست را انتخاب کن (فقط برای سفارش جدید عادی)
+            else if (!isCustomerLoaded && !isFromCustomerDetail) {
                 customerViewModel.filteredCustomers.value?.firstOrNull()?.let { firstCustomer ->
                     binding.tvCustomerName.text = firstCustomer.name
                     loadCustomerData(firstCustomer.id, firstCustomer.name)
                     factorViewModel.updateHeader(customerId = firstCustomer.id)
+                    isCustomerLoaded = true
                 }
-            }
-
-            // اگر مشتری از آرگومان‌ها آمده، آن را بارگذاری کن
-            if (args.typeCustomer && args.customerId != 0 && args.customerName.isNotEmpty()) {
-                loadCustomerData(args.customerId, args.customerName)
             }
         }
     }
@@ -569,7 +601,7 @@ class HeaderOrderFragment : Fragment() {
 
         // انتخاب خودکار اولین مشتری فقط در حالت جدید (نه ویرایش)
         customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
-            if (isEditMode) return@observe
+            if (isEditMode || isCustomerLoaded) return@observe
 
             // فقط اگر هنوز مشتری انتخاب نشده است
             if (customers.isNotEmpty() && factorViewModel.factorHeader.value?.customerId == null) {
@@ -577,6 +609,7 @@ class HeaderOrderFragment : Fragment() {
                 factorViewModel.updateHeader(customerId = first.id)
                 binding.tvCustomerName.text = first.name
                 loadCustomerData(first.id, first.name)
+                isCustomerLoaded = true
             }
         }
 

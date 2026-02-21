@@ -33,11 +33,11 @@ class OfflineOrderListAdapter(
             val context = binding.root.context
 
             if (item.isSending) {
-                clSyncOrder.hide()
+                tvSyncOrder.hide()
                 pbSyncOrder.show()
             } else {
                 pbSyncOrder.gone()
-                clSyncOrder.show()
+                tvSyncOrder.show()
             }
 
             tvOrderNumber.text = item.factorId.toString()
