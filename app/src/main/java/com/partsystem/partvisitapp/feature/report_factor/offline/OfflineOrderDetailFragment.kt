@@ -24,8 +24,6 @@ import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.extensions.gregorianToPersian
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
-import com.partsystem.partvisitapp.core.utils.getColorAttr
-import com.partsystem.partvisitapp.core.utils.getColorAttrSafe
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.adapter.OfflineOrderDetailAdapter
@@ -43,6 +41,7 @@ class OfflineOrderDetailFragment : Fragment() {
     private val customerViewModel: CustomerViewModel by viewModels()
     private var currentSabt: Int = 0
     private var hasDetails: Boolean = false
+    private var productSelectionType = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -106,16 +105,33 @@ class OfflineOrderDetailFragment : Fragment() {
     }
 
     private fun navigateToProducts() {
-        val bundle = bundleOf(
-            "fromFactor" to true,
-            "actId" to args.actId,
-            "typeOrder" to OrderType.Edit.value,
-            "factorId" to args.factorId
-        )
-        Log.d("factorfactorId", args.factorId.toString())
+        if (productSelectionType == "group"
+        ) {
+            val bundle = bundleOf(
+                "fromFactor" to true,
+                "actId" to args.actId,
+                "typeOrder" to OrderType.Edit.value,
+                "factorId" to args.factorId
+            )
+            Log.d("factorfactorId", args.factorId.toString())
 
-        val navController = requireActivity().findNavController(R.id.mainNavHost)
-        navController.navigate(R.id.action_global_to_productListFragment, bundle)
+            requireActivity()
+                .findNavController(R.id.mainNavHost)
+                .navigate(R.id.action_global_to_groupProductFragment, bundle)
+        } else {
+            val bundle = bundleOf(
+                "fromFactor" to true,
+                "actId" to args.actId,
+                "typeOrder" to OrderType.Edit.value,
+                "factorId" to args.factorId
+            )
+            Log.d("factorfactorId", args.factorId.toString())
+
+            requireActivity()
+                .findNavController(R.id.mainNavHost)
+                .navigate(R.id.action_global_to_productListFragment, bundle)
+        }
+
     }
 
     private fun initAdapter() {
@@ -139,6 +155,7 @@ class OfflineOrderDetailFragment : Fragment() {
                     }
                 binding.tvDateTime.text = gregorianToPersian(header.createDate.toString())
                 currentSabt = header.sabt
+                productSelectionType = header.productSelectionType
                 // نمایش وضعیت فاکتور در UI
             }
 

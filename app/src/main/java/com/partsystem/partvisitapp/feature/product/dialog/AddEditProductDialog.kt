@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import kotlinx.coroutines.withContext
 import android.view.LayoutInflater
 import android.view.View
@@ -28,12 +29,10 @@ import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
 import com.partsystem.partvisitapp.feature.product.ui.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.floor
-import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class AddEditProductDialog(
@@ -83,12 +82,8 @@ class AddEditProductDialog(
         dialog?.window?.setBackgroundDrawableResource(R.drawable.background_dialog)
         currentProduct = product
         observeMojoodi()
+        updateDialogTitle()
 
-        binding.tvTitleDialog.text = if (product == null) {
-            getString(R.string.label_add_product)
-        } else {
-            getString(R.string.label_edit_product)
-        }
         product?.let {
             observeCartData(product.product.id)
         }
@@ -186,7 +181,7 @@ class AddEditProductDialog(
         factorViewModel.startProductSaving()
 
         // فراخوانی کال‌بک با تأخیر کوتاه برای اطمینان از نمایش لودینگ
-      //  delay(50)
+        //  delay(50)
 
         val packingId = packing?.packingId ?: 0
         onSave(
@@ -201,7 +196,7 @@ class AddEditProductDialog(
         factorViewModel.waitForProductSavingComplete()
 
 
-      }
+    }
 
     private fun saveProduct(
         finalUnit1: Double,
@@ -340,6 +335,7 @@ class AddEditProductDialog(
     private fun observeCartData(productId: Int) {
         val validFactorId = factorViewModel.currentFactorId.value
             ?: factorViewModel.header.value?.id?.toLong() ?: return
+        Log.d("validFactorId", validFactorId.toString())
 
         if (validFactorId <= 0) return
 
@@ -348,6 +344,8 @@ class AddEditProductDialog(
                 details.forEach { detail ->
                     if (productId == detail.productId) {
                         detailId = detail.id
+                        updateDialogTitle()
+
 
                         val hasCurrentPackings = currentProduct?.packings?.isNotEmpty() == true
                         val hasPackingInDetail = detail.packingId != null && detail.packingId != 0
@@ -407,6 +405,14 @@ class AddEditProductDialog(
                     }
                 }
             }
+    }
+
+    private fun updateDialogTitle() {
+        binding.tvTitleDialog.text =
+            if (detailId > 0)
+                getString(R.string.label_edit_product)
+            else
+                getString(R.string.label_add_product)
     }
 
     private fun updateProductValues(

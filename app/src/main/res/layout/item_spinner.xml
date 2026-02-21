@@ -12,11 +12,11 @@
         android:layout_marginHorizontal="@dimen/small_size"
         android:layout_marginVertical="@dimen/xxx_small_size"
         android:ellipsize="end"
-        android:gravity="end|center_vertical"
+        android:textDirection="rtl"
+        android:gravity="start|center_vertical"
         android:scrollHorizontally="false"
         android:singleLine="true"
         android:text="@string/label_app_name"
-        android:textAlignment="viewEnd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

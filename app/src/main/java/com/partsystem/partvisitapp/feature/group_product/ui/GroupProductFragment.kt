@@ -15,6 +15,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
@@ -56,6 +57,7 @@ class GroupProductFragment : Fragment() {
     private var latestMainGroupId: Int? = null
     private var latestSubGroupId: Int? = null
     private var latestCategoryId: Int? = null
+    private var cartValuesCache: Map<Int, Pair<Double, Double>> = emptyMap()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -75,12 +77,14 @@ class GroupProductFragment : Fragment() {
         observeCartBadge()
         if (args.fromFactor) {
             observeCartData()
+            factorViewModel.setCurrentFactorId(args.factorId.toLong())
         }
         productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
             latestCategoryId?.let { categoryId ->
                 val products =
                     groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
                 productListAdapter.setProductData(products, imagesMap)
+                reapplyCartValues()
             }
         }
     }
@@ -150,7 +154,7 @@ class GroupProductFragment : Fragment() {
             onClickDialog = { product ->
                 // 1. تمام داده‌های مورد نیاز را به صورت suspend جمع‌آوری کنید
                 lifecycleScope.launch {
-                    val factorHeader = factorViewModel.factorHeader.value ?: return@launch
+                    val factorHeader = getFactorHeader()
 
                     val productRate =
                         factorViewModel.getProductRate(product.product.id, factorHeader.actId!!)
@@ -162,6 +166,7 @@ class GroupProductFragment : Fragment() {
                         ).show()
                         return@launch
                     }
+                    //  val productRate = productWithRate
 
                     // بررسی وجود ردیف قبلی
                     val existingDetail = try {
@@ -242,6 +247,21 @@ class GroupProductFragment : Fragment() {
         )
     }
 
+    private fun isEditMode(): Boolean {
+        return args.factorId > 0
+    }
+
+    private suspend fun getFactorHeader(): FactorHeaderEntity {
+        return if (isEditMode()) {
+            // فاکتور ذخیره شده → دیتابیس
+            factorViewModel.getFactorHeaderFromDb(args.factorId)
+        } else {
+            // فاکتور در حال ساخت → SharedViewModel
+            factorViewModel.factorHeader.value
+                ?: throw IllegalStateException("FactorHeader is null")
+        }
+    }
+
     private fun initRecyclerViews() {
         binding.rvMainGroup.apply {
             layoutManager =
@@ -255,7 +275,7 @@ class GroupProductFragment : Fragment() {
         }
         binding.rvCategory.apply {
             layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, true)
             adapter = categoryAdapter
         }
         binding.rvProduct.apply {
@@ -281,15 +301,17 @@ class GroupProductFragment : Fragment() {
     }
 
     private fun observeCartData() {
-        val validFactorId =
-            factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+        val viewModelId = factorViewModel.currentFactorId.value ?: 0L
+        val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
+
         if (validFactorId <= 0) return
 
         factorViewModel.getFactorDetails(validFactorId.toInt())
             .observe(viewLifecycleOwner) { details ->
-                val values = mutableMapOf<Int, Pair<Double, Double>>()
+                val nonGiftDetails = details.filter { it.isGift != 1 }
 
-                details.forEach { detail ->
+                val values = mutableMapOf<Int, Pair<Double, Double>>()
+                nonGiftDetails.forEach { detail ->
                     val cached = factorViewModel.productInputCache[detail.productId]
                     if (cached != null) {
                         values[detail.productId] = cached
@@ -304,8 +326,23 @@ class GroupProductFragment : Fragment() {
                         }
                     }
                 }
+
+                // ذخیره در کش کلاس
+                cartValuesCache = values
+
+                // اعمال روی آداپتر
                 productListAdapter.updateProductValues(values)
             }
+    }
+
+    /**
+     * اعمال مجدد مقادیر سبد خرید روی لیست محصولات فعلی
+     * این متد باید بعد از هر بار آپدیت لیست محصولات فراخوانی شود
+     */
+    private fun reapplyCartValues() {
+        if (cartValuesCache.isNotEmpty()) {
+            productListAdapter.updateProductValues(cartValuesCache)
+        }
     }
 
     private fun observeSubGroup(mainGroupId: Int) {
@@ -363,19 +400,20 @@ class GroupProductFragment : Fragment() {
     }
 
     private fun observeProductsByCategory(categoryId: Int) {
-
         if (args.fromFactor) {
             productViewModel.loadProductsWithAct(
                 groupProductId = categoryId,
-                actId = factorViewModel.factorHeader.value?.actId
+                actId = factorViewModel.factorHeader.value?.actId ?: args.actId
             )
             productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
                 val images = productViewModel.productImages.value ?: emptyMap()
                 updateUI(list, images)
+                reapplyCartValues()
             }
             productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
                 val list = productViewModel.filteredWithActList.value ?: emptyList()
                 productListAdapter.setProductWithActData(list, imagesMap)
+                reapplyCartValues()
             }
         } else {
 
@@ -394,6 +432,7 @@ class GroupProductFragment : Fragment() {
                             binding.tvTitleProduct.show()
                             binding.rvProduct.show()
                             productListAdapter.setProductData(products, imagesMap)
+                            reapplyCartValues()
                         }
                     }
                 }
@@ -412,12 +451,14 @@ class GroupProductFragment : Fragment() {
             binding.info.gone()
             binding.rvProduct.show()
             productListAdapter.setProductWithActData(list, images)
+            reapplyCartValues()
         }
     }
 
     private fun observeCartBadge() {
         if (args.fromFactor) {
-            val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
+            val viewModelId = factorViewModel.currentFactorId.value ?: 0L
+            val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
             if (validFactorId <= 0) return
 
             factorViewModel.getFactorItemCount(validFactorId.toInt())

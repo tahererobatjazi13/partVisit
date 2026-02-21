@@ -4,11 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.base.BaseActivity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.feature.login.model.VisitorDto
 import com.partsystem.partvisitapp.core.utils.SnackBarType
@@ -28,8 +28,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LoginActivity : AppCompatActivity() {
-
+class LoginActivity : BaseActivity() {
 
     @Inject
     lateinit var mainPreferences: MainPreferences

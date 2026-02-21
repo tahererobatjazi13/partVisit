@@ -88,7 +88,9 @@ class FactorViewModel @Inject constructor(
     fun deleteFactor(factorId: Int) = viewModelScope.launch {
         factorRepository.deleteFactor(factorId)
     }
-
+    fun setCurrentFactorId(id: Long) {
+        currentFactorId.value = id
+    }
     suspend fun getFactorHeaderById(factorId: Int): FactorHeaderEntity? {
         return factorRepository.getFactorHeaderById(factorId)
     }
@@ -235,6 +237,8 @@ class FactorViewModel @Inject constructor(
                         it.factorId.toString().contains(query)
             }
     }
+    suspend fun getFactorHeaderFromDb(factorId: Int) =
+        factorRepository.getHeaderByIdSuspend(factorId)
 
     fun addOrUpdateFactorDetail(detail: FactorDetailEntity) {
         viewModelScope.launch {

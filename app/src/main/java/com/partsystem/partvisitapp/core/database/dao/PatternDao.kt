@@ -26,6 +26,9 @@ interface PatternDao {
     @Query("DELETE FROM Pattern")
     suspend fun clearPatterns()
 
+    @Query("DELETE FROM PatternDetail")
+    suspend fun clearPatternDetails()
+
     // 1) فیلتر مشتری و CustomerFilterKind
     @Query(
         """

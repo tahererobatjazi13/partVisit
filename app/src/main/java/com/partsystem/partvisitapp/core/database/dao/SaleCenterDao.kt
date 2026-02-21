@@ -40,10 +40,10 @@ interface SaleCenterDao {
     suspend fun clearSaleCenters()
 
     @Query("DELETE FROM SaleCenterAnbar")
-    suspend fun clearAnbars()
+    suspend fun clearSaleCenterAnbars()
 
     @Query("DELETE FROM SaleCenterUser")
-    suspend fun clearUsers()
+    suspend fun clearSaleCenterUsers()
 
     @Query("""
     SELECT DISTINCT sc.*

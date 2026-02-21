@@ -3,12 +3,12 @@ package com.partsystem.partvisitapp.feature.splash
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.partsystem.partvisitapp.databinding.ActivitySplashBinding
 import com.partsystem.partvisitapp.feature.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import com.partsystem.partvisitapp.BuildConfig
+import com.partsystem.partvisitapp.core.base.BaseActivity
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.feature.login.ui.LoginActivity
 import kotlinx.coroutines.flow.first
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @SuppressLint("CustomSplashScreen")
 @AndroidEntryPoint
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
 
     @Inject
     lateinit var mainPreferences: MainPreferences

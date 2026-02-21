@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp
 
+
 import android.app.Application
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate

@@ -12,6 +12,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.gone
 import java.text.DecimalFormat
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.extensions.clean
+import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.core.utils.getColorAttr
 import com.partsystem.partvisitapp.core.utils.getColorFromAttr
@@ -56,14 +57,14 @@ class OrderAdapter(
 
             if (isOrderCompleted) {
                 // سطل آشغال در حالت تکمیل سفارش همیشه مخفی است
-                binding.ivDelete.gone()
+                binding.ivDelete.hide()
                 if (item.isGift == 1) {
                     binding.root.setBackgroundColor(backColorGift)
                 }
             } else {
                 // در حالت عادی، فقط ردیف‌های غیرهدیه قابل حذف هستند
                 if (item.isGift == 1) {
-                    binding.ivDelete.gone()
+                    binding.ivDelete.hide()
                     binding.root.setBackgroundColor(backColorGift)
                 } else {
                     binding.ivDelete.show()

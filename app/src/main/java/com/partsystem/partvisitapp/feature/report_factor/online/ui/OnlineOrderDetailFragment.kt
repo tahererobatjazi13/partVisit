@@ -53,7 +53,6 @@ class OnlineOrderDetailFragment : Fragment() {
 
     private fun init() {
         binding.btnEditOrder.gone()
-        binding.tvStatus.gone()
     }
 
     private fun initAdapter() {

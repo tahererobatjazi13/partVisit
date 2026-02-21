@@ -68,10 +68,10 @@
             android:id="@+id/date_picker_actions"
             android:layout_width="match_parent"
             android:layout_height="@dimen/xx_big_size"
-            android:gravity="left"
+            android:gravity="end"
             android:orientation="horizontal"
             android:paddingStart="@dimen/small_size"
-            android:paddingLeft="@dimen/small_size"
+            android:paddingEnd="@dimen/small_size"
             android:paddingBottom="@dimen/small_size"
             tools:ignore="RtlHardcoded,RtlSymmetry">
 

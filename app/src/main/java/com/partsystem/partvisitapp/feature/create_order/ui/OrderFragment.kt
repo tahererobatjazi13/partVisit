@@ -67,15 +67,12 @@ class OrderFragment : Fragment() {
         customDialog = CustomDialog()
 
         if (args.factorId > 0) {
-            binding.hfOrder.textTitle = getString(R.string.label_edit_order)
             binding.cbSabt.isChecked = (args.sabt == 1)
             binding.cbSabt.isEnabled = true
-            // factorViewModel.loadFactorHeader(args.factorId)
 
             // تنظیم وضعیت اولیه آداپتر بر اساس مقدار ذخیره‌شده
             orderAdapter.setOrderCompleted(args.sabt == 1)
         } else {
-            binding.hfOrder.textTitle = getString(R.string.label_register_order)
             binding.cbSabt.isChecked = false
             binding.cbSabt.isEnabled = true
 

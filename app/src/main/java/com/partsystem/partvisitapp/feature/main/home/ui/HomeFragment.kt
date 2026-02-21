@@ -564,10 +564,17 @@ class HomeFragment : Fragment() {
             db.assignDirectionCustomerDao().clearAssignDirectionCustomer() // جدول مسیر مشتری
             db.invoiceCategoryDao().clearInvoiceCategory() // جدول گروه صورت حساب
             db.patternDao().clearPatterns() // جدول طرح فروش
+            db.patternDao().clearPatternDetails() // جدول جزییات طرح فروش
             db.actDao().clearAct() // جدول مصوبه
+            db.actDao().clearActDetails() // جدول جزییات مصوبه
             db.vatDao().clearVat() // جدول مالیات
+            db.vatDao().clearVatDetails() // جدول جزییات مالیات
             db.saleCenterDao().clearSaleCenters() // جدول مراکز فروش
+            db.saleCenterDao().clearSaleCenterAnbars() // جدول انبار مراکز فروش
+            db.saleCenterDao().clearSaleCenterUsers() // جدول کاربر مراکز فروش
             db.discountDao().clearDiscounts() // جدول تخفیف
+            db.visitScheduleDao().clearVisitSchedule() // جدول برنامه ویزیت
+            db.visitScheduleDao().clearVisitScheduleDetails() // جدول جزییات برنامه ویزیت
             db.factorDao().clearFactorHeader() // جدول هدر فاکتور
             db.factorDao().clearFactorDetails() // جدول جزییات فاکتور
             db.factorDao().clearFactorDiscount() // جدول تخفیفات فاکتور

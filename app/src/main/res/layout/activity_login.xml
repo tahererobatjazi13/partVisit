@@ -6,9 +6,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorBasic"
     android:fillViewport="true"
-    android:layoutDirection="rtl"
-    android:overScrollMode="never"
-    android:textDirection="rtl">
+    android:overScrollMode="never">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -44,8 +42,7 @@
                 android:paddingStart="@dimen/_2sdp"
                 android:text="@string/label_star"
                 android:textColor="?attr/colorWarning"
-                app:layout_constraintStart_toEndOf="@id/tvTitleUserName"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tvTitleUserName"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
@@ -54,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_user_name"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -63,6 +60,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/xx_small_size"
+                android:layoutDirection="ltr"
                 app:boxBackgroundColor="?attr/colorBasic"
                 app:endIconMode="clear_text"
                 app:errorEnabled="true"
@@ -77,8 +75,11 @@
                     style="@style/Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:maxLength="20" />
+                    android:gravity="start|center_vertical"
+                    android:layoutDirection="ltr"
+                    android:maxLength="20"
+                    android:textDirection="ltr" />
+
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- عنوان رمز عبور -->
@@ -90,8 +91,7 @@
                 android:paddingStart="@dimen/_2sdp"
                 android:text="@string/label_star"
                 android:textColor="?attr/colorWarning"
-                app:layout_constraintStart_toEndOf="@id/tvTitlePassword"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tvTitlePassword"
                 app:layout_constraintTop_toBottomOf="@id/tilUserName" />
 
             <com.google.android.material.textview.MaterialTextView
@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_password"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tvRequiredPassword" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -109,6 +109,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/xx_small_size"
+                android:layoutDirection="ltr"
                 app:boxBackgroundColor="?attr/colorBasic"
                 app:endIconMode="password_toggle"
                 app:errorEnabled="true"
@@ -123,12 +124,13 @@
                     style="@style/Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="right|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:inputType="textPassword"
-                    android:layoutDirection="rtl"
+                    android:layoutDirection="ltr"
                     android:maxLength="20"
-                    android:textDirection="rtl" />
+                    android:textDirection="ltr" />
             </com.google.android.material.textfield.TextInputLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- دکمه ورود -->

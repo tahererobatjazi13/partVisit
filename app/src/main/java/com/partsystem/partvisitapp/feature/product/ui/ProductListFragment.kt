@@ -18,6 +18,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
+import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
@@ -58,12 +59,6 @@ class ProductListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-       /* if (args.fromFactor) {
-            val currentHeaderId = factorViewModel.factorHeader.value?.id
-            if (currentHeaderId == null || currentHeaderId != args.factorId) {
-                factorViewModel.loadFactorHeader(args.factorId)
-            }
-        }*/
         init()
         setupClicks()
         initAdapter()
@@ -74,6 +69,7 @@ class ProductListFragment : Fragment() {
 
         if (args.fromFactor) {
             observeCartData()
+            factorViewModel.setCurrentFactorId(args.factorId.toLong())
         }
     }
 
@@ -171,7 +167,7 @@ class ProductListFragment : Fragment() {
             onClickDialog = { product ->
                 // 1. تمام داده‌های مورد نیاز را به صورت suspend جمع‌آوری کنید
                 lifecycleScope.launch {
-                    val factorHeader = factorViewModel.factorHeader.value ?: return@launch
+                    val factorHeader = getFactorHeader()
 
                     val productRate =
                         factorViewModel.getProductRate(product.product.id, factorHeader.actId!!)
@@ -264,6 +260,29 @@ class ProductListFragment : Fragment() {
         )
     }
 
+    private fun isEditMode(): Boolean {
+        return args.factorId > 0
+    }
+
+    private suspend fun getFactorHeader(): FactorHeaderEntity {
+        // اولویت‌بندی دریافت factorId از منابع مختلف
+        val validFactorId = factorViewModel.currentFactorId.value
+            ?: args.factorId.toLong()
+            ?: factorViewModel.factorHeader.value?.id?.toLong()
+            ?: throw IllegalStateException("No valid factorId found")
+
+        return if (validFactorId > 0) {
+            // اگر فاکتور در دیتابیس وجود دارد، از دیتابیس بخوان
+            factorViewModel.getFactorHeaderFromDb(validFactorId.toInt())
+                ?: factorViewModel.factorHeader.value
+                ?: throw IllegalStateException("FactorHeader not found for id=$validFactorId")
+        } else {
+            // فاکتور جدید در حال ساخت
+            factorViewModel.factorHeader.value
+                ?: throw IllegalStateException("FactorHeader is null for new order")
+        }
+    }
+
     private fun initRecyclerViews() {
         binding.rvProduct.apply {
             layoutManager =
@@ -303,36 +322,6 @@ class ProductListFragment : Fragment() {
                 productListAdapter.updateProductValues(values)
             }
     }
-    /*
-        private fun observeCartData() {
-            val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-            if (validFactorId <= 0) return
-
-            factorViewModel.getFactorDetails(validFactorId.toInt())
-                .observe(viewLifecycleOwner) { details ->
-                    val values = mutableMapOf<Int, Pair<Double, Double>>()
-                    details.forEach { detail ->
-                        // ✅ فقط از کش بخوان، اما کش را با مقادیر تجزیه‌شده آپدیت نکن!
-                        val cached = factorViewModel.productInputCache[detail.productId]
-                        if (cached != null) {
-                            values[detail.productId] = cached
-                        } else {
-                            // فقط برای نمایش در لیست، تجزیه کن (کش را تغییر نده)
-                            val packingSize = detail.packing?.unit1Value ?: 0.0
-                            if (packingSize > 0) {
-                                val pack = floor(detail.unit1Value / packingSize)
-                                val unit = detail.unit1Value % packingSize
-                                values[detail.productId] = Pair(unit, pack)
-                            } else {
-                                values[detail.productId] = Pair(detail.unit1Value, 0.0)
-                            }
-                        }
-                    }
-                    productListAdapter.updateProductValues(values)
-                    // ❌ هرگز این خط را اضافه نکنید: factorViewModel.productInputCache.putAll(values)
-                }
-        }
-    */
 
     private fun observeData() {
         if (args.fromFactor) {

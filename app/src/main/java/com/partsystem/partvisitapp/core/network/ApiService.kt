@@ -109,7 +109,7 @@ interface ApiService {
     ): Response<List<ReportFactorDto>>
 
 
-    @POST("InsertFghjghjactor")
+    @POST("InsertFactor")
     suspend fun sendFactorToServer(
         @Body factors: List<FinalFactorRequestDto>
     ): Response<ApiResponse>

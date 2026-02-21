@@ -26,7 +26,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:textTitleHeader="@string/label_register_order" />
+            app:textTitleHeader="@string/label_order_detail" />
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/svMain"
@@ -43,18 +43,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvTitleOrderDetail"
-                    style="@style/MediumBoldTextStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="@dimen/small_size"
-                    android:layout_marginTop="@dimen/xxx_small_size"
-                    android:text="@string/label_order_summary"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/clList"
                     android:layout_marginTop="@dimen/xx_small_size"
@@ -62,7 +50,7 @@
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvTitleOrderDetail">
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/ivTopDots"

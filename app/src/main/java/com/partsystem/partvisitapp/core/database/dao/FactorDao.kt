@@ -285,6 +285,10 @@ interface FactorDao {
     )
     fun getFactorHeaderDbList(): Flow<List<FactorHeaderDbModel>>
 
+
+    @Query("SELECT * FROM FactorHeader WHERE id = :factorId LIMIT 1")
+    suspend fun getHeaderByIdSuspend(factorId: Int): FactorHeaderEntity
+
     @Upsert
     suspend fun insertFactorDiscount(discount: FactorDiscountEntity)
 

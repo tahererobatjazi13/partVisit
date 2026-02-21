@@ -44,7 +44,7 @@
                 android:layout_width="@dimen/_35sdp"
                 android:layout_height="@dimen/_35sdp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="@dimen/small_size"
+                android:padding="@dimen/xx_small_size"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

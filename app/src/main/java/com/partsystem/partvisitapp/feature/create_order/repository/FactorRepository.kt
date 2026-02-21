@@ -179,6 +179,9 @@ class FactorRepository @Inject constructor(
     fun getAllHeaderUi(): Flow<List<FactorHeaderDbModel>> =
         factorDao.getFactorHeaderDbList()
 
+    suspend fun getHeaderByIdSuspend(factorId: Int) =
+        factorDao.getHeaderByIdSuspend(factorId)
+
     private suspend fun getSumByField(
         factorId: Int,
         productIds: List<Int>,

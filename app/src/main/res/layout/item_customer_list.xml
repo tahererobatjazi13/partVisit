@@ -71,6 +71,7 @@
                     android:id="@+id/tvCustomerPhone"
                     style="@style/SmallBoldTextStyle"
                     android:layout_width="0dp"
+                    android:gravity="center_vertical|end"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/xx_small_size"
                     android:textDirection="rtl"
