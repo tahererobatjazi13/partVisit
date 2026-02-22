@@ -20,7 +20,11 @@ enum class ImageProductType(val value: String) {
     GROUP_PRODUCT("Store.GroupProduct"), PRODUCT("Store.Product")
 }
 
-
+enum class AccessState {
+    NO_DATA,          // دیتابیس خالی
+    DATA_OLD,         // دیتا هست ولی امروز نیست
+    READY             //  اوکی
+}
 
 enum class FactorFormKind {
     Unknown,
@@ -76,7 +80,6 @@ enum class FactorFormKind {
     // ثبت سفارش توزیع
     RegisterOrderDistribute
 }
-
 
 
 /** <summary>

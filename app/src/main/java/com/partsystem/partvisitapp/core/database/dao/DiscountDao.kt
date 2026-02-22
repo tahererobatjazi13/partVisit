@@ -372,7 +372,7 @@ interface DiscountDao {
         WHERE fd.FactorId = :factorId
           AND fd.IsGift = 0
           AND (:factorDetailId IS NULL OR fd.Id = :factorDetailId)
-          AND fd.ProductId IN (:productIds)  -- ✅ فقط وقتی لیست پر است
+          AND fd.ProductId IN (:productIds)  -- فقط وقتی لیست پر است
     ) fdAgg ON 1=1
     WHERE ds.DiscountId = :discountId
       AND (

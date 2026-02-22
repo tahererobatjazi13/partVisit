@@ -36,13 +36,10 @@ class MyApplication : Application() {
                         AppCompatDelegate.MODE_NIGHT_NO
 
                     val currentMode = AppCompatDelegate.getDefaultNightMode()
-                    Log.d("MyApplication", "darkFlow emit: $enabled | current=$currentMode | new=$newMode")
 
                     if (currentMode != newMode) {
-                        Log.d("MyApplication", "Applying new night mode: $newMode")
                         AppCompatDelegate.setDefaultNightMode(newMode)
                     } else {
-                        Log.d("MyApplication", "No change in night mode. Skipping.")
                     }
                 }
         }

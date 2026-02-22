@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Query
 import androidx.room.withTransaction
 import com.partsystem.partvisitapp.core.database.AppDatabase
+import com.partsystem.partvisitapp.core.database.dao.ApplicationSettingDao
 import com.partsystem.partvisitapp.core.database.dao.FactorDao
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
@@ -29,6 +30,7 @@ class FactorRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: ApiService,
     private val factorDao: FactorDao,
+    private val applicationSettingDao: ApplicationSettingDao,
     private val appDatabase: AppDatabase,
 ) {
 
@@ -213,13 +215,8 @@ class FactorRepository @Inject constructor(
                 appDatabase.withTransaction {
 
                     val currentMax = factorDao.getMaxSortCode(detail.factorId)
-                    Log.d(
-                        "SortCodeDebug",
-                        "Current max sortCode for factor ${detail.factorId}: $currentMax"
-                    )
 
                     val nextSortCode = currentMax + 1
-                    Log.d("SortCodeDebug", "Inserting new detail with sortCode: $nextSortCode")
 
                     factorDao.insert(detail.copy(id = 0, sortCode = nextSortCode)).toInt()
 
@@ -265,5 +262,10 @@ class FactorRepository @Inject constructor(
 
     suspend fun getSumUnit1ValueByFactorId(factorId: Int): Double {
         return factorDao.getSumUnit1ValueByFactorId(factorId)
+    }
+
+    suspend fun getHasTaxConnection(): Boolean {
+        val setting = applicationSettingDao.getSettingByName("HasTaxConnection")
+        return setting?.value.equals("true", ignoreCase = true)
     }
 }

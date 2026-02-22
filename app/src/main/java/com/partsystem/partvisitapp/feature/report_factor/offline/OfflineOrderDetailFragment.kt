@@ -113,7 +113,6 @@ class OfflineOrderDetailFragment : Fragment() {
                 "typeOrder" to OrderType.Edit.value,
                 "factorId" to args.factorId
             )
-            Log.d("factorfactorId", args.factorId.toString())
 
             requireActivity()
                 .findNavController(R.id.mainNavHost)
@@ -125,7 +124,6 @@ class OfflineOrderDetailFragment : Fragment() {
                 "typeOrder" to OrderType.Edit.value,
                 "factorId" to args.factorId
             )
-            Log.d("factorfactorId", args.factorId.toString())
 
             requireActivity()
                 .findNavController(R.id.mainNavHost)

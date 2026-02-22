@@ -15,7 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
-import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDateLatin
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -129,7 +129,7 @@ class CustomerListBottomSheet(
     private fun observeData() {
         lifecycleScope.launch {
             val controlVisit = mainPreferences.controlVisitSchedule.first() ?: false
-            val persianDate = getTodayPersianDate()
+            val persianDate = getTodayPersianDateLatin()
 
             if (controlVisit) {
                 //  با برنامه ویزیت

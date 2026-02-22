@@ -19,3 +19,23 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Retrofit
+# Retrofit
+-keep class retrofit2.** { *; }
+-keep class okhttp3.** { *; }
+
+# Gson
+-keep class com.google.gson.** { *; }
+
+# Network
+-keep class com.partsystem.partvisitapp.core.network.** { *; }
+
+# ALL DTO & ENTITY MODELS (خیلی مهم)
+-keep class com.partsystem.partvisitapp.feature.**.model.** { *; }
+-keep class com.partsystem.partvisitapp.core.database.entity.** { *; }
+
+# ApiService
+-keep interface com.partsystem.partvisitapp.core.network.ApiService
+
+# Keep annotations
+-keepattributes *Annotation*

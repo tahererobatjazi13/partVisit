@@ -172,6 +172,15 @@ class OrderFragment : Fragment() {
                 orderAdapter.setOrderCompleted(isChecked)
 
                 if (isChecked) {
+                    /*lifecycleScope.launch {
+                        if (factorViewModel.getHasTaxConnection()) {
+                            // اتصال مالیات فعال است
+                        } else {
+                            // اتصال مالیات غیرفعال است
+                        }
+                    }*/
+
+
                     if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
                         viewLifecycleOwner.lifecycleScope.launch {
                             // نکته: برای محاسبه تخفیف، هدر فعلی از دیتابیس لود شود
@@ -374,10 +383,6 @@ class OrderFragment : Fragment() {
                 )
 
                 factorViewModel.updateFactorHeader(updatedHeader)
-                Log.d(
-                    "OrderFragment_DB",
-                    "✅ آپدیت مستقیم دیتابیس: factorId=${args.factorId}, finalPrice=$finalPrice, sabt=${updatedHeader.sabt}"
-                )
             } else {
                 // حالت سفارش جدید: استفاده از وضعیت ViewModel
                 val currentHeader = factorViewModel.factorHeader.value ?: return@launch
@@ -387,10 +392,6 @@ class OrderFragment : Fragment() {
                 )
                 factorViewModel.updateHeader(finalPrice = finalPrice, sabt = targetSabt)
                 factorViewModel.updateFactorHeader(updatedHeader)
-                Log.d(
-                    "OrderFragment_DB",
-                    "✅ آپدیت سفارش جدید: id=${currentHeader.id}, finalPrice=$finalPrice"
-                )
             }
         }
     }

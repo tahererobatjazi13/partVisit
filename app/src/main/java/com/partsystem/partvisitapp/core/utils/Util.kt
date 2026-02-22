@@ -14,19 +14,12 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.GridLayoutManager
 import com.partsystem.partvisitapp.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.File
 import java.io.IOException
-import java.text.DecimalFormat
-import java.text.NumberFormat
-import java.util.Locale
 import java.util.UUID
 
 /** دانلود عکس و ذخیره روی حافظه داخلی */
@@ -52,19 +45,19 @@ suspend fun saveBase64ImageToFile(base64Data: String, fileName: String, context:
     }
 }
 
-    fun isInternetAvailable(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork ?: return false
-            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-        } else {
-            val networkInfo = connectivityManager.activeNetworkInfo
-            return networkInfo != null && networkInfo.isConnected
-        }
+fun isInternetAvailable(context: Context): Boolean {
+    val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+    } else {
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
     }
+}
 
 
 fun getTypefaceRegular(context: Context): Typeface {
@@ -77,15 +70,6 @@ fun getColorAttr(ctx: Context, attrId: Int): Int {
     return ContextCompat.getColor(ctx, typedValue.resourceId)
 }
 
-fun Context.getColorAttrSafe(attr: Int, defaultColorRes: Int): Int {
-    val typedValue = TypedValue()
-    return if (theme.resolveAttribute(attr, typedValue, true) && typedValue.resourceId != 0) {
-        ContextCompat.getColor(this, typedValue.resourceId)
-    } else {
-        ContextCompat.getColor(this, defaultColorRes)
-    }
-}
-
 fun Context.getColorFromAttr(attr: Int): Int {
     val typedValue = TypedValue()
     theme.resolveAttribute(attr, typedValue, true)
@@ -94,15 +78,12 @@ fun Context.getColorFromAttr(attr: Int): Int {
 
 fun hideKeyboard(activity: Activity) {
     val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-    //Find the currently focused view, so we can grab the correct window token from it.
     var view = activity.currentFocus
-    //If no view currently has focus, create a new one, just so we can grab a window token from it
     if (view == null) {
         view = View(activity)
     }
     imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
-
 
 class Event<out T>(private val content: T) {
 
@@ -118,28 +99,6 @@ class Event<out T>(private val content: T) {
     }
 
     fun peekContent(): T = content
-}
-
-class RtlGridLayoutManager : GridLayoutManager {
-    constructor(
-        context: Context?,
-        attrs: AttributeSet?,
-        defStyleAttr: Int,
-        defStyleRes: Int
-    ) : super(context, attrs, defStyleAttr, defStyleRes)
-
-    constructor(context: Context?, spanCount: Int) : super(context, spanCount)
-
-    constructor(
-        context: Context?,
-        spanCount: Int,
-        orientation: Int,
-        reverseLayout: Boolean
-    ) : super(context, spanCount, orientation, reverseLayout)
-
-    override fun isLayoutRTL(): Boolean {
-        return true
-    }
 }
 
 class ReceiptTopEdgeView @JvmOverloads constructor(
@@ -169,7 +128,6 @@ class ReceiptTopEdgeView @JvmOverloads constructor(
             startX += 2 * radius + gap
         }
 
-        //  canvas.drawRect(0f, radius, width.toFloat(), height.toFloat(), grayPaint)
     }
 }
 
@@ -185,7 +143,7 @@ object ErrorHandler {
         }
     }
 
-    fun getErrorMessage(context: Context, message: String?): String {
+    private fun getErrorMessage(context: Context, message: String?): String {
         return when {
             message.isNullOrBlank() -> context.getString(R.string.error_unknown)
             message.contains("timeout", ignoreCase = true) ->
@@ -228,14 +186,4 @@ fun convertNumbersToEnglish(input: String): String {
 
 fun getGUID(): String {
     return UUID.randomUUID().toString()
-}
-
-private var floatFormat: DecimalFormat? = null
-
-fun formatFloat(value: Double): String {
-    return if (value % 1 == 0.0) {
-        value.toInt().toString()
-    } else {
-        value.toString()
-    }
 }

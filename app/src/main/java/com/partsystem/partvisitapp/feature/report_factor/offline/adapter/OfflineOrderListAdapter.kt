@@ -43,7 +43,6 @@ class OfflineOrderListAdapter(
             tvOrderNumber.text = item.factorId.toString()
             tvCustomerName.text = item.customerName ?: "-"
             tvPatternName.text = item.patternName ?: "-"
-            Log.d("finalPriceadapter", item.finalPrice.toString())
 
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"

@@ -88,9 +88,11 @@ class FactorViewModel @Inject constructor(
     fun deleteFactor(factorId: Int) = viewModelScope.launch {
         factorRepository.deleteFactor(factorId)
     }
+
     fun setCurrentFactorId(id: Long) {
         currentFactorId.value = id
     }
+
     suspend fun getFactorHeaderById(factorId: Int): FactorHeaderEntity? {
         return factorRepository.getFactorHeaderById(factorId)
     }
@@ -237,6 +239,7 @@ class FactorViewModel @Inject constructor(
                         it.factorId.toString().contains(query)
             }
     }
+
     suspend fun getFactorHeaderFromDb(factorId: Int) =
         factorRepository.getHeaderByIdSuspend(factorId)
 
@@ -318,10 +321,6 @@ class FactorViewModel @Inject constructor(
         val gifts = factorRepository.getFactorGifts(header.id)
         // دریافت تخفیف‌های سطح فاکتور (با factorDetailId = null)
         val factorLevelDiscounts = factorRepository.getFactorDiscounts(header.id, null)
-
-        Log.d("FINAL_header", header.id.toString())
-        Log.d("FINAL_details", details.toString())
-        Log.d("FINAL_gifts", gifts.toString())
 
 
         val finalDetails = details.map { d ->
@@ -591,10 +590,6 @@ class FactorViewModel @Inject constructor(
         val totalDiscount = getTotalDiscountForFactor(factorId)
 
         val finalPrice = (sumPrice - totalDiscount) + sumVat
-        Log.d("OfflineListsumPrice", sumPrice.toString())
-        Log.d("OfflineListsumVat", sumVat.toString())
-        Log.d("OfflineListtotalDiscount", totalDiscount.toString())
-        Log.d("OfflineListfinalPrice", finalPrice.toString())
 
         updateFactorHeader(
             header.copy(
@@ -604,10 +599,11 @@ class FactorViewModel @Inject constructor(
         )
 
         // لیست آفلاین رو رفرش کن
-      //  loadOfflineHeaders()
+        //  loadOfflineHeaders()
     }
 
 
-
-
+    suspend fun getHasTaxConnection(): Boolean {
+        return factorRepository.getHasTaxConnection()
+    }
 }

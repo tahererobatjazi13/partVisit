@@ -7,6 +7,7 @@ plugins {
     id("kotlin-parcelize")
 
 }
+//partvisit , poopaksystempart
 android {
     namespace = "com.partsystem.partvisitapp"
     compileSdk = 35
@@ -16,18 +17,32 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("MYAPP_UPLOAD_STORE_FILE") ?: "upload-keystore.jks")
+            storePassword = System.getenv("MYAPP_UPLOAD_STORE_PASSWORD")
+            keyAlias = System.getenv("MYAPP_UPLOAD_KEY_ALIAS")
+            keyPassword = System.getenv("MYAPP_UPLOAD_KEY_PASSWORD")
+        }
+    }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+
             )
+            buildConfigField("boolean", "DEBUG", "false")
+            lint {
+                checkReleaseBuilds = false
+                abortOnError = false
+            }
         }
     }
     compileOptions {

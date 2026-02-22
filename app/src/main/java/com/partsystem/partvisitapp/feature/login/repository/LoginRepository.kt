@@ -8,6 +8,7 @@ import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.feature.login.model.VisitorDto
 import com.partsystem.partvisitapp.core.utils.ErrorHandler
 import com.partsystem.partvisitapp.core.utils.ErrorHandler.getExceptionMessage
+import com.partsystem.partvisitapp.core.utils.ReleaseLogger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -43,11 +44,12 @@ class LoginRepository @Inject constructor(
             }
 
         } catch (ex: Exception) {
+            ReleaseLogger.e("LoginRepo", "Login Error: ${ex.message}", ex)
+
             val errorMsg = getExceptionMessage(context, ex)
             NetworkResult.Error(errorMsg)
         }
     }
-
 
     suspend fun getVisitors(visitorId: Int): NetworkResult<List<VisitorDto>> {
         return try {

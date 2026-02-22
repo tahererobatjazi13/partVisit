@@ -3,7 +3,7 @@ package com.partsystem.partvisitapp.core.utils.datastore
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDateLatin
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -113,9 +113,9 @@ class MainPreferences @Inject constructor(
         return baseUrlFlow.first() ?: "http://default/api/Android/"
     }
 
-    suspend fun setUpdatedToday(key: Preferences.Key<String>) {
+   suspend fun setUpdatedToday(key: Preferences.Key<String>) {
         context.updateDataStore.edit { prefs ->
-            prefs[key] = getTodayPersianDate()
+            prefs[key] = getTodayPersianDateLatin()
         }
     }
 
@@ -124,24 +124,14 @@ class MainPreferences @Inject constructor(
     suspend fun setProductUpdated() = setUpdatedToday(KEY_PRODUCT_LAST_UPDATE)
     suspend fun setDiscountUpdated() = setUpdatedToday(KEY_DISCOUNT_LAST_UPDATE)
 
-    private fun lastUpdateFlow(key: Preferences.Key<String>): Flow<String?> =
-        context.updateDataStore.data.map { prefs ->
-            prefs[key]
-        }
-
-    val actLastUpdate = lastUpdateFlow(KEY_ACT_LAST_UPDATE)
-    val patternLastUpdate = lastUpdateFlow(KEY_PATTERN_LAST_UPDATE)
-    val productLastUpdate = lastUpdateFlow(KEY_PRODUCT_LAST_UPDATE)
-    val discountLastUpdate = lastUpdateFlow(KEY_DISCOUNT_LAST_UPDATE)
 
     private suspend fun isUpdatedToday(key: Preferences.Key<String>): Boolean {
         val lastDate = context.updateDataStore.data
             .map { it[key] }
             .first()
 
-        return lastDate == getTodayPersianDate()
+        return lastDate == getTodayPersianDateLatin()
     }
-
     suspend fun hasDownloadedToday(): Boolean {
         return isUpdatedToday(KEY_ACT_LAST_UPDATE) &&
                 isUpdatedToday(KEY_PATTERN_LAST_UPDATE) &&
@@ -149,10 +139,5 @@ class MainPreferences @Inject constructor(
                 isUpdatedToday(KEY_DISCOUNT_LAST_UPDATE)
     }
 
-    suspend fun updateTablesToday() {
-        setActUpdated()
-        setPatternUpdated()
-        setProductUpdated()
-        setDiscountUpdated()
-    }
+
 }

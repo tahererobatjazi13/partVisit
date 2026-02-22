@@ -71,7 +71,19 @@ fun getTodayPersianDate(): String {
         jalaliDate.day
     )
 }
-
+fun getTodayPersianDateLatin(): String {
+    return getTodayPersianDate()
+        .replace("۰","0")
+        .replace("۱","1")
+        .replace("۲","2")
+        .replace("۳","3")
+        .replace("۴","4")
+        .replace("۵","5")
+        .replace("۶","6")
+        .replace("۷","7")
+        .replace("۸","8")
+        .replace("۹","9")
+}
 fun getTodayGregorian(): String {
     val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return formatter.format(Date())
@@ -122,7 +134,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "layout header"
+git commit -m "proguard"
 git push -u origin master
 git push
 */

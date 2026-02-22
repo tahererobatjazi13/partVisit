@@ -31,7 +31,7 @@ import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getCurrentTime
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
-import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDateLatin
 import com.partsystem.partvisitapp.core.utils.extensions.gregorianToPersian
 import com.partsystem.partvisitapp.core.utils.extensions.persianToGregorian
 import com.partsystem.partvisitapp.core.utils.getGUID
@@ -90,7 +90,7 @@ class HeaderOrderFragment : Fragment() {
     data class KeyValue(val id: Int, val name: String)
 
     private val args: HeaderOrderFragmentArgs by navArgs()
-    private val persianDate: String = getTodayPersianDate()
+    private val persianDate: String = getTodayPersianDateLatin()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -195,7 +195,6 @@ class HeaderOrderFragment : Fragment() {
                         parent: AdapterView<*>?, view: View?, position: Int, id: Long
                     ) {
                         if (position == 0) {
-                            Log.d("DEBUG", "Setting invoiceCategoryId to NULL")
                             factorViewModel.updateHeader(invoiceCategoryId = null)
                             return
                         }
@@ -269,7 +268,6 @@ class HeaderOrderFragment : Fragment() {
                             position > 0 -> {
                                 val act = allAct[position - 1]
                                 factorViewModel.updateHeader(actId = act.id)
-                                Log.d("factorHeaderctId1", act.id.toString())
                             }
 
                             position == 0 -> {
@@ -359,7 +357,7 @@ class HeaderOrderFragment : Fragment() {
                             centerId = saleCenterId,
                             invoiceCategoryId = categoryId,
                             settlementKind = header.settlementKind,
-                            date = header.persianDate ?: getTodayPersianDate()
+                            date = header.persianDate ?: getTodayPersianDateLatin()
                         )
                     }
                 }
@@ -427,7 +425,7 @@ class HeaderOrderFragment : Fragment() {
               centerId = saleCenterId,
               invoiceCategoryId = header.invoiceCategoryId!!,
               settlementKind = header.settlementKind ?: 0,
-              date = header.persianDate ?: getTodayPersianDate()
+              date = header.persianDate ?: getTodayPersianDateLatin()
           )
       }
 
@@ -467,7 +465,7 @@ class HeaderOrderFragment : Fragment() {
                 createSource = 2,
                 formKind = FactorFormKind.RegisterOrderDistribute.ordinal,
                 createDate = getTodayGregorian(),
-                persianDate = getTodayPersianDate(),
+                persianDate = getTodayPersianDateLatin(),
                 dueDate = getTodayGregorian(),
                 deliveryDate = getTodayGregorian(),
                 createTime = getCurrentTime(),
@@ -493,7 +491,7 @@ class HeaderOrderFragment : Fragment() {
                 loadCustomerData(args.customerId, args.customerName)
                 isCustomerLoaded = true
             }
-            // ✅ در غیر این صورت، اولین مشتری لیست را انتخاب کن (فقط برای سفارش جدید عادی)
+            // در غیر این صورت، اولین مشتری لیست را انتخاب کن (فقط برای سفارش جدید عادی)
             else if (!isCustomerLoaded && !isFromCustomerDetail) {
                 customerViewModel.filteredCustomers.value?.firstOrNull()?.let { firstCustomer ->
                     binding.tvCustomerName.text = firstCustomer.name
@@ -546,7 +544,7 @@ class HeaderOrderFragment : Fragment() {
                         binding.spCustomerDirection.setSelectionById(
                             id = directionId,
                             items = allCustomerDirection
-                        ) { it.directionDetailId } // ✅ استفاده صحیح از directionDetailId
+                        ) { it.directionDetailId } // استفاده صحیح از directionDetailId
                     }
                 }
             }
@@ -566,7 +564,6 @@ class HeaderOrderFragment : Fragment() {
                 binding.spPattern.setSelectionById(id, allPattern) { it.id }
             }
             if (isEditMode) {
-                Log.d("isEditModepatternId", "ok")
                 editingHeader?.patternId?.let { id ->
                     binding.spPattern.setSelectionById(
                         id = id,
@@ -581,7 +578,7 @@ class HeaderOrderFragment : Fragment() {
             centerId = saleCenterId,
             invoiceCategoryId = factorViewModel.factorHeader.value!!.invoiceCategoryId,
             settlementKind = 0,
-            date = getTodayPersianDate()
+            date = getTodayPersianDateLatin()
         )
     }
 
@@ -956,7 +953,7 @@ class HeaderOrderFragment : Fragment() {
                         centerId = saleCenterId,
                         invoiceCategoryId = categoryId,
                         settlementKind = header.settlementKind,
-                        date = header.persianDate ?: getTodayPersianDate()
+                        date = header.persianDate ?: getTodayPersianDateLatin()
                     )
                 }
 
@@ -983,7 +980,6 @@ class HeaderOrderFragment : Fragment() {
 
     // متد کمکی برای هدایت به صفحه محصولات
     private fun navigateToProductPage(selectionType: String, sabt: Int, factorId: Int) {
-        Log.d("productSelectionType3", selectionType)
 
         val action = when (selectionType) {
 
@@ -1060,7 +1056,6 @@ class HeaderOrderFragment : Fragment() {
 
     private fun validateHeader() {
         val factor = factorViewModel.factorHeader.value ?: return
-        Log.d("productSelectionType4", "ok")
 
         // Invoice Category
         if (binding.spInvoiceCategory.selectedItemPosition == 0) {

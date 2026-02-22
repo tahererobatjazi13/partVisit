@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.AccessState
 import com.partsystem.partvisitapp.core.utils.OrderType
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
@@ -268,12 +269,22 @@ class HomeFragment : Fragment() {
             if (!syncFailed) { // موفقیت کامل
                 loadingDialog.dismiss()
                 onAllDataUpdatedSuccessfully()
+                onSyncSuccess()
             }
             return
         }
-
         tasks[currentTaskIndex].invoke()
         currentTaskIndex++
+    }
+
+    private fun onSyncSuccess() {
+        loadingDialog.dismiss()
+
+        CustomSnackBar.make(
+            requireView(),
+            getString(R.string.msg_success_update),
+            SnackBarType.Success.value
+        )?.show()
     }
 
     private fun onAllDataUpdatedSuccessfully() {
@@ -329,7 +340,7 @@ class HomeFragment : Fragment() {
                         }
                     }
 
-                    3 -> { /* باز کردن صفحه ثبت سفارش */
+                    /*    3 -> { *//* باز کردن صفحه ثبت سفارش *//*
                         viewLifecycleOwner.lifecycleScope.launch {
 
                             if (!isDatabaseReady()) {
@@ -351,6 +362,37 @@ class HomeFragment : Fragment() {
                                     showPositiveButton = true,
                                     showNegativeButton = true
                                 )
+                            }
+                        }
+                    }*/
+                    3 -> { /* ثبت سفارش */
+                        viewLifecycleOwner.lifecycleScope.launch {
+
+                            when (checkAccessState()) {
+
+                                AccessState.NO_DATA -> {
+                                    // دیتابیس خالی
+                                    showSyncRequiredMessage()
+                                }
+
+                                AccessState.DATA_OLD -> {
+                                    // دیتا قدیمی
+                                    customDialogForceUpdate?.showDialog(
+                                        activity,
+                                        "",
+                                        getString(R.string.error_receiving_product_pattern_act_mandatory),
+                                        true,
+                                        getString(R.string.label_no),
+                                        getString(R.string.label_update),
+                                        showPositiveButton = true,
+                                        showNegativeButton = true
+                                    )
+                                }
+
+                                AccessState.READY -> {
+                                    // ورود
+                                    openFactorScreen()
+                                }
                             }
                         }
                     }
@@ -600,10 +642,30 @@ class HomeFragment : Fragment() {
                 db.customerDao().getCount() > 0
 
         // اگر داده اصلی وجود دارد، بررسی فلگ‌های امروز
-        return if (hasBasicData) {
+        return hasBasicData /*if (hasBasicData) {
             mainPreferences.hasDownloadedToday()
         } else {
             false
+        }*/
+    }
+
+    private suspend fun checkAccessState(): AccessState {
+
+        val hasBasicData =
+            db.groupProductDao().getCount() > 0 &&
+                    db.productDao().getCount() > 0 &&
+                    db.customerDao().getCount() > 0
+
+        if (!hasBasicData) {
+            return AccessState.NO_DATA
+        }
+
+        val isTodayUpdated = mainPreferences.hasDownloadedToday()
+
+        return if (isTodayUpdated) {
+            AccessState.READY
+        } else {
+            AccessState.DATA_OLD
         }
     }
 

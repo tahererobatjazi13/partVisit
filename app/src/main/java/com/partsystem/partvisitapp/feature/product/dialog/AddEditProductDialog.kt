@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import kotlinx.coroutines.withContext
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +17,7 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
-import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDateLatin
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -58,8 +57,8 @@ class AddEditProductDialog(
     private var defaultAnbarId = 0
     private var persianDate: String = ""
     private var mojoodiConsumed = false
-    var finalUnit1 = 0.0
-    var finalPackingValue = 0.0
+    private var finalUnit1 = 0.0
+    private var finalPackingValue = 0.0
     private var isProcessing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +66,7 @@ class AddEditProductDialog(
 
         lifecycleScope.launch {
             defaultAnbarId = mainPreferences.defaultAnbarId.first() ?: 0
-            persianDate = getTodayPersianDate()
+            persianDate = getTodayPersianDateLatin()
             currentMojoodiSetting = productRepository.getDistributionMojoodiSetting()
         }
     }
@@ -89,7 +88,7 @@ class AddEditProductDialog(
         }
         setupInputs(product)
         setupButtons()
-        setupSpinner(product) // اصلاح شده
+        setupSpinner(product)
 
         binding.clConfirm.setOnClickListener {
             validateAndSaveProduct()
@@ -111,7 +110,7 @@ class AddEditProductDialog(
         val originalPacking = binding.etPackingValue.text.toString().toDoubleOrNull() ?: 0.0
         factorViewModel.productInputCache[product.product.id] = Pair(originalUnit1, originalPacking)
 
-        // 🔑 تغییر اصلی: تشخیص خودکار حالت بدون بسته‌بندی بر اساس وجود بسته‌بندی در محصول
+        // تغییر اصلی: تشخیص خودکار حالت بدون بسته‌بندی بر اساس وجود بسته‌بندی در محصول
         val hasPackings = product.packings.isNotEmpty()
         finalUnit1 = if (hasPackings && selectedPacking != null) {
             // با بسته‌بندی: محاسبه کل واحدها
@@ -155,7 +154,7 @@ class AddEditProductDialog(
                 productViewModel.checkMojoodi(
                     anbarId = defaultAnbarId,
                     productId = product.product.id,
-                    persianDate = getTodayPersianDate()
+                    persianDate = getTodayPersianDateLatin()
                 )
             }
 
@@ -198,23 +197,6 @@ class AddEditProductDialog(
 
     }
 
-    private fun saveProduct(
-        finalUnit1: Double,
-        finalPackingValue: Double,
-        packing: ProductPackingEntity?
-    ) {
-        // 🔑 تغییر اصلی: ارسال 0 به جای packingId در حالت بدون بسته‌بندی
-        val packingId = packing?.packingId ?: 0
-        onSave(
-            finalUnit1,
-            finalPackingValue,
-            packingId,
-            detailId,
-            product.product.id
-        )
-        dismiss()
-    }
-
     private fun resetUiState() {
         isProcessing = false
         binding.clConfirm.isEnabled = true
@@ -240,9 +222,6 @@ class AddEditProductDialog(
                 else -> packing.toString()
             }
         )
-
-        // ✅ حذف خط اشتباه: binding.etPackingValue.isEnabled = (selectedPacking != null)
-        // به جای آن، enabled state فقط در اسپینر و observeCartData تنظیم شود
 
         watcherUnit1 = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
@@ -288,12 +267,12 @@ class AddEditProductDialog(
 
         val selectedIndex = if (hasPackings) {
             val defaultIndex = product.packings.indexOfFirst { it.isDefault }
-            if (defaultIndex in 0 until spinnerItems.size) defaultIndex else 0
+            if (defaultIndex in spinnerItems.indices) defaultIndex else 0
         } else {
             0
         }
 
-        // ✅ تنظیم لیسنر قبل از setSelection برای جلوگیری از فراخوانی ناخواسته
+        // تنظیم لیسنر قبل از setSelection برای جلوگیری از فراخوانی ناخواسته
         binding.spProductPacking.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -306,7 +285,7 @@ class AddEditProductDialog(
 
                     if (hasPackings) {
                         selectedPacking = product.packings.getOrNull(pos)
-                        // ✅ فقط وقتی بسته‌بندی وجود دارد، فیلد فعال شود
+                        // فقط وقتی بسته‌بندی وجود دارد، فیلد فعال شود
                         binding.etPackingValue.isEnabled = true
                         binding.etPackingValue.isFocusable = true
                         binding.etPackingValue.isFocusableInTouchMode = true
@@ -323,10 +302,10 @@ class AddEditProductDialog(
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
 
-        // ✅ setSelection بعد از تنظیم لیسنر
+        // setSelection بعد از تنظیم لیسنر
         binding.spProductPacking.setSelection(selectedIndex, false)
 
-        // ✅ تنظیم اولیه enabled state بر اساس وجود بسته‌بندی
+        // تنظیم اولیه enabled state بر اساس وجود بسته‌بندی
         binding.etPackingValue.isEnabled = hasPackings
         binding.etPackingValue.isFocusable = hasPackings
         binding.etPackingValue.isFocusableInTouchMode = hasPackings
@@ -335,7 +314,6 @@ class AddEditProductDialog(
     private fun observeCartData(productId: Int) {
         val validFactorId = factorViewModel.currentFactorId.value
             ?: factorViewModel.header.value?.id?.toLong() ?: return
-        Log.d("validFactorId", validFactorId.toString())
 
         if (validFactorId <= 0) return
 
@@ -370,7 +348,7 @@ class AddEditProductDialog(
                             binding.spProductPacking.setSelection(savedPackingIndex, false)
                             selectedPacking = currentProduct?.packings?.get(savedPackingIndex)
 
-                            // ✅ فعال‌سازی فیلد بسته‌بندی
+                            // فعال‌سازی فیلد بسته‌بندی
                             binding.etPackingValue.isEnabled = true
                             binding.etPackingValue.isFocusable = true
                             binding.etPackingValue.isFocusableInTouchMode = true
@@ -378,7 +356,7 @@ class AddEditProductDialog(
                             binding.spProductPacking.setSelection(0, false)
                             selectedPacking = null
 
-                            // ✅ غیرفعال‌سازی فیلد بسته‌بندی
+                            // غیرفعال‌سازی فیلد بسته‌بندی
                             binding.etPackingValue.isEnabled = false
                             binding.etPackingValue.isFocusable = false
                             binding.etPackingValue.setText("")
@@ -442,18 +420,15 @@ class AddEditProductDialog(
 
             when (result) {
                 is NetworkResult.Loading -> {
-                    binding.tvConfirm.hide()
-                    binding.pbConfirm.show()
+                    //  binding.tvConfirm.hide()
+                    //  binding.pbConfirm.show()
                 }
 
                 is NetworkResult.Success -> {
                     mojoodiConsumed = true
                     productViewModel.clearCheckMojoodi()
 
-                    binding.tvConfirm.show()
-                    binding.pbConfirm.gone()
-
-                    if (result.data.isNullOrEmpty()) {
+                    if (result.data.isEmpty()) {
                         Toast.makeText(
                             context,
                             R.string.error_out_of_stock,
@@ -473,8 +448,13 @@ class AddEditProductDialog(
                         ).show()
                         resetUiState()
                     } else {
-                        saveProduct(finalUnit1, finalPackingValue, selectedPacking)
-                        dismiss()
+                        lifecycleScope.launch {
+                            saveProductWithLoading(
+                                finalUnit1,
+                                finalPackingValue,
+                                selectedPacking
+                            )
+                        }
                     }
                 }
 
@@ -482,8 +462,8 @@ class AddEditProductDialog(
                     mojoodiConsumed = true
                     productViewModel.clearCheckMojoodi()
 
-                    binding.tvConfirm.show()
-                    binding.pbConfirm.gone()
+                    //   binding.tvConfirm.show()
+                    //   binding.pbConfirm.gone()
 
                     Toast.makeText(
                         context,

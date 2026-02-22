@@ -43,7 +43,6 @@ class Retry @JvmOverloads constructor(
 
     init {
         _binding = CompRetryBinding.inflate(LayoutInflater.from(context), this, true)
-        Log.d("RetryView", "Retry view initialized")
     }
 
     override fun onFinishInflate() {
@@ -53,17 +52,8 @@ class Retry @JvmOverloads constructor(
 
     private fun rxBinding() {
         binding.tvAction.setOnClickListener {
-            Log.d("RetryView", "tvAction clicked (basic)")
             actionListener?.invoke()
         }
-
-       /* binding.apply {
-            val actionDisposable = tvAction.setSafeOnClickListener {
-                Log.d("RetryView", "tvAction clicked")
-                actionListener?.invoke()
-            }
-            compositeDisposable.add(actionDisposable)
-        }*/
     }
 
     infix fun message(message: String) {
@@ -88,7 +78,6 @@ class Retry @JvmOverloads constructor(
 
     fun setActionListener(listener: ClickListener) {
         this.actionListener = listener
-        Log.d("RetryView", "Action listener set")
     }
 
     private fun loadingConfig(isLoading: Boolean) {

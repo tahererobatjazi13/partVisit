@@ -85,7 +85,6 @@ class ProductViewModel @Inject constructor(
     val filteredWithActList: LiveData<List<ProductWithPacking>> = _filteredWithActList
 
     fun loadProductsWithAct(groupProductId: Int? = null, actId: Int? = null) {
-        Log.d("factoractId", actId.toString())
 
         viewModelScope.launch {
             repository.getProducts(groupProductId, actId).collect { list ->
