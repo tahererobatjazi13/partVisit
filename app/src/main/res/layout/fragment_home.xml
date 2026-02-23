@@ -47,12 +47,13 @@
     </androidx.appcompat.widget.Toolbar>
 
     <ScrollView
-        android:fillViewport="true"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -118,9 +119,11 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvHomeMenu"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/large_size"
                 android:padding="@dimen/small_size"
+                android:nestedScrollingEnabled="false"
+                android:isScrollContainer="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/cvHeader"
@@ -128,7 +131,6 @@
                 tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 tools:listitem="@layout/item_home_menu"
                 tools:spanCount="2" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>

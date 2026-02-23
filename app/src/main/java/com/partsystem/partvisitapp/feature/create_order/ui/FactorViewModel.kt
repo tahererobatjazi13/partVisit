@@ -10,6 +10,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
 import com.partsystem.partvisitapp.core.database.AppDatabase
+import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
@@ -435,13 +436,16 @@ class FactorViewModel @Inject constructor(
     suspend fun calculateDiscountInsert(
         applyKind: Int,
         factorHeader: FactorHeaderEntity,
-        factorDetail: FactorDetailEntity?
+        factorDetail: FactorDetailEntity?,
+        hasTaxConnection: Boolean?
     ) =
         discountRepository.calculateDiscountInsert(
             applyKind = applyKind,
             factorHeader = factorHeader,
-            factorDetail = factorDetail
+            factorDetail = factorDetail,
+            hasTaxConnection = hasTaxConnection
         )
+
 
     private val _productSavingState = MutableStateFlow(false)
     val isProductSaving: StateFlow<Boolean> = _productSavingState.asStateFlow()
@@ -477,7 +481,8 @@ class FactorViewModel @Inject constructor(
                 discountRepository.calculateDiscountInsert(
                     applyKind = DiscountApplyKind.ProductLevel.ordinal,
                     factorHeader = factorHeader,
-                    factorDetail = savedDetail
+                    factorDetail = savedDetail,
+                    null
                 )
 
                 // 3. محاسبه مقادیر
@@ -564,13 +569,15 @@ class FactorViewModel @Inject constructor(
     ) = viewModelScope.launch {
 
         val header = getFactorHeaderById(factorId) ?: return@launch
+        val hasTaxConnection = getHasTaxConnection()
 
         if (sabt == 1) {
             // ثبت سفارش
             calculateDiscountInsert(
                 applyKind = DiscountApplyKind.FactorLevel.ordinal,
                 factorHeader = header,
-                factorDetail = null
+                factorDetail = null,
+                hasTaxConnection = hasTaxConnection
             )
         } else {
             // لغو ثبت

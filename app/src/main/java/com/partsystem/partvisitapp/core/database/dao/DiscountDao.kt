@@ -178,6 +178,22 @@ interface DiscountDao {
     ): List<DiscountFull>
 
 
+    /**
+     * گرفتن تمام تخفیف‌های سطح فاکتور
+     * (FactorLevel)
+     */
+    @Query("""
+        SELECT d.*
+        FROM Discount d
+        INNER JOIN FactorDiscount fd 
+            ON fd.discountId = d.id
+        WHERE fd.factorId = :factorId
+          AND fd.factorDetailId IS NULL
+    """)
+    suspend fun getFactorLevelDiscounts(
+        factorId: Int
+    ): List<DiscountEntity>
+
     @Query("SELECT COUNT(*) FROM FactorDiscount WHERE factorId = :factorId")
     suspend fun getFactorDiscountCountByFactorId(factorId: Int): Int
 

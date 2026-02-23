@@ -26,9 +26,9 @@ class OnlineOrderListAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: ReportFactorDto) = with(binding) {
-            tvOrderNumber.text = "${bindingAdapterPosition + 1}_  ${item.id}"
+            // tvOrderNumber.text = "${bindingAdapterPosition + 1}_  ${item.id}"
 
-           // tvOrderNumber.text = item.id.toString()
+            tvOrderNumber.text = item.id.toString()
             tvCustomerName.text = item.customerName
             tvPatternName.text = item.patternName
             tvDateTime.text = item.persianDate + " _ " + item.createTime

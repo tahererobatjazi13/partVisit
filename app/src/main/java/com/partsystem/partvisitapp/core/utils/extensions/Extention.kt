@@ -134,7 +134,7 @@ fun getCurrentTime(): String {
 }
 /*
 git add .
-git commit -m "proguard"
+git commit -m "HasTaxConnection"
 git push -u origin master
 git push
 */

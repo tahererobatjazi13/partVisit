@@ -25,6 +25,7 @@ import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.DiscountCalculationKind
 import com.partsystem.partvisitapp.core.utils.DiscountExecuteKind
 import com.partsystem.partvisitapp.core.utils.DiscountInclusionKind
+import com.partsystem.partvisitapp.core.utils.DiscountKind
 import com.partsystem.partvisitapp.core.utils.DiscountPaymentKind
 import com.partsystem.partvisitapp.core.utils.DiscountPriceKind
 import com.partsystem.partvisitapp.core.utils.DiscountUnitKind
@@ -54,7 +55,8 @@ class DiscountRepository @Inject constructor(
     suspend fun calculateDiscountInsert(
         applyKind: Int,
         factorHeader: FactorHeaderEntity,
-        factorDetail: FactorDetailEntity?
+        factorDetail: FactorDetailEntity?,
+        hasTaxConnection: Boolean?
     ) {
         if (factorHeader.patternId == null) return
 
@@ -78,7 +80,8 @@ class DiscountRepository @Inject constructor(
         }
         //region Init
 
-        var discounts = getDiscounts(applyKind, factorHeader.createDate!!, factorHeader.persianDate!!, true)
+        var discounts =
+            getDiscounts(applyKind, factorHeader.createDate!!, factorHeader.persianDate!!, true)
 
         val pattern = patternDao.getPattern(factorHeader.patternId!!) ?: return
         val discountInclusionKind: Int = pattern.discountInclusionKind!!
@@ -92,7 +95,39 @@ class DiscountRepository @Inject constructor(
         //  usedDiscountIds=[]
         discounts = discounts.filter { !usedDiscountIds.contains(it.id) }
 
+        // ---------- فیلتر مودیان - فقط برای سطح فاکتور ----------
+        // اگر HasTaxConnection درست باشد و تخفیف در سطح فاکتور باشد
+        // و نوعش تخفیف و اضافات باشد discountkind=0||1 (کسورات نباشد)
+        // و DiscountCalculationKind!=Eshantyun اشانتیون نباشد
+        // تخفیف اعمال نشود
 
+        // ---------- فیلتر مودیان -  برای سطح ردیف ----------
+        // اگر HasTaxConnection درست باشد و تخفیف در سطح ردیف باشد
+        // و نوعش  اضافات باشد discountkind=1
+        // تخفیف اعمال نشود
+
+        if (hasTaxConnection == true) {
+
+            discounts = discounts.filterNot { discount ->
+
+                when (applyKind) {
+
+                    // سطح فاکتور
+                    DiscountApplyKind.FactorLevel.ordinal -> {
+                        (discount.kind == DiscountKind.Discount.ordinal ||
+                                discount.kind == DiscountKind.Addition.ordinal) &&
+                                discount.calculationKind != DiscountCalculationKind.Eshantyun.ordinal
+                    }
+
+                    // سطح ردیف
+                    DiscountApplyKind.ProductLevel.ordinal -> {
+                        discount.kind == DiscountKind.Addition.ordinal
+                    }
+
+                    else -> false
+                }
+            }
+        }
         // Apply pattern inclusion filter
         if (discountInclusionKind == PatternInclusionKind.List.ordinal) {
             val listPatternDetail = getPatternDetailById(pattern.id)
@@ -116,6 +151,7 @@ class DiscountRepository @Inject constructor(
         var hasGiftEshantyun = false
 
         for (discount in discounts) {
+
             if (discount.calculationKind == DiscountCalculationKind.Eshantyun.ordinal ||
                 discount.calculationKind == DiscountCalculationKind.Gift.ordinal
             ) {
@@ -168,7 +204,8 @@ class DiscountRepository @Inject constructor(
                     factorDetailId = if (applyKind == DiscountApplyKind.ProductLevel.ordinal) factorDetail?.id else null,
                     sortCode = 0,
                     price = 0.0,
-                    discountPercent = 0.0
+                    discountPercent = 0.0,
+                    discountKind = discount.kind,
                 )
 
                 // Set SortCode
@@ -498,7 +535,8 @@ class DiscountRepository @Inject constructor(
                     factorDetailId = detail.id,
                     sortCode = 1,
                     price = detail.price,
-                    discountPercent = 0.0
+                    discountPercent = 0.0,
+                    discountKind = discount.kind
                 )
 
                 factorDao.insertFactorDiscount(detailDiscount)
@@ -663,7 +701,8 @@ class DiscountRepository @Inject constructor(
                                 factorDetailId = detail.id,
                                 sortCode = 1,
                                 price = detail.price,
-                                discountPercent = 0.0
+                                discountPercent = 0.0,
+                                discountKind = discount.kind,
                             )
                             factorDao.insertFactorDiscount(detailDiscount)
 

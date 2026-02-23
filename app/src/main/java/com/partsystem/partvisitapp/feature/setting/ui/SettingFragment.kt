@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.setting.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.partsystem.partvisitapp.BuildConfig
 import com.partsystem.partvisitapp.databinding.FragmentSettingBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -31,8 +33,16 @@ class SettingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        init()
         setupDarkModeSwitch()
         rxBinding()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun init() {
+        // app version
+        val versionName = BuildConfig.VERSION_NAME
+        binding.tvVersion.text = "نسخه $versionName"
     }
 
     private fun setupDarkModeSwitch() {

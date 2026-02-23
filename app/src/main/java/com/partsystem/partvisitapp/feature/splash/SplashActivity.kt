@@ -45,15 +45,28 @@ class SplashActivity : BaseActivity() {
         lifecycleScope.launch {
             val loggedIn = mainPreferences.isLoggedIn.first()
 
-            val intent = if (loggedIn == true) {
-                Intent(this@SplashActivity, MainActivity::class.java)
+            if (loggedIn == true) {
+                navigateToMain()
             } else {
-                Intent(this@SplashActivity, LoginActivity::class.java)
+                navigateToLogin()
             }
-
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
         }
+    }
+
+    // مثال در SplashActivity.kt
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    private fun navigateToMain() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }

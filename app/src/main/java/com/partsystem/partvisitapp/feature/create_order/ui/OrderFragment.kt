@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
+import com.partsystem.partvisitapp.core.utils.DiscountCalculationKind
+import com.partsystem.partvisitapp.core.utils.DiscountKind
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
@@ -162,7 +164,8 @@ class OrderFragment : Fragment() {
 
                     // تکمیل سفارش → ارسال به سرور
                     factorViewModel.sendFactor(
-                        factorId = args.factorId)
+                        factorId = args.factorId
+                    )
                 } else {
                     // تیک نزده → هشدار
                     showWarningDialog()
@@ -172,17 +175,10 @@ class OrderFragment : Fragment() {
                 orderAdapter.setOrderCompleted(isChecked)
 
                 if (isChecked) {
-                    /*lifecycleScope.launch {
-                        if (factorViewModel.getHasTaxConnection()) {
-                            // اتصال مالیات فعال است
-                        } else {
-                            // اتصال مالیات غیرفعال است
-                        }
-                    }*/
+                    lifecycleScope.launch {
+                        val hasTaxConnection = factorViewModel.getHasTaxConnection()
 
-
-                    if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
-                        viewLifecycleOwner.lifecycleScope.launch {
+                        if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
                             // نکته: برای محاسبه تخفیف، هدر فعلی از دیتابیس لود شود
                             val headerForDiscount = if (args.factorId > 0) {
                                 factorViewModel.getFactorHeaderById(args.factorId) ?: return@launch
@@ -193,16 +189,18 @@ class OrderFragment : Fragment() {
                             factorViewModel.calculateDiscountInsert(
                                 applyKind = DiscountApplyKind.FactorLevel.ordinal,
                                 factorHeader = headerForDiscount,
-                                factorDetail = null
+                                factorDetail = null,
+                                hasTaxConnection
                             )
                             factorViewModel.markDiscountApplied()
                             calculateTotalPrices(
                                 currentCartItems,
                                 targetSabt = 1
                             ) // sabt=1 را مستقیماً پاس بده
+
+                        } else {
+                            calculateTotalPrices(currentCartItems, targetSabt = 1)
                         }
-                    } else {
-                        calculateTotalPrices(currentCartItems, targetSabt = 1)
                     }
                 } else {
                     viewLifecycleOwner.lifecycleScope.launch {

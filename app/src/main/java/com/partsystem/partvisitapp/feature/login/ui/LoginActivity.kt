@@ -216,10 +216,15 @@ class LoginActivity : BaseActivity() {
      * رفتن به صفحه اصلی پس از ورود موفق
      */
     private fun navigateToHome() {
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java).apply {
+            // حذف تمام اکتیویتی‌های قبلی از استک و ساخت تسک جدید
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
         startActivity(intent)
+        finish()
     }
-
     /**
      *  تنظیم تغییر حالت آیکن پسورد در صورت خالی یا پر بودن فیلد
      */
