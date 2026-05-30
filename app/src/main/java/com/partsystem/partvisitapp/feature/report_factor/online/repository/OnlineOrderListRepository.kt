@@ -17,10 +17,11 @@ class OnlineOrderListRepository @Inject constructor(
 
     suspend fun getReportFactorVisitor(
         type: Int,
-        visitorId: Int
+        visitorId: Int,
+        condition: String
     ): NetworkResult<List<ReportFactorDto>> {
         return try {
-            val response = api.getReportFactorVisitor(type, visitorId)
+            val response = api.getReportFactorVisitor(type, visitorId, condition)
             val body = response.body()
 
             if (response.isSuccessful && body != null) {

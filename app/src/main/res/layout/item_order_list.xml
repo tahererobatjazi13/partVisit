@@ -129,6 +129,42 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- مسیر مشتری  -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clCustomerDirection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/xx_small_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvCustomerDirection"
+                style="@style/SmallBoldTextStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/xx_small_size"
+                android:textDirection="rtl"
+                app:layout_constraintEnd_toStartOf="@+id/tvTitleCustomerDirection"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvTitleCustomerDirection"
+                style="@style/XSmallTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:scrollHorizontally="false"
+                android:text="@string/label_customer_direction"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <!-- طرح فروش -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clPatternName"
@@ -183,25 +219,69 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="@dimen/xx_small_size"
-                android:textDirection="rtl"
                 android:gravity="end|center_vertical"
+                android:textDirection="rtl"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/tvTitleDateTime"
-                app:layout_constraintStart_toEndOf="@+id/cbSabt"
+                app:layout_constraintStart_toEndOf="@+id/clSabt"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/cbSabt"
-                style="@style/MediumBoldTextStyle"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clSabt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end|center_vertical"
-                android:gravity="end|center_vertical"
-                android:text="@string/label_register"
-                android:textColor="@color/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbSabt"
+                    style="@style/MediumBoldTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|center_vertical"
+                    android:gravity="end|center_vertical"
+                    android:text="@string/label_register"
+                    android:textColor="@color/colorPrimary"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/clProgressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        style="?android:attr/progressBarStyleLarge"
+                        android:layout_width="@dimen/_13sdp"
+                        android:layout_height="@dimen/_13sdp"
+                        android:layout_gravity="center"
+                        android:indeterminateTint="@color/orange_FF5722"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvProgressBar"
+                        style="@style/XSmallBoldTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/xx_small_size"
+                        android:text="@string/label_validate_credit"
+                        android:textColor="@color/orange_FF5722"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/progressBar"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

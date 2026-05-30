@@ -1,10 +1,10 @@
 package com.partsystem.partvisitapp.feature.customer.ui.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.databinding.ItemCustomerDirectionBinding
-
 
 class CustomerDirectionAdapter(
     private val items: List<String>,
@@ -13,6 +13,7 @@ class CustomerDirectionAdapter(
     inner class CustomerDirectionViewHolder(val binding: ItemCustomerDirectionBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("SetTextI18n")
         fun bind(address: String) = with(binding) {
             tvAddress.text = address
             tvAddress.text = "${bindingAdapterPosition + 1}_  ${address}"

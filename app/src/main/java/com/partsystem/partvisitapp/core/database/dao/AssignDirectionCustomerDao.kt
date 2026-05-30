@@ -12,9 +12,6 @@ interface AssignDirectionCustomerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<AssignDirectionCustomerEntity>)
 
-    @Query("SELECT * FROM AssignDirectionCustomer WHERE tafsiliId = :visitorId")
-    suspend fun getByVisitor(visitorId: Int): List<AssignDirectionCustomerEntity>
-
     @Query("DELETE FROM AssignDirectionCustomer")
     suspend fun clearAssignDirectionCustomer()
 

@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.customer.ui.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -32,6 +33,7 @@ class CustomerListAdapter(
 
     inner class CustomerListViewHolder(private val binding: ItemCustomerListBinding) :
         RecyclerView.ViewHolder(binding.root) {
+        @SuppressLint("SetTextI18n")
         fun bind(customer: CustomerEntity) = with(binding) {
 
             tvCustomerName.text = "${bindingAdapterPosition + 1}_  ${customer.name}"
@@ -44,10 +46,10 @@ class CustomerListAdapter(
 
 
             if (details.isNotEmpty()) {
-                binding.tvCustomerPhone.text = details.joinToString(" | ")
-                binding.clCustomerPhone.show()
+                tvCustomerPhone.text = details.joinToString(" | ")
+                clCustomerPhone.show()
             } else {
-                binding.clCustomerPhone.gone()
+                clCustomerPhone.gone()
             }
 
             llEdit.setOnClickListener { onEdit(customer) }

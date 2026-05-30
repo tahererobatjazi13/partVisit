@@ -32,7 +32,7 @@
         app:layout_constraintTop_toBottomOf="@+id/hfOrderList">
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tabSent"
+            android:id="@+id/tabCurrentOrder"
             style="@style/SmallBoldTextStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -40,10 +40,10 @@
             android:background="@drawable/bg_tab_inactive"
             android:gravity="center"
             android:padding="@dimen/small_size"
-            android:text="@string/label_sent_orders" />
+            android:text="@string/label_current_day_orders" />
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tabUnsent"
+            android:id="@+id/tabDraftOrder"
             style="@style/SmallBoldTextStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
             android:background="@drawable/bg_tab_active"
             android:gravity="center"
             android:padding="@dimen/small_size"
-            android:text="@string/label_unsent_orders" />
+            android:text="@string/label_draft_orders" />
 
     </LinearLayout>
 

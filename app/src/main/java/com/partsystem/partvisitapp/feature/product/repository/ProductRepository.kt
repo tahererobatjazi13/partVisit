@@ -48,52 +48,46 @@ class ProductRepository @Inject constructor(
         emit(grouped)
     }
 
-    fun getProducts(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>> =
+    fun loadProductsWithAct(groupProductId: Int?, actId: Int?): Flow<List<ProductWithPacking>> =
         dao.getProductsWithActDetails(groupProductId, actId)
 
     fun getProductByActId(id: Int, actId: Int): ProductWithPacking? {
         return dao.getProductWithRate(id, actId)
     }
 
-    fun getProductByActId2(id: Int, actId: Int): Flow<ProductWithPacking> =
-        dao.getProductWithRate2(id, actId)
+    fun getProductWithRateAct(id: Int, actId: Int): Flow<ProductWithPacking> =
+        dao.getProductWithRateAct(id, actId)
 
-
-    // گرفتن موجودی از Room
-    suspend fun getMojoodi(anbarId: Int, productId: Int): MojoodiEntity? {
-        return mojoodiDao.getMojoodi(anbarId, productId)
-    }
 
     suspend fun getDistributionMojoodiSetting(): Int {
         return applicationSettingDao.getSettingByName("DistributionMojoodi")
-            ?.value?.toIntOrNull() ?: 1 // Default: NoAction
+            ?.value?.toIntOrNull() ?: 1
     }
 
     // Check  Mojoodi
-        suspend fun checkMojoodi(
-            anbarId: Int,
-            productId: Int,
-            persianDate: String
-        ): NetworkResult<List<MojoodiDto>> {
+    suspend fun checkMojoodi(
+        anbarId: Int,
+        productId: Int,
+        persianDate: String
+    ): NetworkResult<List<MojoodiDto>> {
 
-            return try {
-                val response = api.checkMojoodi(anbarId, productId, persianDate)
-                val body = response.body()
+        return try {
+            val response = api.checkMojoodi(anbarId, productId, persianDate)
+            val body = response.body()
 
-                if (response.isSuccessful && body != null) {
-                    NetworkResult.Success(body)
-                } else {
-                    val errorMsg = ErrorHandler.getHttpErrorMessage(
-                        context,
-                        response.code(),
-                        response.message()
-                    )
-                    NetworkResult.Error(errorMsg)
-                }
-
-            } catch (e: Exception) {
-                NetworkResult.Error(getExceptionMessage(context, e))
+            if (response.isSuccessful && body != null) {
+                NetworkResult.Success(body)
+            } else {
+                val errorMsg = ErrorHandler.getHttpErrorMessage(
+                    context,
+                    response.code(),
+                    response.message()
+                )
+                NetworkResult.Error(errorMsg)
             }
-        }
 
+        } catch (e: Exception) {
+            NetworkResult.Error(getExceptionMessage(context, e))
+        }
+    }
 }

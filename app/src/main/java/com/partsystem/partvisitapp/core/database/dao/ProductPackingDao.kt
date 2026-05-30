@@ -12,14 +12,8 @@ interface ProductPackingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(packings: List<ProductPackingEntity>)
 
-    @Query("SELECT * FROM ProductPacking")
-    suspend fun getAll(): List<ProductPackingEntity>
-
     @Query("DELETE FROM ProductPacking")
     suspend fun clearProductPacking()
-
-    @Query("SELECT * FROM ProductPacking WHERE productId = :productId")
-    suspend fun getPackingsByProductId(productId: Int): List<ProductPackingEntity>
 
     @Query(
         """

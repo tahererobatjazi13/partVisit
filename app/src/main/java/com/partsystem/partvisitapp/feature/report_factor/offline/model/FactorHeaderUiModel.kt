@@ -10,5 +10,6 @@ data class FactorHeaderUiModel(
     val hasDetail: Boolean,
     val actId: Int,
     val sabt: Int,
-    val isSending: Boolean = false
+    val isSending: Boolean = false,
+    val isValidateCredit: Boolean = false
 )

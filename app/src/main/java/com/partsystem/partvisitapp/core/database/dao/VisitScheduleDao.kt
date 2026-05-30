@@ -13,10 +13,6 @@ interface VisitScheduleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVisitScheduleDetails(details: List<VisitScheduleDetailEntity>)
 
-    @Transaction
-    @Query("SELECT * FROM VisitSchedule WHERE visitorId = :visitorId")
-    suspend fun getScheduleByVisitor(visitorId: Int): List<VisitScheduleEntity>
-
     @Query("DELETE FROM VisitSchedule")
     suspend fun clearVisitSchedule()
 

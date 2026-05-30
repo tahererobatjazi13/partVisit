@@ -10,6 +10,8 @@
     <string name="label_reports">گزارشات</string>
     <string name="label_customers">مشتریان</string>
     <string name="label_setting">تنظیمات</string>
+    <string name="label_receiving_data">دریافت اطلاعات</string>
+    <string name="label_sending_data">ارسال اطلاعات</string>
     <string name="label_version">نســخه</string>
     <string name="label_register_send_track_order">ثــبت ، ارســال سفــارش</string>
     <string name="label_login">ورود</string>
@@ -20,16 +22,24 @@
     <string name="label_ok">بله</string>
     <string name="label_logout">خروج از حساب کاربری</string>
     <string name="label_sent_orders">سفارشات ارسال شده</string>
+    <string name="label_current_day_orders">سفارشات روز جاری</string>
+    <string name="label_draft_orders">سفارشات پیش نویس</string>
     <string name="label_unsent_orders">سفارشات ارسال نشده</string>
     <string name="label_date_item">تاریخ:</string>
     <string name="label_number">تعداد:</string>
     <string name="label_number_units">تعداد واحد:</string>
     <string name="label_number_packing">تعداد بسته:</string>
     <string name="label_order_number">شماره سفارش:</string>
+    <string name="label_order_draft_number">شماره پیش نویس:</string>
     <string name="label_agent">نماینده:</string>
     <string name="label_customer_list">لیست مشتریان</string>
+    <string name="label_direction_list">لیست مسیر ها</string>
+    <string name="label_order_list">لیست سفارشات</string>
+    <string name="label_filter_order">فیلتر سفارشات</string>
+    <string name="label_delete_filter">حذف فیلتر</string>
     <string name="label_customer_name">نام مشتری:</string>
     <string name="label_customer">مشتری:</string>
+    <string name="label_direction">مسیر:</string>
     <string name="label_customer_direction">مسیر مشتری:</string>
     <string name="label_invoice_category">گروه صورتحساب:</string>
     <string name="label_customer_detail">جزییات مشتری</string>
@@ -42,6 +52,7 @@
     <string name="label_add_product">افزودن محصول</string>
     <string name="label_edit_product">ویرایش محصول</string>
     <string name="label_customer_search">جستجو مشتری ...</string>
+    <string name="label_direction_search">جستجو مسیر ...</string>
     <string name="label_order_search">جستجو سفارش ...</string>
     <string name="label_phone">تلفن:</string>
     <string name="label_address">آدرس:</string>
@@ -72,8 +83,11 @@
     <string name="label_save">ذخیره</string>
     <string name="label_dark_mode">حالت تیره</string>
     <string name="label_user_name">نام کاربری</string>
+    <string name="label_user_name_item">نام کاربری:</string>
     <string name="label_password">رمز عبور</string>
-    <string name="label_date">تاریخ :</string>
+    <string name="label_date">تاریخ:</string>
+    <string name="label_from_date">از تاریخ:</string>
+    <string name="label_to_date">تا تاریخ:</string>
     <string name="label_duo_date">تاریخ سررسید:</string>
     <string name="label_delivery_date">تاریخ تحویل:</string>
     <string name="label_continue">ادامه</string>
@@ -102,10 +116,17 @@
     <string name="label_sync_all_order">ارسال همه سفارشات</string>
     <string name="label_please_select">لطفا انتخاب کنید</string>
     <string name="label_server_setting">تنظیمات سرور</string>
+    <string name="label_equivalent">معادل</string>
     <string name="label_update">آپدیت</string>
     <string name="label_back">بازگشت</string>
     <string name="label_attention">توجه</string>
     <string name="label_understand">متوجه شدم</string>
+    <string name="label_remove_cache">پاک کردن داده</string>
+    <string name="label_warning">هشدار</string>
+    <string name="label_validate_credit">در حال بررسی اعتبار...</string>
+    <string name="label_select_all">انتخاب همه</string>
+    <string name="label_receive_update_information">دریافت و به روز رسانی اطلاعات</string>
+
     <!-- date picker -->
     <string name="picker_announce_current_selection">Current selection: %1$s</string>
     <string name="picker_date_header_selected">%1$s</string>
@@ -120,19 +141,23 @@
 
     <!-- Messages -->
     <string name="msg_no_customer">مشتری یافت نشد</string>
+    <string name="msg_no_direction">مسیری یافت نشد</string>
     <string name="msg_no_product">محصولی یافت نشد</string>
     <string name="msg_no_data">آیتمی یافت نشد</string>
     <string name="msg_no_order">سفارشی یافت نشد</string>
     <string name="msg_sure_send_order">سفارش به صورت قطعی ثبت شود؟</string>
-    <string name="msg_sure_send_orders">همه سفارشات به صورت قطعی ثبت شوند؟</string>
+    <string name="msg_sure_send_orders">همه سفارشات ثبت شده به صورت قطعی ارسال شوند؟</string>
     <string name="msg_sure_delete_orders">آیا برای حذف اطمینان دارید؟</string>
-    <string name="msg_log_out">آیا مایل به خروج از حساب کاربری خود می باشید؟</string>
+    <string name="msg_log_out">    با خارج شدن از حساب کاربری تمامی اطلاعات ذخیره شده در دستگاه حذف خواهد شد آیا مایل به خروج از حساب کاربری خود می باشید؟</string>
     <string name="msg_success_login">ورود با موفقیت انجام شد.</string>
+    <string name="msg_success_validate_credit">اعتبار سنجی با موفقیت انجام شد.</string>
     <string name="msg_success_update">بروزرسانی با موفقیت انجام شد.</string>
+    <string name="msg_success_download">دریافت اطلاعات با موفقیت انجام شد.</string>
     <string name="msg_press_back_button_again_exit">برای خروج دوباره دکمه بازگشت را بزنید</string>
     <string name="msg_order_successfully_sent">سفارش با موفقیت ارسال شد</string>
     <string name="msg_cannot_go_back_warning">پس از زدن تیک ثبت ، امکان بازگشت به لیست محصولات وجود ندارد. برای ادامه کار، سفارش را ذخیره یا ارسال کنید.</string>
     <string name="msg_cannot_delete_when_completed">در حالت ثبت ، امکان حذف ردیف وجود ندارد. لطفاً ابتدا تیک ثبت را بردارید.</string>
+    <string name="msg_select_direction">حداقل یک مسیر را انتخاب کنید</string>
     <!-- Errors -->
     <string name="error_enter_address_server">آدرس سرور را وارد کنید</string>
     <string name="error_network_json_response">مشکل در دریافت اطلاعات از سرور</string>
@@ -160,20 +185,25 @@
     <string name="error_selecting_act_mandatory">انتخاب مصوبه اجباری است</string>
     <string name="error_visitor_not_assigned_account">ویزیتور به این حساب کاربری تخصیص داده نشده است</string>
     <string name="error_there_not_default_warehouse_sales_center">انبار پیش فرض برای این مرکز فروش وجود ندارد</string>
+    <string name="error_end_act_date">تاریخ اعتبار مصوبه وارد شده در طرح به اتمام رسیده است.</string>
     <string name="error_sales_center_not_assigned_visitor">مرکز فروش به ویزیتور تخصیص داده نشده است</string>
     <string name="error_configure_ip_domain_settings">ابتدا تنظیمات IP و دامنه را انجام دهید</string>
     <string name="error_sending_order">خطا در ارسال سفارش</string>
     <string name="error_updating_information">خطا در بروزرسانی اطلاعات</string>
     <string name="error_receiving_product_pattern_act_mandatory">دریافت اطلاعات محصول، طرح و مصوبه اجباری است.</string>
-    <string name="error_click_sync_button_download_information">ابتدا دکمه سینک بالای صفحه را بزنید تا اطلاعات دانلود شود</string>
+    <string name="error_click_sync_button_download_information">ابتدا دکمه دریافت اطلاعات را بزنید تا اطلاعات دانلود شود</string>
     <string name="error_no_row_for_order">برای سفارش مورد نظر ردیفی وجود ندارد</string>
     <string name="error_order_not_sabt">سفارش ثبت نشده است.</string>
+    <string name="error_not_found_register_order">هیچ فاکتور ثبت‌شده‌ای وجود ندارد.</string>
     <string name="error_save_order_draft">
     این سفارش به صورت پیش نویس در تبلت شما ذخیره می شود
     لطفا در اولین فرصت نسبت به ارسال آن به سرور اقدام نمایید
-    و تا قبل از ارسال به سرور از حساب کاربری خود خارج نشوید.</string>
+    </string>
     <string name="error_cannot_go_back_when_completed">پس از ثبت سفارش امکان بازگشت وجود ندارد. لطفاً سفارش را پیش نویس یا ارسال کنید.</string>
     <string name="error_internet_disconnected">ارتباط اینترنت قطع شد. لطفاً دوباره تلاش کنید.</string>
     <string name="error_update_failed">خطا در بروزرسانی: %1$s</string>
+    <string name="error_remove_cache">اگر این گزینه را بزنید، تمام اطلاعات ذخیره‌شدهٔ محلی (local data) و سفارشات پیش‌نویس شما حذف می‌شود. آیا هنوز هم مایل به پاک کردن داده ها می باشید؟\n</string>
+    <string name="error_remove_cache_log_out">اگر این گزینه را بزنید، تمام اطلاعات ذخیره‌شدهٔ محلی (local data) و سفارشات پیش‌نویس شما حذف می‌شود. آیا هنوز هم مایل به خروج از حساب کاربری خود می باشید؟\n</string>
+    <string name="error_select_one_item">لطفاً حداقل یک مورد را برای دریافت اطلاعات انتخاب کنید</string>
 
 </resources>

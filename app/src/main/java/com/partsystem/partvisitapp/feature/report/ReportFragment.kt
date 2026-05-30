@@ -29,15 +29,11 @@ class ReportFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupClicks()
         binding.info.message(requireContext().getString(R.string.msg_no_data))
-
     }
 
-    private fun setupClicks() {
-        binding.apply {
-
-            hfReport.setOnClickImgTwoListener {
-                findNavController().navigateUp()
-            }
+    private fun setupClicks() = binding.apply {
+        hfReport.setOnClickImgTwoListener {
+            findNavController().navigateUp()
         }
     }
 

@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Delete
 import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
+import com.partsystem.partvisitapp.feature.create_order.model.CustomerVisitorStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -17,7 +18,6 @@ interface CustomerDao {
     suspend fun insertCustomers(customers: List<CustomerEntity>)
 
     // کنترل برنامه ویزیت غیرفعال
-
     @Query(
         """
         SELECT c.* 
@@ -34,26 +34,6 @@ interface CustomerDao {
         saleCenterId: Int,
         visitorId: Int
     ): Flow<List<CustomerEntity>>
-
-
-
-    /*
-    @Query(
-        """
-    SELECT c.*
-    FROM customer_table c
-    INNER JOIN assign_direction_customer_table adc
-          ON c.id = adc.customerId
-         AND adc.saleCenterId = c.saleCenterId
-    WHERE c.saleCenterId = :saleCenterId
-      AND adc.tafsiliId = :visitorId
-"""
-    )
-    fun getCustomersWithoutVisitSchedule(
-        saleCenterId: Int,
-        visitorId: Int
-    ): Flow<List<CustomerEntity>>*/
-
 
     // کنترل برنامه ویزیت فعال
     @Query(
@@ -105,14 +85,14 @@ interface CustomerDao {
     @Delete
     suspend fun deleteCustomer(customer: CustomerEntity)
 
-    // جستجوی مشتری بر اساس نام
-    @Query("SELECT * FROM Customer WHERE name LIKE '%' || :keyword || '%'")
-    suspend fun searchCustomer(keyword: String): List<CustomerEntity>
-
     @Query("SELECT COUNT(*) FROM Customer")
     suspend fun getCount(): Int
 
     // حذف همه مشتری‌ها (برای زمانی که API سینک کامل می‌کنی)
     @Query("DELETE FROM Customer")
     suspend fun clearCustomers()
+
+    @Query("SELECT hasErrorOrder, hasWarningOrder FROM Customer WHERE id = :customerId")
+    fun getCustomerErrorStatus(customerId: Int): Flow<CustomerVisitorStatus?>
+
 }

@@ -2,11 +2,8 @@ package com.partsystem.partvisitapp.core.database.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
-import com.partsystem.partvisitapp.core.database.entity.ProductPackingEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PatternDao {
@@ -14,22 +11,13 @@ interface PatternDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<PatternEntity>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: PatternEntity)
-
-    @Query("SELECT * FROM Pattern")
-    fun getAllPatterns(): Flow<List<PatternEntity>>
-
-    @Query("SELECT * FROM Pattern WHERE id = :id")
-    suspend fun getById(id: Int): PatternEntity?
-
     @Query("DELETE FROM Pattern")
     suspend fun clearPatterns()
 
     @Query("DELETE FROM PatternDetail")
     suspend fun clearPatternDetails()
 
-    // 1) فیلتر مشتری و CustomerFilterKind
+    // فیلتر مشتری و CustomerFilterKind
     @Query(
         """
         SELECT DISTINCT p.id
@@ -81,7 +69,7 @@ interface PatternDao {
     ): List<Int>
 
 
-    // 2) فیلتر مرکز فروش (Center)
+    // فیلتر مرکز فروش (Center)
     @Query(
         """
         SELECT DISTINCT p.id
@@ -106,7 +94,7 @@ interface PatternDao {
     ): List<Int>
 
 
-    // 3) فیلتر گروه صورتحساب (InvoiceCategory)
+    // فیلتر گروه صورتحساب (InvoiceCategory)
     @Query(
         """
         SELECT DISTINCT p.id

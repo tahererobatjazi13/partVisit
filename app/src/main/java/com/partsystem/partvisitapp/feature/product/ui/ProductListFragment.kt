@@ -59,11 +59,12 @@ class ProductListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        init()
+        initView()
         setupClicks()
+        setupClearIcon()
         initAdapter()
         initRecyclerViews()
-        observeData()
+        observeProducts()
         setupSearch()
         observeCartBadge()
 
@@ -73,191 +74,176 @@ class ProductListFragment : Fragment() {
         }
     }
 
-    private fun init() {
-        binding.hfProduct.isShowImgOne = args.fromFactor
+    private fun initView() = with(binding) {
+        hfProduct.isShowImgOne = args.fromFactor
+    }
+
+    private fun setupClicks() = binding.apply {
+        hfProduct.setOnClickImgTwoListener {
+            findNavController().navigateUp()
+        }
+        hfProduct.setOnClickImgOneListener {
+            val action =
+                ProductListFragmentDirections.actionProductListFragmentToOrderFragment(
+                    args.factorId,
+                    args.sabt
+                )
+            findNavController().navigate(action)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun setupClicks() {
-        binding.apply {
+    private fun setupClearIcon() = binding.apply {
+        // پاک کردن جستجو با لمس آیکون ضربدر
+        etSearch.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawableEnd =
+                    etSearch.compoundDrawablesRelative[2] ?: return@setOnTouchListener false
 
-            binding.hfProduct.setOnClickImgTwoListener {
-                findNavController().navigateUp()
-            }
-            binding.hfProduct.setOnClickImgOneListener {
-                val action =
-                    ProductListFragmentDirections.actionProductListFragmentToOrderFragment(
-                        args.factorId,
-                        args.sabt
-                    )
-                findNavController().navigate(action)
-            }
+                val touchAreaStart =
+                    etSearch.width - etSearch.paddingEnd - drawableEnd.intrinsicWidth
 
-            etSearch.addTextChangedListener { editable ->
-                val query = editable.toString()
-                if (query.isNotEmpty()) {
-                    // نمایش ضربدر و جستجو
-                    binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        null,
-                        null,
-                        clearIcon,
-                        null
-                    )
-                } else {
-                    // فقط جستجو، بدون ضربدر
-                    binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        null,
-                        null,
-                        searchIcon,
-                        null
-                    )
+                if (event.x >= touchAreaStart) {
+                    etSearch.text?.clear()
+                    v.performClick()
+                    return@setOnTouchListener true
                 }
             }
-
-            // پاک کردن جستجو با لمس آیکون ضربدر
-            etSearch.setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_UP) {
-                    val drawableEnd = binding.etSearch.compoundDrawablesRelative[2] // drawableEnd
-                    drawableEnd?.let {
-                        val touchAreaStart =
-                            binding.etSearch.width - binding.etSearch.paddingEnd - it.intrinsicWidth
-                        if (event.rawX >= touchAreaStart) {
-                            binding.etSearch.text?.clear()
-                            return@setOnTouchListener true
-                        }
-                    }
-                }
-                false
-            }
+            false
         }
     }
 
     private fun initAdapter() {
         productListAdapter = ProductListAdapter(
-            loadProduct = { productId, actId ->
-                factorViewModel.loadProduct(productId, actId!!)
-            },
-            factorViewModel = factorViewModel,
-            factorId = args.factorId,
-            onProductChanged = { item ->
-                val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-                if (validFactorId <= 0) {
-                    Log.e("ProductList", "Invalid factorId: cannot save detail")
-                    return@ProductListAdapter
-                }
-
-                factorViewModel.updateHeader(hasDetail = true)
-
-                lifecycleScope.launch {
-                    val updatedHeader = factorViewModel.factorHeader.value?.copy(hasDetail = true)
-                    updatedHeader?.let {
-                        factorViewModel.updateFactorHeader(it)
-                    }
-                }
-                val updatedItem = item.copy(factorId = validFactorId.toInt())
-                factorViewModel.addOrUpdateFactorDetail(updatedItem)
-            },
             onClickDetail = { product ->
                 val action = ProductListFragmentDirections
                     .actionProductListFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
-
             },
 
             onClickDialog = { product ->
-                // 1. تمام داده‌های مورد نیاز را به صورت suspend جمع‌آوری کنید
-                lifecycleScope.launch {
-                    val factorHeader = getFactorHeader()
-
-                    val productRate =
-                        factorViewModel.getProductRate(product.product.id, factorHeader.actId!!)
-                    if (productRate == null) {
-                        Toast.makeText(
-                            requireContext(),
-                            "خطا در دریافت اطلاعات محصول",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@launch
-                    }
-                    //  val productRate = productWithRate
-
-                    // بررسی وجود ردیف قبلی
-                    val existingDetail = try {
-                        factorViewModel.getExistingFactorDetail(
-                            factorHeader.id,
-                            product.product.id
-                        )
-                    } catch (e: Exception) {
-                        null
-                    }
-
-                    // دریافت maxId برای ایجاد ردیف جدید
-                    val maxId = if ((factorViewModel.getCount().value ?: 0) > 0) {
-                        factorViewModel.getMaxFactorDetailId().value ?: 0
-                    } else {
-                        0
-                    }
-                    var dialogRef: AddEditProductDialog? = null
-
-                    // 2. نمایش دیالوگ با داده‌های آماده
-                    dialogRef = AddEditProductDialog(
-                        productViewModel,
-                        product
-                    ) { finalUnit1, finalPackingValue, packingId, _, _ ->
-                        // 3. ایجاد یا به‌روزرسانی ردیف در ViewModel
-                        lifecycleScope.launch {
-                            try {
-                                val validFactorId = factorViewModel.currentFactorId.value
-                                    ?: args.factorId.toLong()
-
-                                // ایجاد entity با مقادیر محاسبه‌شده
-                                val detail = FactorDetailEntity(
-                                    id = existingDetail?.id ?: (maxId + 1),
-                                    factorId = validFactorId.toInt(),
-                                    sortCode = 0,
-                                    anbarId = factorHeader.defaultAnbarId,
-                                    productId = product.product.id,
-                                    actId = factorHeader.actId,
-                                    unit1Value = finalUnit1,
-                                    packingValue = finalPackingValue,
-                                    unit2Value = 0.0,
-                                    price = Math.round(productRate * finalUnit1).toDouble(),
-                                    packingId = packingId,
-                                    vat = 0.0,
-                                    unit1Rate = productRate,
-                                    isGift = 0
-                                )
-
-                                // ذخیره‌سازی و محاسبه تخفیف در ViewModel
-
-                                factorViewModel.saveProductWithDiscounts(
-                                    detail = detail,
-                                    factorHeader = factorHeader,
-                                    vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
-                                    tollPercent = product.tollPercent
-                                )
-                                // فقط اینجا دیالوگ بسته شود - پس از اتمام کامل تراکنش
-                                dialogRef?.dismiss()
-                            } catch (e: Exception) {
-                                Log.e("ProductList", "Error saving product", e)
-                                Toast.makeText(
-                                    requireContext(),
-                                    "خطا در ذخیره محصول",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    }
-
-                    // نمایش دیالوگ
-                    val fm = childFragmentManager
-                    fm.findFragmentByTag("AddRawProductDialog")?.let {
-                        fm.beginTransaction().remove(it).commitAllowingStateLoss()
-                    }
-                    dialogRef.show(fm, "AddRawProductDialog")
-                }
+                showAddProductDialog(product)
             }
         )
+    }
+
+    private fun showAddProductDialog(product: ProductWithPacking) {
+
+        lifecycleScope.launch {
+
+            try {
+
+                val factorHeader = getFactorHeader()
+
+                val productRate =
+                    factorViewModel.getProductWithRateAct(
+                        product.product.id,
+                        factorHeader.actId!!
+                    )
+
+                if (productRate == null) {
+
+                    Toast.makeText(
+                        requireContext(),
+                        "خطا در دریافت اطلاعات محصول",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@launch
+                }
+
+                val existingDetail =
+                    factorViewModel.getExistingFactorDetail(
+                        factorHeader.id,
+                        product.product.id
+                    )
+
+                val maxId =
+                    factorViewModel.getMaxFactorDetailId().value ?: 0
+
+                var dialogRef: AddEditProductDialog? = null
+
+                dialogRef = AddEditProductDialog(
+                    productViewModel,
+                    product
+                ) { finalUnit1, finalPackingValue, packingId, _, _ ->
+
+                    lifecycleScope.launch {
+
+                        try {
+
+                            val factorId =
+                                getValidFactorId().toInt()
+
+                            val detail = FactorDetailEntity(
+                                id = existingDetail?.id ?: (maxId + 1),
+                                factorId = factorId,
+                                sortCode = 0,
+                                anbarId = factorHeader.defaultAnbarId,
+                                productId = product.product.id,
+                                actId = factorHeader.actId,
+                                unit1Value = finalUnit1,
+                                packingValue = finalPackingValue,
+                                unit2Value = 0.0,
+                                price = Math.round(productRate * finalUnit1).toDouble(),
+                                packingId = packingId,
+                                vat = 0.0,
+                                unit1Rate = productRate,
+                                isGift = 0
+                            )
+
+                            factorViewModel.saveProductWithDiscounts(
+                                detail = detail,
+                                factorHeader = factorHeader,
+                                vatPercent = product.vatPercent,
+                                tollPercent = product.tollPercent
+                            )
+
+                            dialogRef?.dismiss()
+
+                        } catch (e: Exception) {
+
+                            Log.e("GroupProduct", "Save error", e)
+
+                            Toast.makeText(
+                                requireContext(),
+                                "خطا در ذخیره محصول",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+
+                childFragmentManager
+                    .findFragmentByTag("AddRawProductDialog")
+                    ?.let {
+                        childFragmentManager.beginTransaction()
+                            .remove(it)
+                            .commitAllowingStateLoss()
+                    }
+
+                dialogRef.show(
+                    childFragmentManager,
+                    "AddRawProductDialog"
+                )
+
+            } catch (e: Exception) {
+
+                Log.e("GroupProduct", "Dialog error", e)
+            }
+        }
+    }
+
+    private fun getValidFactorId(): Long {
+
+        val viewModelId =
+            factorViewModel.currentFactorId.value ?: 0L
+
+        return if (viewModelId > 0) {
+            viewModelId
+        } else {
+            args.factorId.toLong()
+        }
     }
 
     private fun isEditMode(): Boolean {
@@ -265,26 +251,18 @@ class ProductListFragment : Fragment() {
     }
 
     private suspend fun getFactorHeader(): FactorHeaderEntity {
-        // اولویت‌بندی دریافت factorId از منابع مختلف
-        val validFactorId = factorViewModel.currentFactorId.value
-            ?: args.factorId.toLong()
-            ?: factorViewModel.factorHeader.value?.id?.toLong()
-            ?: throw IllegalStateException("No valid factorId found")
-
-        return if (validFactorId > 0) {
-            // اگر فاکتور در دیتابیس وجود دارد، از دیتابیس بخوان
-            factorViewModel.getFactorHeaderFromDb(validFactorId.toInt())
-                ?: factorViewModel.factorHeader.value
-                ?: throw IllegalStateException("FactorHeader not found for id=$validFactorId")
+        return if (isEditMode()) {
+            // فاکتور ذخیره شده → دیتابیس
+            factorViewModel.getFactorHeaderFromDb(args.factorId)
         } else {
-            // فاکتور جدید در حال ساخت
+            // فاکتور در حال ساخت → SharedViewModel
             factorViewModel.factorHeader.value
-                ?: throw IllegalStateException("FactorHeader is null for new order")
+                ?: throw IllegalStateException("FactorHeader is null")
         }
     }
 
-    private fun initRecyclerViews() {
-        binding.rvProduct.apply {
+    private fun initRecyclerViews() = binding.apply {
+        rvProduct.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = productListAdapter
@@ -292,12 +270,11 @@ class ProductListFragment : Fragment() {
     }
 
     private fun observeCartData() {
-        val viewModelId = factorViewModel.currentFactorId.value ?: 0L
-        val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
+        val validFactorId = getValidFactorId()
 
         if (validFactorId <= 0) return
 
-        factorViewModel.getFactorDetails(validFactorId.toInt())
+        factorViewModel.getFactorDetails(args.factorId)
             .observe(viewLifecycleOwner) { details ->
                 // فیلتر نهایی: فقط ردیف‌های عادی (غیر هدیه)
                 val nonGiftDetails = details.filter { it.isGift != 1 }
@@ -323,88 +300,100 @@ class ProductListFragment : Fragment() {
             }
     }
 
-    private fun observeData() {
+    private fun observeProducts() = binding.apply {
         if (args.fromFactor) {
-            productViewModel.loadProductsWithAct(
-                groupProductId = null,
-                actId = factorViewModel.factorHeader.value?.actId ?: args.actId
-            )
-
-            productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
-                val images = productViewModel.productImages.value ?: emptyMap()
-                updateUI(list, images)
-            }
-            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-                val list = productViewModel.filteredWithActList.value ?: emptyList()
-                productListAdapter.setProductWithActData(list, imagesMap)
-            }
+            observeProductsWithAct()
         } else {
-            // مشاهده محصولات
-            productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
-                val imagesMap = productViewModel.productImages.value ?: emptyMap()
+            observeNormalProducts()
+        }
+    }
 
-                if (filteredProducts.isEmpty()) {
-                    binding.info.show()
-                    binding.info.message(requireContext().getString(R.string.msg_no_product))
-                    binding.rvProduct.hide()
-                } else {
-                    binding.info.gone()
-                    binding.rvProduct.show()
-                    productListAdapter.setProductData(filteredProducts, imagesMap)
-                }
-            }
+    private fun observeProductsWithAct() {
 
-            // مشاهده تغییرات عکس‌ها
-            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-                val products = productViewModel.filteredList.value ?: emptyList()
-                productListAdapter.setProductData(products, imagesMap)
+        productViewModel.loadProductsWithAct(
+            groupProductId = null,
+            actId = factorViewModel.factorHeader.value?.actId ?: args.actId
+        )
+
+        productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
+            val images = productViewModel.productImages.value ?: emptyMap()
+            updateUI(list, images)
+        }
+        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+            val list = productViewModel.filteredWithActList.value ?: emptyList()
+            productListAdapter.setProductWithActData(list, imagesMap)
+        }
+    }
+
+    private fun observeNormalProducts() = binding.apply {
+        // مشاهده محصولات
+        productViewModel.filteredList.observe(viewLifecycleOwner) { filteredProducts ->
+            val imagesMap = productViewModel.productImages.value ?: emptyMap()
+
+            if (filteredProducts.isEmpty()) {
+                info.show()
+                info.message(requireContext().getString(R.string.msg_no_product))
+                rvProduct.hide()
+            } else {
+                info.gone()
+                rvProduct.show()
+                productListAdapter.setProductData(filteredProducts, imagesMap)
             }
+        }
+
+        // مشاهده تغییرات عکس‌ها
+        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+            val products = productViewModel.filteredList.value ?: emptyList()
+            productListAdapter.setProductData(products, imagesMap)
         }
     }
 
     private fun updateUI(
         list: List<ProductWithPacking>,
         images: Map<Int, List<ProductImageEntity>>
-    ) {
+    ) = binding.apply {
         if (list.isEmpty()) {
-            binding.info.show()
-            binding.info.message(getString(R.string.msg_no_product))
-            binding.rvProduct.hide()
+            info.show()
+            info.message(getString(R.string.msg_no_product))
+            rvProduct.hide()
         } else {
-            binding.info.gone()
-            binding.rvProduct.show()
+            info.gone()
+            rvProduct.show()
             productListAdapter.setProductWithActData(list, images)
         }
     }
 
-    private fun setupSearch() {
-        if (args.fromFactor) {
-            binding.etSearch.addTextChangedListener { editable ->
-                val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
-                productViewModel.filterProductsWithAct(query)
-            }
-        } else {
+    private fun setupSearch() = binding.apply {
+        etSearch.addTextChangedListener { editable ->
+            val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
 
-            binding.etSearch.addTextChangedListener { editable ->
-                val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
+            etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                null, null,
+                if (query.isEmpty()) searchIcon else clearIcon,
+                null
+            )
+
+            if (args.fromFactor) {
+                productViewModel.filterProductsWithAct(query)
+            } else {
                 productViewModel.filterProducts(query)
             }
         }
     }
 
-
     private fun observeCartBadge() {
-        if (args.fromFactor) {
-            val viewModelId = factorViewModel.currentFactorId.value ?: 0L
-            val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
-            if (validFactorId <= 0) return
+        if (!args.fromFactor) return
 
-            factorViewModel.getFactorItemCount(validFactorId.toInt())
-                .observe(viewLifecycleOwner) { count ->
-                    binding.hfProduct.isShowBadge = count > 0
-                    binding.hfProduct.textBadge = count.toString()
-                }
-        }
+        val factorId = getValidFactorId()
+
+        if (factorId <= 0) return
+
+        factorViewModel.getFactorItemCount(factorId.toInt())
+            .observe(viewLifecycleOwner) { count ->
+
+                binding.hfProduct.isShowBadge = count > 0
+                binding.hfProduct.textBadge = count.toString()
+            }
     }
 
     override fun onDestroyView() {

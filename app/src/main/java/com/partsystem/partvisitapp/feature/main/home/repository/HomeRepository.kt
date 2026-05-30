@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.feature.main.home.repository
 
 import android.content.Context
+import android.util.Log
 import com.partsystem.partvisitapp.core.database.dao.ActDao
 import com.partsystem.partvisitapp.core.database.dao.ApplicationSettingDao
 import com.partsystem.partvisitapp.core.database.dao.AssignDirectionCustomerDao
@@ -250,6 +251,7 @@ class HomeRepository @Inject constructor(
 
     suspend fun fetchAndSaveCustomerDirections(): NetworkResult<List<CustomerDirectionEntity>> {
         return try {
+            Log.d("visitorId", visitorId.toString())
             val response = api.getCustomerDirections(visitorId)
             val body = response.body()
 

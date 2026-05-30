@@ -96,7 +96,6 @@ fun VisitorDto.toEntity(): VisitorEntity {
         userId = userId
     )
 }
-
 fun VisitScheduleDto.toEntity() = VisitScheduleEntity(
     id = id,
     kind = kind,
@@ -217,7 +216,9 @@ fun CustomerDto.toEntity() = CustomerEntity(
     customerSabt = customerSabt,
     tafsiliPhone1 = tafsiliPhone1,
     tafsiliPhone2 = tafsiliPhone2,
-    tafsiliMobile = tafsiliMobile
+    tafsiliMobile = tafsiliMobile,
+    hasErrorOrder = hasErrorOrder,
+    hasWarningOrder = hasWarningOrder,
 )
 
 fun CustomerDirectionDto.toEntity() = CustomerDirectionEntity(
@@ -231,6 +232,8 @@ fun CustomerDirectionDto.toEntity() = CustomerDirectionEntity(
     fullAddress = fullAddress ?: "",
     cityCode = cityCode ?: "",
     cityName = cityName ?: "",
+    directionCode = directionCode ,
+    directionName = directionName,
     latitude = latitude,
     longitude = longitude,
     mainStreet = mainStreet ?: "",

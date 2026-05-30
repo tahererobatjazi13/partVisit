@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductEntity
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
 import kotlinx.coroutines.flow.Flow
@@ -34,19 +33,6 @@ interface ProductDao {
 
     @Query("SELECT * FROM Product WHERE saleRastehId = :saleRastehId")
     fun getProductsByCategory(saleRastehId: Int): Flow<List<ProductEntity>>
-
-    /*@Query("SELECT * FROM product_table WHERE subGroupId = :subGroupId")
-    fun getProductsBySubGroup(subGroupId: Int): LiveData<List<ProductEntity>>*/
-
-    @Query("SELECT * FROM Product WHERE id = :id")
-    suspend fun getProduct(id: Int): ProductEntity?
-
-/*
-    // فقط برای inject کردن در repository
-    @get:Query("SELECT * FROM product_packing_table ")
-    val productPackingDao: ProductPackingDao // این روش غیرمستقیم است؛ بهتر است همه DAOها مستقل inject شوند.
-*/
-
 
     @Transaction
     @Query(
@@ -93,8 +79,7 @@ interface ProductDao {
         LIMIT 1
     """
     )
-     fun getProductWithRate(id: Int, actId: Int): ProductWithPacking?
-
+    fun getProductWithRate(id: Int, actId: Int): ProductWithPacking?
 
 
     @Transaction
@@ -121,7 +106,20 @@ interface ProductDao {
         WHERE p.Id = :id AND ad.ActId = :actId
         LIMIT 1
     """
-    )    fun getProductWithRate2(id: Int, actId: Int): Flow<ProductWithPacking>
+    )
+    fun getProductWithRateAct(id: Int, actId: Int): Flow<ProductWithPacking>
+
+
+    @Query(
+        """
+SELECT Rate 
+FROM ActDetail
+WHERE productId = :id AND actId = :actId
+LIMIT 1
+"""
+    )
+    fun getProductRate(id: Int, actId: Int): Flow<Double?>
+
 
 }
 

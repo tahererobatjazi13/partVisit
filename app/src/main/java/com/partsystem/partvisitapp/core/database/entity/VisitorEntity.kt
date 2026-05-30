@@ -33,5 +33,7 @@ data class VisitorEntity(
     "visitorSabt": false,
     "saleCenterCode": null,
     "saleCenterName": null,
-    "userId": null
+    "userId": null,
+    "hasErrorOrder": null,
+    "hasWarningOrder": null
 }*/

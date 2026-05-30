@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/_2sdp"
                 android:text="@string/label_star"
-                android:textColor="?attr/colorWarning"
+                android:textColor="?attr/colorError"
                 app:layout_constraintEnd_toStartOf="@id/tvTitleUserName"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -90,7 +90,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/_2sdp"
                 android:text="@string/label_star"
-                android:textColor="?attr/colorWarning"
+                android:textColor="?attr/colorError"
                 app:layout_constraintEnd_toStartOf="@id/tvTitlePassword"
                 app:layout_constraintTop_toBottomOf="@id/tilUserName" />
 

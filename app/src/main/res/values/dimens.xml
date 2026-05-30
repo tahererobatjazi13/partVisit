@@ -13,6 +13,7 @@
     <dimen name="x_small_size">@dimen/_6sdp</dimen>
     <dimen name="xx_small_size">@dimen/_4sdp</dimen>
     <dimen name="xxx_small_size">@dimen/_2sdp</dimen>
+    <dimen name="bit_size">@dimen/_1sdp</dimen>
 
     <!-- font size -->
     <dimen name="xxx_large_text_size">@dimen/_20ssp</dimen>

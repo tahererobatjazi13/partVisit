@@ -25,6 +25,7 @@ import com.partsystem.partvisitapp.core.database.entity.VisitorEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.feature.main.home.model.HomeMenuItem
+import com.partsystem.partvisitapp.feature.main.home.repository.AppRepository
 import com.partsystem.partvisitapp.feature.main.home.repository.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
+    private val appRepository: AppRepository,
     private val mainPreferences: MainPreferences
 
 ) : ViewModel() {
@@ -53,8 +55,10 @@ class HomeViewModel @Inject constructor(
             HomeMenuItem(4, R.string.label_customers, R.drawable.ic_home_customer),
             HomeMenuItem(5, R.string.label_reports, R.drawable.ic_home_report),
             HomeMenuItem(6, R.string.label_orders, R.drawable.ic_home_order),
-            HomeMenuItem(7, R.string.label_logout, R.drawable.ic_home_exit),
-            HomeMenuItem(8, R.string.label_setting, R.drawable.ic_home_setting),
+            /*   HomeMenuItem(7, R.string.label_logout, R.drawable.ic_home_exit),
+               HomeMenuItem(8, R.string.label_setting, R.drawable.ic_home_setting),*/
+            HomeMenuItem(9, R.string.label_sending_data, R.drawable.ic_home_send),
+            HomeMenuItem(10, R.string.label_receiving_data, R.drawable.ic_home_receiving),
         )
     }
 
@@ -194,6 +198,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun checkDatabase(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = appRepository.isDatabaseReady()
+            onResult(result)
+        }
+    }
 }
 
 

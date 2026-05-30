@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.group_product.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -9,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
 import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
+import com.partsystem.partvisitapp.core.utils.getColorAttr
 import com.partsystem.partvisitapp.databinding.ItemCategoryBinding
 import java.io.File
 
@@ -23,10 +25,16 @@ class CategoryAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(category: GroupProductEntity, isSelected: Boolean) = with(binding) {
+            val context = binding.root.context
+            val selectedColor = context.getColor(R.color.purple_673AB7)
+            val defaultColor =
+                getColorAttr(context, com.google.android.material.R.attr.colorOnPrimarySurface)
+
             tvCategoryName.text = category.name
+            tvCategoryName.setTextColor(if (isSelected) selectedColor else defaultColor)
 
             val backgroundRes = if (isSelected)
-                R.drawable.bg_rectangle_focused
+                R.drawable.bg_rectangle_focused_red
             else
                 R.drawable.bg_rectangle_default
 
@@ -36,7 +44,7 @@ class CategoryAdapter(
             if (!images.isNullOrEmpty()) {
                 val localPath = images.first().localPath
                 Glide.with(ivCategory.context)
-                    .load(File(localPath))
+                    .load(File(localPath.toString()))
                     .placeholder(R.drawable.ic_placeholder)
                     .error(R.drawable.ic_placeholder)
                     .into(ivCategory)
@@ -69,11 +77,11 @@ class CategoryAdapter(
 
     private var images: Map<Int, List<ProductImageEntity>> = emptyMap()
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setImages(map: Map<Int, List<ProductImageEntity>>) {
         images = map
         notifyDataSetChanged()
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
         val binding =

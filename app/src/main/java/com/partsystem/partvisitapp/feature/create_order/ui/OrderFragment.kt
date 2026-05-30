@@ -1,6 +1,7 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.annotation.SuppressLint
+import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,12 +18,13 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.CustomerCreditKind
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
-import com.partsystem.partvisitapp.core.utils.DiscountCalculationKind
-import com.partsystem.partvisitapp.core.utils.DiscountKind
+import com.partsystem.partvisitapp.core.utils.FactorFormKind
 import com.partsystem.partvisitapp.core.utils.SnackBarType
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDateLatin
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -30,6 +32,7 @@ import com.partsystem.partvisitapp.databinding.FragmentOrderBinding
 import com.partsystem.partvisitapp.feature.create_order.adapter.OrderAdapter
 import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorDetailUiModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
@@ -48,6 +51,7 @@ class OrderFragment : Fragment() {
     private var customDialog: CustomDialog? = null
     private var backCallback: OnBackPressedCallback? = null
     private var isEditingCompletedOrder = false //  فلگ برای تشخیص حالت ویرایش
+    private var customDialogSend: CustomDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,6 +70,8 @@ class OrderFragment : Fragment() {
         initAdapter()
         setupObserver()
         observeSendFactor()
+        observeValidateCredit()
+
         customDialog = CustomDialog()
 
         if (args.factorId > 0) {
@@ -97,7 +103,7 @@ class OrderFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, it)
         }
 
-        // مدیریت دکمه بازگشت هدر - همان رفتار سخت‌افزاری
+        // مدیریت دکمه بازگشت هدر
         binding.hfOrder.setOnClickImgTwoListener {
             handleBackPressAttempt()
         }
@@ -141,83 +147,126 @@ class OrderFragment : Fragment() {
     /**
      *     تنظیم کلیک روی دکمه ورود و بررسی ورودی‌ها
      */
-    private fun setupClicks() {
-        binding.apply {
 
-            btnDraftOrder.setOnClickListener {
-                factorViewModel.resetHeader()
-                factorViewModel.enteredProductPage = false
-                navigateToReportFactor()
+    private fun setupClicks() = binding.apply {
+
+        btnDraftOrder.setOnClickListener {
+            factorViewModel.resetHeader()
+            factorViewModel.enteredProductPage = false
+            navigateToReportFactor()
+        }
+        bmbSendOrder.setOnClickBtnOneListener {
+            if (currentCartItems.isEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.error_no_row_for_order,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickBtnOneListener
             }
-            bmbSendOrder.setOnClickBtnOneListener {
-                if (currentCartItems.isEmpty()) {
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.error_no_row_for_order,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@setOnClickBtnOneListener
-                }
 
-                if (binding.cbSabt.isChecked) {
-                    calculateTotalPrices(currentCartItems, targetSabt = 1)
+            if (cbSabt.isChecked) {
+                showSendDialog()
 
-                    // تکمیل سفارش → ارسال به سرور
-                    factorViewModel.sendFactor(
-                        factorId = args.factorId
-                    )
-                } else {
-                    // تیک نزده → هشدار
-                    showWarningDialog()
-                }
+            } else {
+                // تیک نزده → هشدار
+                showWarningDialog()
             }
-            cbSabt.setOnCheckedChangeListener { _, isChecked ->
-                orderAdapter.setOrderCompleted(isChecked)
+        }
+        cbSabt.setOnCheckedChangeListener { _, isChecked ->
+            orderAdapter.setOrderCompleted(isChecked)
 
-                if (isChecked) {
-                    lifecycleScope.launch {
-                        val hasTaxConnection = factorViewModel.getHasTaxConnection()
-
-                        if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
-                            // نکته: برای محاسبه تخفیف، هدر فعلی از دیتابیس لود شود
-                            val headerForDiscount = if (args.factorId > 0) {
-                                factorViewModel.getFactorHeaderById(args.factorId) ?: return@launch
-                            } else {
-                                factorViewModel.factorHeader.value ?: return@launch
-                            }
-
-                            factorViewModel.calculateDiscountInsert(
-                                applyKind = DiscountApplyKind.FactorLevel.ordinal,
-                                factorHeader = headerForDiscount,
-                                factorDetail = null,
-                                hasTaxConnection
-                            )
-                            factorViewModel.markDiscountApplied()
-                            calculateTotalPrices(
-                                currentCartItems,
-                                targetSabt = 1
-                            ) // sabt=1 را مستقیماً پاس بده
-
-                        } else {
-                            calculateTotalPrices(currentCartItems, targetSabt = 1)
-                        }
+            if (isChecked) {
+                lifecycleScope.launch {
+                    val hasTaxConnection = factorViewModel.getHasTaxConnection()
+                    // گرفتن هدر
+                    val header = if (args.factorId > 0) {
+                        factorViewModel.getFactorHeaderById(args.factorId) ?: return@launch
+                    } else {
+                        factorViewModel.factorHeader.value ?: return@launch
                     }
-                } else {
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        factorViewModel.removeGiftsAndDiscounts(args.factorId)
-                        factorViewModel.markDiscountRemoved()
+                    if (args.sabt == 0 || factorViewModel.discountManuallyRemoved.value) {
+
+                        factorViewModel.calculateDiscountInsert(
+                            applyKind = DiscountApplyKind.FactorLevel.ordinal,
+                            factorHeader = header,
+                            factorDetail = null,
+                            hasTaxConnection
+                        )
+                        factorViewModel.markDiscountApplied()
                         calculateTotalPrices(
                             currentCartItems,
-                            targetSabt = 0
-                        ) // sabt=0 را مستقیماً پاس بده
+                            targetSabt = 1
+                        )
+
+                    } else {
+                        calculateTotalPrices(currentCartItems, targetSabt = 1)
                     }
-                    // حذف کامل این بخش‌ها:
-                    // factorViewModel.updateHeader(sabt = 0)
-                    // factorViewModel.factorHeader.value?.let { ... }
+
+                    val customerStatus = factorViewModel
+                        .getCustomerErrorStatus(header.customerId!!)
+                        .firstOrNull()
+
+                    if (customerStatus == null) {
+                        Toast.makeText(context, "Customer not found", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+
+                    val hasError = customerStatus.hasErrorOrder
+                    val hasWarning = customerStatus.hasWarningOrder
+
+                    if (hasError || hasWarning) {
+
+                        factorViewModel.checkCustomerCredit(
+                            customerId = header.customerId!!,
+                            persianDate = getTodayPersianDateLatin(),
+                            kind = CustomerCreditKind.Customer,
+                            formKind = FactorFormKind.Factor
+                        )
+                        observeValidateCredit()
+                    }
+                }
+            } else {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    factorViewModel.removeGiftsAndDiscounts(args.factorId)
+                    factorViewModel.markDiscountRemoved()
+                    calculateTotalPrices(
+                        currentCartItems,
+                        targetSabt = 0
+                    )
                 }
             }
         }
     }
+
+    private fun showSendDialog() {
+        customDialogSend = CustomDialog().apply {
+
+            setOnClickNegativeButton {
+                hideProgress()
+            }
+
+            setOnClickPositiveButton {
+                calculateTotalPrices(currentCartItems, targetSabt = 1)
+                // تکمیل سفارش → ارسال به سرور
+                factorViewModel.sendFactor(
+                    factorId = args.factorId
+                )
+            }
+        }
+
+        customDialogSend?.showDialog(
+            requireActivity(),
+            "",
+            getString(R.string.msg_sure_send_order),
+            true,
+            getString(R.string.label_no),
+            getString(R.string.label_ok),
+            showPositiveButton = true,
+            showNegativeButton = true
+        )
+    }
+
 
     private fun showWarningDialog() {
         customDialog = CustomDialog().apply {
@@ -404,6 +453,53 @@ class OrderFragment : Fragment() {
                 .build()
         )
     }
+
+    private fun observeValidateCredit() {
+
+        factorViewModel.validationCredit.observe(viewLifecycleOwner) { event ->
+            val state = event.getContentIfNotHandled() ?: return@observe
+            when (state) {
+                is NetworkResult.Loading -> {
+                    binding.progressBar.show()
+                    binding.tvProgressBar.show()
+                }
+
+                is NetworkResult.Success -> {
+                    binding.progressBar.gone()
+                    binding.tvProgressBar.gone()
+
+                    CustomSnackBar.make(
+                        requireView(),
+                        getString(R.string.msg_success_validate_credit),
+                        SnackBarType.Success.value
+                    )?.show()
+                }
+
+                is NetworkResult.Error -> {
+                    binding.progressBar.gone()
+                    binding.tvProgressBar.gone()
+
+                    Log.d("finalPriceMessage", state.message)
+                    CustomSnackBar.make(
+                        requireView(),
+                        "  ${state.message}",
+                        SnackBarType.Error.value
+                    )?.show()
+
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        factorViewModel.removeGiftsAndDiscounts(args.factorId)
+                        factorViewModel.markDiscountRemoved()
+                        calculateTotalPrices(
+                            currentCartItems,
+                            targetSabt = 0
+                        )
+                    }
+                    binding.cbSabt.isChecked = false
+                }
+            }
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

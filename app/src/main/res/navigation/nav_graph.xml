@@ -30,8 +30,12 @@
             android:id="@+id/action_homeFragment_to_reportFactorFragment"
             app:destination="@id/reportFactorFragment" />
         <action
-            android:id="@+id/action_homeFragment_to_reportFragment"
-            app:destination="@id/reportFragment" />
+            android:id="@+id/action_homeFragment_to_onlineOrderListFragment"
+            app:destination="@id/onlineOrderListFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_syncSelectionFragment"
+            app:destination="@id/syncSelectionFragment" />
     </fragment>
     <fragment
         android:id="@+id/onlineOrderListFragment"
@@ -44,6 +48,10 @@
         <argument
             android:name="id"
             app:argType="integer" />
+        <argument
+            android:name="typeVisitor"
+            android:defaultValue=""
+            app:argType="string" />
         <action
             android:id="@+id/action_onlineOrderListFragment_to_onlineOrderDetailFragment"
             app:destination="@id/onlineOrderDetailFragment" />
@@ -96,8 +104,8 @@
             app:argType="boolean" />
         <argument
             android:name="sabt"
-            app:argType="integer"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="integer" />
         <argument
             android:name="actId"
             android:defaultValue="0"
@@ -159,8 +167,8 @@
             app:argType="boolean" />
         <argument
             android:name="sabt"
-            app:argType="integer"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="integer" />
         <argument
             android:name="actId"
             android:defaultValue="0"
@@ -194,12 +202,12 @@
             app:argType="integer" />
         <argument
             android:name="sabt"
-            app:argType="integer"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="integer" />
         <argument
             android:name="isEditingCompletedOrder"
-            app:argType="boolean"
-            android:defaultValue="false" />
+            android:defaultValue="false"
+            app:argType="boolean" />
         <action
             android:id="@+id/action_orderFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
@@ -225,6 +233,11 @@
         android:id="@+id/reportFragment"
         android:name="com.partsystem.partvisitapp.feature.report.ReportFragment"
         android:label="ReportFragment"
-        tools:layout="@layout/fragment_report"/>
+        tools:layout="@layout/fragment_report" />
+    <fragment
+        android:id="@+id/syncSelectionFragment"
+        android:name="com.partsystem.partvisitapp.feature.sync.SyncSelectionFragment"
+        android:label="SyncSelectionFragment"
+        tools:layout="@layout/fragment_sync_selection"/>
 
 </navigation>

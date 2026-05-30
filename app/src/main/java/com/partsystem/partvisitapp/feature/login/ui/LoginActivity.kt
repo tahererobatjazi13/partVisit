@@ -48,13 +48,13 @@ class LoginActivity : BaseActivity() {
         initPasswordToggle()
     }
 
-    private fun setupClicks() {
-        binding.bmbLogin.setOnClickBtnOneListener {
+    private fun setupClicks() = binding.apply {
+        bmbLogin.setOnClickBtnOneListener {
             if (validateInputs()) {
                 doLogin()
             }
         }
-        binding.bmbSetting.setOnClickBtnOneListener {
+        bmbSetting.setOnClickBtnOneListener {
             val dialog = ServerAddressDialog()
             dialog.show(supportFragmentManager, "Setting")
         }
@@ -225,6 +225,7 @@ class LoginActivity : BaseActivity() {
         startActivity(intent)
         finish()
     }
+
     /**
      *  تنظیم تغییر حالت آیکن پسورد در صورت خالی یا پر بودن فیلد
      */

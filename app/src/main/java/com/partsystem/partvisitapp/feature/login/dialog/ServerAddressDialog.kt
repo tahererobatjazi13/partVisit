@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.network.BaseUrlProvider
 import com.partsystem.partvisitapp.core.utils.BaseUrlValidator
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
@@ -23,6 +24,9 @@ class ServerAddressDialog : DialogFragment() {
 
     @Inject
     lateinit var mainPreferences: MainPreferences
+
+    @Inject
+    lateinit var baseUrlProvider: BaseUrlProvider
 
     private lateinit var binding: DialogServerAddressBinding
 
@@ -69,6 +73,7 @@ class ServerAddressDialog : DialogFragment() {
                 }
 
                 mainPreferences.saveBaseUrl(baseUrl)
+                baseUrlProvider.updateBaseUrl(baseUrl)
                 dismiss()
             }
         }

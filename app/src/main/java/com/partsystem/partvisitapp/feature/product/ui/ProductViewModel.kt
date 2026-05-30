@@ -87,7 +87,7 @@ class ProductViewModel @Inject constructor(
     fun loadProductsWithAct(groupProductId: Int? = null, actId: Int? = null) {
 
         viewModelScope.launch {
-            repository.getProducts(groupProductId, actId).collect { list ->
+            repository.loadProductsWithAct(groupProductId, actId).collect { list ->
                 _productWithActList.value = list
                 _filteredWithActList.value = list
             }

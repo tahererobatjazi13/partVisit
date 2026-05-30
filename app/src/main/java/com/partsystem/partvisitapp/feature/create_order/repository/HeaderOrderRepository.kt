@@ -31,13 +31,9 @@ class HeaderOrderRepository @Inject constructor(
     private val assignDirectionCustomerDao: AssignDirectionCustomerDao,
     private val actDao: ActDao,
 ) {
-   // fun insert(factor: FactorHeaderEntity) = factorDao.insertFactor(factor)
+    // fun insert(factor: FactorHeaderEntity) = factorDao.insertFactor(factor)
 
     fun update(factor: FactorHeaderEntity) = factorDao.updateFactor(factor)
-
-    fun delete(factor: FactorHeaderEntity) = factorDao.deleteFactor(factor)
-
-    fun getById(id: Int) = factorDao.getFactorById(id)
 
     fun getCustomerDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>> =
         customerDirectionDao.getCustomerDirectionsByCustomer(customerId)
@@ -46,26 +42,20 @@ class HeaderOrderRepository @Inject constructor(
     fun getSaleCenters(invoiceCategoryId: Int): List<SaleCenterEntity> =
         saleCenterDao.getSaleCenters(invoiceCategoryId)
 
-    suspend fun getSaleCenter(id: Int): SaleCenterEntity? {
-        return saleCenterDao.getSaleCenter(id)
-    }
 
     fun getInvoiceCategory(userId: Int): Flow<List<InvoiceCategoryEntity>> {
         return invoiceCategoryDao.getInvoiceCategory(userId)
     }
-
-    fun getPattern(): Flow<List<PatternEntity>> =
-        patternDao.getAllPatterns()
 
     fun getAct(): Flow<List<ActEntity>> =
         actDao.getActs()
 
     fun getPatternById(id: Int): LiveData<PatternEntity> = patternDao.getPatternById(id)
     suspend fun getPatternByIdSuspend(id: Int): PatternEntity = patternDao.getPatternByIdSuspend(id)
-/*
-     fun getPatternById(id: Int): PatternEntity? {
-        return patternDao.getPatternById(id)
-    }*/
+    /*
+         fun getPatternById(id: Int): PatternEntity? {
+            return patternDao.getPatternById(id)
+        }*/
 //    suspend fun getPatterns(): List<PatternEntity> {
 //        return patternDao.getAllPatterns()
 //    }
@@ -86,8 +76,8 @@ class HeaderOrderRepository @Inject constructor(
     suspend fun getProductActId(patternId: Int): Int? {
         if (productActIdCache == null) {
             productActIdCache = actDao.getPatternDetailActId(
-                patternId,
-                ActKind.Product.ordinal
+                patternId = patternId,
+                kind = ActKind.Product.ordinal
             )
         }
         return productActIdCache

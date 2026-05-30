@@ -2,8 +2,10 @@ package com.partsystem.partvisitapp.feature.main.home.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.ViewOutlineProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.partsystem.partvisitapp.core.utils.extensions.gone
+import com.partsystem.partvisitapp.core.utils.extensions.hide
+import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.ItemHomeMenuBinding
 import com.partsystem.partvisitapp.feature.main.home.model.HomeMenuItem
 
@@ -15,9 +17,20 @@ class HomeMenuAdapter(
     inner class ViewHolder(private val binding: ItemHomeMenuBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: HomeMenuItem) {
+
+            if (item.isLoading) {
+                binding.ivHomeMenuItem.hide()
+                binding.pbHomeMenuItem.show()
+            } else {
+                binding.ivHomeMenuItem.show()
+                binding.pbHomeMenuItem.gone()
+                binding.ivHomeMenuItem.setImageResource(item.icon)
+            }
+
             binding.tvHomeMenuItem.text = binding.root.context.getString(item.titleRes)
-            binding.ivHomeMenuItem.setImageResource(item.icon)
-            binding.root.setOnClickListener { onClick(item) }
+            binding.root.setOnClickListener {
+                if (!item.isLoading) onClick(item)
+            }
         }
     }
 

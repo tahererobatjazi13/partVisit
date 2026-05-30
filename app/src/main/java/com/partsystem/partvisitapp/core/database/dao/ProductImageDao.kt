@@ -9,6 +9,7 @@ import com.partsystem.partvisitapp.core.database.entity.ProductImageEntity
 
 @Dao
 interface ProductImageDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertImages(images: List<ProductImageEntity>)
 

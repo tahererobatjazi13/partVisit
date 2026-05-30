@@ -147,7 +147,6 @@
                     android:gravity="center"
                     android:inputType="numberDecimal"
                     android:padding="0dp"
-                    android:text="0"
                     android:textDirection="ltr"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -233,11 +232,11 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvConfirm"
-                android:paddingHorizontal="@dimen/large_size"
-                android:paddingVertical="@dimen/small_size"
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/large_size"
+                android:paddingVertical="@dimen/small_size"
                 android:text="@string/label_confirm"
                 android:textColor="?attr/colorOnPrimary"
                 android:visibility="visible"
@@ -272,24 +271,37 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvlCancel"
-                android:paddingHorizontal="@dimen/large_size"
-                android:paddingVertical="@dimen/small_size"
                 style="@style/MediumBoldTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/large_size"
+                android:paddingVertical="@dimen/small_size"
                 android:text="@string/label_close"
                 android:textColor="?attr/colorOnPrimary"
                 android:visibility="visible"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvEquivalent"
+            style="@style/SmallTextStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="@dimen/x_small_size"
+            android:layout_marginEnd="@dimen/xx_small_size"
+            android:gravity="end|center_vertical"
+            android:text="@string/label_equivalent"
+            android:textColor="@color/blue_283167"
+            android:textDirection="ltr"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@+id/clCancel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-

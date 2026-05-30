@@ -1,27 +1,20 @@
 package com.partsystem.partvisitapp.core.network
 
-import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
-import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import javax.inject.Inject
 
+
 class BaseUrlInterceptor @Inject constructor(
-    private val mainPreferences: MainPreferences
+    private val baseUrlProvider: BaseUrlProvider
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
+
         val originalRequest = chain.request()
-
-        val baseUrlString = runBlocking {
-            mainPreferences.getBaseUrl()
-        }
-
-        val baseUrl = baseUrlString.toHttpUrl()
+        val baseUrl = baseUrlProvider.getBaseUrl()
 
         val basePath = baseUrl.encodedPath
-
         val originalPath = originalRequest.url.encodedPath
 
         val newPath = if (basePath.endsWith("/")) {
@@ -42,4 +35,5 @@ class BaseUrlInterceptor @Inject constructor(
             .build()
 
         return chain.proceed(newRequest)
-    }}
+    }
+}

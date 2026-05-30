@@ -22,6 +22,8 @@ data class CustomerEntity(
     val tafsiliPhone1: String?,
     val tafsiliPhone2: String?,
     val tafsiliMobile: String?,
+    val hasErrorOrder: Boolean?,
+    val hasWarningOrder: Boolean?
 )
 
 /*{
@@ -52,5 +54,7 @@ data class CustomerEntity(
     "customerKindId": 3007,
     "isCustomerDeactive": false,
     "description": null,
-    "customerSabt": true
+    "customerSabt": true,
+    "hasErrorOrder": null,
+    "hasWarningOrder": null
 }*/

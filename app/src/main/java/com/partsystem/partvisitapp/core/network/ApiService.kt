@@ -13,6 +13,7 @@ import com.partsystem.partvisitapp.feature.main.home.model.CustomerDto
 import com.partsystem.partvisitapp.feature.main.home.model.DiscountDto
 import com.partsystem.partvisitapp.feature.main.home.model.InvoiceCategoryDto
 import com.partsystem.partvisitapp.feature.create_order.model.MojoodiDto
+import com.partsystem.partvisitapp.feature.create_order.model.ValidateCredit
 import com.partsystem.partvisitapp.feature.main.home.model.PatternDetailDto
 import com.partsystem.partvisitapp.feature.main.home.model.PatternDto
 import com.partsystem.partvisitapp.feature.main.home.model.ProductDto
@@ -93,7 +94,8 @@ interface ApiService {
     @GET("ReportFactor")
     suspend fun getReportFactorVisitor(
         @Query("type") type: Int,
-        @Query("VisitorId") visitorId: Int
+        @Query("VisitorId") visitorId: Int,
+        @Query("Condition") condition: String
     ): Response<List<ReportFactorDto>>
 
     @GET("ReportFactor")
@@ -121,5 +123,10 @@ interface ApiService {
         @Query("persianDate") persianDate: String
     ): Response<List<MojoodiDto>>
 
-
+    @GET("ValidateCredit")
+    suspend fun validateCreditCustomer(
+        @Query("customerId") customerId: Int,
+        @Query("persianDate") persianDate: String,
+        @Query("Kind") kind: Int
+    ): Response<List<ValidateCredit>>
 }

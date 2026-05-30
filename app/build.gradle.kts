@@ -7,7 +7,8 @@ plugins {
     id("kotlin-parcelize")
 
 }
-//partvisit , poopaksystempart
+//partvisit , poopaksystempart.
+
 android {
     namespace = "com.partsystem.partvisitapp"
     compileSdk = 35
@@ -17,7 +18,7 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -110,11 +111,14 @@ dependencies {
 
     // Shimmer
     implementation(libs.facebook.shimmer)
-    implementation(libs.facebook.shimmer)
 
     // Glide
     implementation(libs.glide)
     kapt(libs.glide.compiler)
+    //implementation("com.google.android.gms:play-services-location:21.2.0")
 
     implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
+
+    //implementation(libs.play.services.location)
+  //  implementation(libs.kotlinx.coroutines.play.services)
 }

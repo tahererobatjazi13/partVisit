@@ -17,24 +17,12 @@ interface SaleCenterDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUsers(users: List<SaleCenterUserEntity>)
 
-    @Query("SELECT * FROM SaleCenter WHERE id = :id LIMIT 1")
-    suspend fun getSaleCenter(id: Int): SaleCenterEntity?
-
     @Transaction
     suspend fun insertFull(center: SaleCenterEntity, anbars: List<SaleCenterAnbarEntity>, users: List<SaleCenterUserEntity>) {
         insertSaleCenter(center)
         insertAnbars(anbars)
         insertUsers(users)
     }
-
-    @Query("SELECT * FROM SaleCenter")
-    suspend fun getAllCenters(): List<SaleCenterEntity>
-
-    @Query("SELECT * FROM SaleCenterAnbar WHERE saleCenterId = :centerId")
-    suspend fun getAnbars(centerId: Int): List<SaleCenterAnbarEntity>
-
-    @Query("SELECT * FROM SaleCenterUser WHERE saleCenterId = :centerId")
-    suspend fun getUsers(centerId: Int): List<SaleCenterUserEntity>
 
     @Query("DELETE FROM SaleCenter")
     suspend fun clearSaleCenters()

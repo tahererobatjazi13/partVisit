@@ -64,72 +64,70 @@ class OnlineOrderDetailFragment : Fragment() {
         }
     }
 
-    private fun setupClicks() {
-        binding.apply {
-            hfOrderDetail.setOnClickImgTwoListener {
-                binding.hfOrderDetail.gone()
-                binding.svMain.gone()
-                findNavController().navigateUp()
-            }
+    private fun setupClicks() = binding.apply {
+        hfOrderDetail.setOnClickImgTwoListener {
+            hfOrderDetail.gone()
+            svMain.gone()
+            findNavController().navigateUp()
+        }
 
-            tryAgain.setOnClickListener {
-                viewModel.fetchReportFactorDetail(1, args.id)
-                binding.tryAgain.gone()
-            }
+        tryAgain.setOnClickListener {
+            viewModel.fetchReportFactorDetail(1, args.id)
+            tryAgain.gone()
         }
     }
 
 
     @SuppressLint("SetTextI18n")
-    private fun setupObserver() {
-
+    private fun setupObserver() = binding.apply {
         viewModel.reportFactorDetail.observe(viewLifecycleOwner) { result ->
-            binding.apply {
-                when (result) {
-                    is NetworkResult.Loading -> {
-                        loading.show()
+
+            when (result) {
+                is NetworkResult.Loading -> {
+                    loading.show()
+                    svMain.gone()
+                }
+
+                is NetworkResult.Success -> {
+                    loading.gone()
+                    svMain.show()
+                    val orderDetailList = result.data
+
+                    if (orderDetailList.isEmpty()) {
                         svMain.gone()
-                    }
-
-                    is NetworkResult.Success -> {
-                        loading.gone()
+                        info.show()
+                        info.message(getString(R.string.msg_no_data))
+                    } else {
+                        info.gone()
                         svMain.show()
-                        val orderDetailList = result.data
+                        onlineOrderDetailAdapter.submitList(orderDetailList)
 
-                        if (orderDetailList.isEmpty()) {
-                            svMain.gone()
-                            info.show()
-                            info.message(getString(R.string.msg_no_data))
-                        } else {
-                            info.gone()
-                            svMain.show()
-                            onlineOrderDetailAdapter.submitList(orderDetailList)
-
-                            tvOrderNumber.text = orderDetailList[0].id.toString()
-                            tvCustomerName.text = orderDetailList[0].customerName
-                            tvDateTime.text =
-                                orderDetailList[0].persianDate + " _ " + orderDetailList[0].createTime
-                            tvSumPrice.text =
-                                formatter.format(orderDetailList[0].sumPrice) + " ریال"
-                            tvSumDiscountPrice.text =
-                                formatter.format(orderDetailList[0].sumDiscountPrice) + " ریال"
-                            tvSumVat.text = formatter.format(orderDetailList[0].sumVat) + " ریال"
-                            tvFinalPrice.text =
-                                formatter.format(orderDetailList[0].finalPrice) + " ریال"
-                        }
-                    }
-
-                    is NetworkResult.Error -> {
-                        loading.gone()
-                        tryAgain.show()
-                        tryAgain.message = result.message
-                    }
-
-                    else -> {
-                        loading.gone()
+                        tvOrderNumber.text = orderDetailList[0].id.toString()
+                        tvCustomerName.text = orderDetailList[0].customerName
+                        tvPatternName.text = orderDetailList[0].patternName
+                        tvDateTime.text =
+                            orderDetailList[0].persianDate + " _ " + orderDetailList[0].createTime
+                        tvSumPrice.text =
+                            formatter.format(orderDetailList[0].sumPrice) + " ریال"
+                        tvSumDiscountPrice.text =
+                            formatter.format(orderDetailList[0].sumDiscountPrice) + " ریال"
+                        tvSumVat.text = formatter.format(orderDetailList[0].sumVat) + " ریال"
+                        tvFinalPrice.text =
+                            formatter.format(orderDetailList[0].finalPrice) + " ریال"
                     }
                 }
+
+                is NetworkResult.Error -> {
+                    loading.gone()
+                    tryAgain.show()
+                    tryAgain.message = result.message
+                }
+
+                else -> {
+                    loading.gone()
+                }
             }
+
         }
     }
 

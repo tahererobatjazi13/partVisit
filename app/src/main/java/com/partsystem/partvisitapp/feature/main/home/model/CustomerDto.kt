@@ -18,4 +18,6 @@ data class CustomerDto(
     val tafsiliPhone1: String?,
     val tafsiliPhone2: String?,
     val tafsiliMobile: String?,
+    val hasErrorOrder: Boolean?,
+    val hasWarningOrder: Boolean?,
 )

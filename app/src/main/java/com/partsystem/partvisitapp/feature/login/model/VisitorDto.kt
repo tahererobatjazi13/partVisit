@@ -13,5 +13,7 @@ data class VisitorDto(
     val visitorSabt: Boolean,
     val saleCenterCode: String?,
     val saleCenterName: String?,
-    val userId: Int?
+    val userId: Int?,
+    val hasErrorOrder: Boolean?,
+    val hasWarningOrder: Boolean?,
 )

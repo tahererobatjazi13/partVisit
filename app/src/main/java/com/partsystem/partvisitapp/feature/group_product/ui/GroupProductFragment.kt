@@ -69,36 +69,29 @@ class GroupProductFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        init()
+        initView()
         setupClicks()
         initAdapters()
         initRecyclerViews()
-        observeData()
+        observeMainGroups()
         observeCartBadge()
         if (args.fromFactor) {
             observeCartData()
             factorViewModel.setCurrentFactorId(args.factorId.toLong())
         }
-        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-            latestCategoryId?.let { categoryId ->
-                val products =
-                    groupProductViewModel.getProductsByCategory(categoryId).value ?: emptyList()
-                productListAdapter.setProductData(products, imagesMap)
-                reapplyCartValues()
-            }
-        }
+        observeProductImages()
     }
 
-    private fun init() {
-        binding.hfGroupProduct.isShowImgOne = args.fromFactor
-        binding.collapsingToolbar.title = getString(R.string.label_product_group)
+    private fun initView() = with(binding) {
+        hfGroupProduct.isShowImgOne = args.fromFactor
+        collapsingToolbar.title = getString(R.string.label_product_group)
     }
 
-    private fun setupClicks() {
-        binding.hfGroupProduct.setOnClickImgTwoListener {
+    private fun setupClicks() = binding.apply {
+        hfGroupProduct.setOnClickImgTwoListener {
             findNavController().navigateUp()
         }
-        binding.hfGroupProduct.setOnClickImgOneListener {
+        hfGroupProduct.setOnClickImgOneListener {
             val action =
                 GroupProductFragmentDirections.actionGroupProductFragmentToOrderFragment(
                     args.factorId,
@@ -114,137 +107,144 @@ class GroupProductFragment : Fragment() {
         }
 
         subGroupAdapter = SubGroupAdapter { sub ->
-            observeCategory(sub.id)
+            observeCategories(sub.id)
         }
 
         categoryAdapter = CategoryAdapter { category ->
             latestCategoryId = category.id
-            observeProductsByCategory(category.id)
+            observeProducts(category.id)
         }
 
-        productListAdapter = ProductListAdapter(loadProduct = { productId, actId ->
-            factorViewModel.loadProduct(productId, actId!!)
-        },
-            factorViewModel = factorViewModel,
-            factorId = args.factorId,
-            onProductChanged = { item ->
-                val validFactorId = factorViewModel.currentFactorId.value ?: args.factorId.toLong()
-                if (validFactorId <= 0) {
-                    Log.e("ProductList", "Invalid factorId: cannot save detail")
-                    return@ProductListAdapter
-                }
-
-                factorViewModel.updateHeader(hasDetail = true)
-
-                lifecycleScope.launch {
-                    val updatedHeader = factorViewModel.factorHeader.value?.copy(hasDetail = true)
-                    updatedHeader?.let {
-                        factorViewModel.updateFactorHeader(it)
-                    }
-                }
-                val updatedItem = item.copy(factorId = validFactorId.toInt())
-                factorViewModel.addOrUpdateFactorDetail(updatedItem)
-            },
+        productListAdapter = ProductListAdapter(
             onClickDetail = { product ->
                 val action = GroupProductFragmentDirections
                     .actionGroupProductFragmentToProductDetailFragment(productId = product.id)
                 findNavController().navigate(action)
 
             },
+
             onClickDialog = { product ->
-                // 1. تمام داده‌های مورد نیاز را به صورت suspend جمع‌آوری کنید
-                lifecycleScope.launch {
-                    val factorHeader = getFactorHeader()
+                showAddProductDialog(product)
+            })
+    }
 
-                    val productRate =
-                        factorViewModel.getProductRate(product.product.id, factorHeader.actId!!)
-                    if (productRate == null) {
-                        Toast.makeText(
-                            requireContext(),
-                            "خطا در دریافت اطلاعات محصول",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@launch
-                    }
-                    //  val productRate = productWithRate
+    private fun showAddProductDialog(product: ProductWithPacking) {
 
-                    // بررسی وجود ردیف قبلی
-                    val existingDetail = try {
-                        factorViewModel.getExistingFactorDetail(
-                            factorHeader.id,
-                            product.product.id
-                        )
-                    } catch (e: Exception) {
-                        null
-                    }
+        lifecycleScope.launch {
 
-                    // دریافت maxId برای ایجاد ردیف جدید
-                    val maxId = if ((factorViewModel.getCount().value ?: 0) > 0) {
-                        factorViewModel.getMaxFactorDetailId().value ?: 0
-                    } else {
-                        0
-                    }
-                    var dialogRef: AddEditProductDialog? = null
+            try {
 
-                    // 2. نمایش دیالوگ با داده‌های آماده
-                    dialogRef = AddEditProductDialog(
-                        productViewModel,
-                        product
-                    ) { finalUnit1, finalPackingValue, packingId, _, _ ->
-                        // 3. ایجاد یا به‌روزرسانی ردیف در ViewModel
-                        lifecycleScope.launch {
-                            try {
-                                val validFactorId = factorViewModel.currentFactorId.value
-                                    ?: args.factorId.toLong()
+                val factorHeader = getFactorHeader()
 
-                                // ایجاد entity با مقادیر محاسبه‌شده
-                                val detail = FactorDetailEntity(
-                                    id = existingDetail?.id ?: (maxId + 1),
-                                    factorId = validFactorId.toInt(),
-                                    sortCode = 0,
-                                    anbarId = factorHeader.defaultAnbarId,
-                                    productId = product.product.id,
-                                    actId = factorHeader.actId,
-                                    unit1Value = finalUnit1,
-                                    packingValue = finalPackingValue,
-                                    unit2Value = 0.0,
-                                    price = Math.round(productRate * finalUnit1).toDouble(),
-                                    packingId = packingId,
-                                    vat = 0.0,
-                                    unit1Rate = productRate,
-                                    isGift = 0
-                                )
+                val productRate =
+                    factorViewModel.getProductWithRateAct(
+                        product.product.id,
+                        factorHeader.actId!!
+                    )
 
-                                // ذخیره‌سازی و محاسبه تخفیف در ViewModel
+                if (productRate == null) {
 
-                                factorViewModel.saveProductWithDiscounts(
-                                    detail = detail,
-                                    factorHeader = factorHeader,
-                                    vatPercent = product.vatPercent, // نیاز برای محاسبه بعدی
-                                    tollPercent = product.tollPercent
-                                )
-                                // فقط اینجا دیالوگ بسته شود - پس از اتمام کامل تراکنش
-                                dialogRef?.dismiss()
-                            } catch (e: Exception) {
-                                Log.e("ProductList", "Error saving product", e)
-                                Toast.makeText(
-                                    requireContext(),
-                                    "خطا در ذخیره محصول",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                    Toast.makeText(
+                        requireContext(),
+                        "خطا در دریافت اطلاعات محصول",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@launch
+                }
+
+                val existingDetail =
+                    factorViewModel.getExistingFactorDetail(
+                        factorHeader.id,
+                        product.product.id
+                    )
+
+                val maxId =
+                    factorViewModel.getMaxFactorDetailId().value ?: 0
+
+                var dialogRef: AddEditProductDialog? = null
+
+                dialogRef = AddEditProductDialog(
+                    productViewModel,
+                    product
+                ) { finalUnit1, finalPackingValue, packingId, _, _ ->
+
+                    lifecycleScope.launch {
+
+                        try {
+
+                            val factorId =
+                                getValidFactorId().toInt()
+
+                            val detail = FactorDetailEntity(
+                                id = existingDetail?.id ?: (maxId + 1),
+                                factorId = factorId,
+                                sortCode = 0,
+                                anbarId = factorHeader.defaultAnbarId,
+                                productId = product.product.id,
+                                actId = factorHeader.actId,
+                                unit1Value = finalUnit1,
+                                packingValue = finalPackingValue,
+                                unit2Value = 0.0,
+                                price = Math.round(productRate * finalUnit1).toDouble(),
+                                packingId = packingId,
+                                vat = 0.0,
+                                unit1Rate = productRate,
+                                isGift = 0
+                            )
+
+                            factorViewModel.saveProductWithDiscounts(
+                                detail = detail,
+                                factorHeader = factorHeader,
+                                vatPercent = product.vatPercent,
+                                tollPercent = product.tollPercent
+                            )
+
+                            dialogRef?.dismiss()
+
+                        } catch (e: Exception) {
+
+                            Log.e("GroupProduct", "Save error", e)
+
+                            Toast.makeText(
+                                requireContext(),
+                                "خطا در ذخیره محصول",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
-
-                    // نمایش دیالوگ
-                    val fm = childFragmentManager
-                    fm.findFragmentByTag("AddRawProductDialog")?.let {
-                        fm.beginTransaction().remove(it).commitAllowingStateLoss()
-                    }
-                    dialogRef.show(fm, "AddRawProductDialog")
                 }
+
+                childFragmentManager
+                    .findFragmentByTag("AddRawProductDialog")
+                    ?.let {
+                        childFragmentManager.beginTransaction()
+                            .remove(it)
+                            .commitAllowingStateLoss()
+                    }
+
+                dialogRef.show(
+                    childFragmentManager,
+                    "AddRawProductDialog"
+                )
+
+            } catch (e: Exception) {
+
+                Log.e("GroupProduct", "Dialog error", e)
             }
-        )
+        }
+    }
+
+    private fun getValidFactorId(): Long {
+
+        val viewModelId =
+            factorViewModel.currentFactorId.value ?: 0L
+
+        return if (viewModelId > 0) {
+            viewModelId
+        } else {
+            args.factorId.toLong()
+        }
     }
 
     private fun isEditMode(): Boolean {
@@ -262,47 +262,45 @@ class GroupProductFragment : Fragment() {
         }
     }
 
-    private fun initRecyclerViews() {
-        binding.rvMainGroup.apply {
+    private fun initRecyclerViews() = binding.apply {
+        rvMainGroup.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, true)
             adapter = mainGroupAdapter
         }
-        binding.rvSubGroup.apply {
+        rvSubGroup.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, true)
             adapter = subGroupAdapter
         }
-        binding.rvCategory.apply {
+        rvCategory.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, true)
             adapter = categoryAdapter
         }
-        binding.rvProduct.apply {
+        rvProduct.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = productListAdapter
         }
     }
 
-    private fun observeData() {
+    private fun observeMainGroups() = binding.apply {
         groupProductViewModel.mainGroupList.observe(viewLifecycleOwner) { mainGroup ->
             if (mainGroup.isNullOrEmpty()) {
-                binding.info.show()
-                binding.info.message(getString(R.string.msg_no_data))
-                binding.nested.gone()
+                info.show()
+                info.message(getString(R.string.msg_no_data))
+                nested.gone()
             } else {
-                binding.info.gone()
+                info.gone()
                 mainGroupAdapter.setData(mainGroup)
-                val id = mainGroup[0].id
-                observeSubGroup(id)
+                observeSubGroup(mainGroup.first().id)
             }
         }
     }
 
     private fun observeCartData() {
-        val viewModelId = factorViewModel.currentFactorId.value ?: 0L
-        val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
+        val validFactorId = getValidFactorId()
 
         if (validFactorId <= 0) return
 
@@ -335,59 +333,55 @@ class GroupProductFragment : Fragment() {
             }
     }
 
-    /**
-     * اعمال مجدد مقادیر سبد خرید روی لیست محصولات فعلی
-     * این متد باید بعد از هر بار آپدیت لیست محصولات فراخوانی شود
-     */
     private fun reapplyCartValues() {
         if (cartValuesCache.isNotEmpty()) {
             productListAdapter.updateProductValues(cartValuesCache)
         }
     }
 
-    private fun observeSubGroup(mainGroupId: Int) {
+    private fun observeSubGroup(mainGroupId: Int) = binding.apply {
         latestMainGroupId = mainGroupId
         groupProductViewModel.getSubGroups(mainGroupId)
             .observe(viewLifecycleOwner) { subs ->
                 if (latestMainGroupId == mainGroupId) {
                     if (subs.isNullOrEmpty()) {
-                        binding.info.show()
-                        binding.info.message(getString(R.string.msg_no_data))
-                        binding.rvSubGroup.gone()
-                        binding.rvCategory.gone()
-                        binding.rvProduct.gone()
-                        binding.infoProduct.gone()
-                        binding.tvTitleProduct.gone()
+                        info.show()
+                        info.message(getString(R.string.msg_no_data))
+                        rvSubGroup.gone()
+                        rvCategory.gone()
+                        rvProduct.gone()
+                        infoProduct.gone()
+                        tvTitleProduct.gone()
                     } else {
-                        binding.info.gone()
-                        binding.rvSubGroup.show()
+                        info.gone()
+                        rvSubGroup.show()
                         subGroupAdapter.resetSelection()
                         subGroupAdapter.setData(subs)
-                        observeCategory(subs[0].id)
+                        observeCategories(subs.first().id)
                     }
                 }
             }
     }
 
-    private fun observeCategory(subGroupId: Int) {
+    private fun observeCategories(subGroupId: Int) = binding.apply {
         latestSubGroupId = subGroupId
         latestCategoryId = null
         groupProductViewModel.getCategories(subGroupId)
             .observe(viewLifecycleOwner) { categories ->
                 if (latestSubGroupId == subGroupId) {
                     if (categories.isNullOrEmpty()) {
-                        binding.info.show()
-                        binding.info.message(getString(R.string.msg_no_data))
-                        binding.rvProduct.gone()
-                        binding.infoProduct.gone()
-                        binding.tvTitleProduct.gone()
-                        binding.rvCategory.gone()
+                        info.show()
+                        info.message(getString(R.string.msg_no_data))
+                        rvProduct.gone()
+                        infoProduct.gone()
+                        tvTitleProduct.gone()
+                        rvCategory.gone()
                     } else {
-                        binding.info.gone()
-                        binding.rvCategory.show()
+                        info.gone()
+                        rvCategory.show()
                         categoryAdapter.resetSelection()
                         categoryAdapter.setData(categories)
-                        observeProductsByCategory(categories[0].id)
+                        observeProducts(categories.first().id)
                     }
                 }
             }
@@ -399,74 +393,102 @@ class GroupProductFragment : Fragment() {
         }
     }
 
-    private fun observeProductsByCategory(categoryId: Int) {
+    private fun observeProducts(categoryId: Int) {
         if (args.fromFactor) {
-            productViewModel.loadProductsWithAct(
-                groupProductId = categoryId,
-                actId = factorViewModel.factorHeader.value?.actId ?: args.actId
-            )
-            productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
-                val images = productViewModel.productImages.value ?: emptyMap()
-                updateUI(list, images)
-                reapplyCartValues()
-            }
-            productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
-                val list = productViewModel.filteredWithActList.value ?: emptyList()
-                productListAdapter.setProductWithActData(list, imagesMap)
-                reapplyCartValues()
-            }
+            observeProductsWithAct(categoryId)
         } else {
+            observeNormalProducts(categoryId)
+        }
+    }
 
-            latestCategoryId = categoryId
-            groupProductViewModel.getProductsByCategory(categoryId)
-                .observe(viewLifecycleOwner) { products ->
-                    if (latestCategoryId == categoryId) {
-                        val imagesMap = productViewModel.productImages.value ?: emptyMap()
-                        if (products.isNullOrEmpty()) {
-                            binding.infoProduct.show()
-                            binding.tvTitleProduct.show()
-                            binding.infoProduct.message(getString(R.string.msg_no_product))
-                            binding.rvProduct.gone()
-                        } else {
-                            binding.infoProduct.gone()
-                            binding.tvTitleProduct.show()
-                            binding.rvProduct.show()
-                            productListAdapter.setProductData(products, imagesMap)
-                            reapplyCartValues()
-                        }
+    private fun observeProductsWithAct(categoryId: Int) {
+
+        productViewModel.loadProductsWithAct(
+            groupProductId = categoryId,
+            actId = factorViewModel.factorHeader.value?.actId ?: args.actId
+        )
+
+        productViewModel.filteredWithActList.observe(viewLifecycleOwner) { list ->
+            val images = productViewModel.productImages.value ?: emptyMap()
+            updateUI(list, images)
+            reapplyCartValues()
+        }
+        productViewModel.productImages.observe(viewLifecycleOwner) { imagesMap ->
+            val list = productViewModel.filteredWithActList.value ?: emptyList()
+            productListAdapter.setProductWithActData(list, imagesMap)
+            reapplyCartValues()
+        }
+    }
+
+    private fun observeNormalProducts(categoryId: Int) {
+        latestCategoryId = categoryId
+        groupProductViewModel.getProductsByCategory(categoryId)
+            .observe(viewLifecycleOwner) { products ->
+                if (latestCategoryId == categoryId) {
+                    val imagesMap = productViewModel.productImages.value ?: emptyMap()
+                    if (products.isNullOrEmpty()) {
+                        binding.infoProduct.show()
+                        binding.tvTitleProduct.show()
+                        binding.infoProduct.message(getString(R.string.msg_no_product))
+                        binding.rvProduct.gone()
+                    } else {
+                        binding.infoProduct.gone()
+                        binding.tvTitleProduct.show()
+                        binding.rvProduct.show()
+                        productListAdapter.setProductData(products, imagesMap)
+                        reapplyCartValues()
                     }
                 }
-        }
+            }
     }
 
     private fun updateUI(
         list: List<ProductWithPacking>,
         images: Map<Int, List<ProductImageEntity>>
-    ) {
+    ) = binding.apply {
         if (list.isEmpty()) {
-            binding.info.show()
-            binding.info.message(getString(R.string.msg_no_product))
-            binding.rvProduct.hide()
+            info.show()
+            info.message(getString(R.string.msg_no_product))
+            rvProduct.hide()
         } else {
-            binding.info.gone()
-            binding.rvProduct.show()
+            info.gone()
+            rvProduct.show()
             productListAdapter.setProductWithActData(list, images)
             reapplyCartValues()
         }
     }
 
-    private fun observeCartBadge() {
-        if (args.fromFactor) {
-            val viewModelId = factorViewModel.currentFactorId.value ?: 0L
-            val validFactorId = if (viewModelId > 0) viewModelId else args.factorId.toLong()
-            if (validFactorId <= 0) return
+    private fun observeProductImages() {
+        productViewModel.productImages.observe(viewLifecycleOwner) { images ->
 
-            factorViewModel.getFactorItemCount(validFactorId.toInt())
-                .observe(viewLifecycleOwner) { count ->
-                    binding.hfGroupProduct.isShowBadge = count > 0
-                    binding.hfGroupProduct.textBadge = count.toString()
-                }
+            latestCategoryId?.let { categoryId ->
+
+                val products =
+                    groupProductViewModel
+                        .getProductsByCategory(categoryId)
+                        .value ?: emptyList()
+
+                productListAdapter.setProductData(products, images)
+
+                reapplyCartValues()
+            }
         }
+    }
+
+    private fun observeCartBadge() {
+
+        if (!args.fromFactor) return
+
+        val factorId = getValidFactorId()
+
+        if (factorId <= 0) return
+
+        factorViewModel.getFactorItemCount(factorId.toInt())
+            .observe(viewLifecycleOwner) { count ->
+
+                binding.hfGroupProduct.isShowBadge = count > 0
+                binding.hfGroupProduct.textBadge = count.toString()
+            }
     }
 
     override fun onDestroyView() {

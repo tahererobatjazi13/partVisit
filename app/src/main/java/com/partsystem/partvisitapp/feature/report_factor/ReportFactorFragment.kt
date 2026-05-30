@@ -13,7 +13,10 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.ReportFactorListType
+import com.partsystem.partvisitapp.core.utils.ReportFactorVisitorType
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
+import com.partsystem.partvisitapp.core.utils.extensions.gone
+import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.databinding.FragmentReportFactorBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -28,7 +31,6 @@ class ReportFactorFragment : Fragment() {
 
     private var _binding: FragmentReportFactorBinding? = null
     private val binding get() = _binding!!
-
 
     private val navController by lazy {
         childFragmentManager.findFragmentById(R.id.reportFactorNavHost)!!
@@ -50,7 +52,6 @@ class ReportFactorFragment : Fragment() {
                 findNavController().navigateUp()
             }
         }
-
         setupClicks()
         setupTabs()
         setActiveTab(true)
@@ -61,50 +62,50 @@ class ReportFactorFragment : Fragment() {
 
                 // تب offline فعال شود
                 R.id.offlineOrderListFragment -> {
-                    binding.tabsLayout.visibility = View.VISIBLE
-                    binding.hfOrderList.visibility = View.VISIBLE
+                    binding.tabsLayout.show()
+                    binding.hfOrderList.show()
                     setActiveTab(true)
                 }
 
                 // تب online فعال شود
                 R.id.onlineOrderListFragment -> {
-                    binding.tabsLayout.visibility = View.VISIBLE
-                    binding.hfOrderList.visibility = View.VISIBLE
+                    binding.tabsLayout.show()
+                    binding.hfOrderList.show()
                     setActiveTab(false)
                 }
 
                 // صفحات دیتیل مخفی شود
                 R.id.onlineOrderDetailFragment,
                 R.id.offlineOrderDetailFragment -> {
-                    binding.tabsLayout.visibility = View.GONE
-                    binding.hfOrderList.visibility = View.GONE
+                    binding.tabsLayout.gone()
+                    binding.hfOrderList.gone()
                 }
             }
         }
-
     }
 
-    private fun setupClicks() {
-        binding.hfOrderList.setOnClickImgTwoListener {
+    private fun setupClicks() = binding.apply {
+        hfOrderList.setOnClickImgTwoListener {
             findNavController().navigateUp()
         }
     }
 
-    private fun setupTabs() {
+    private fun setupTabs() = binding.apply {
 
-        binding.tabUnsent.setOnClickListener {
+        tabDraftOrder.setOnClickListener {
             setActiveTab(true)
             navController.navigate(R.id.offlineOrderListFragment)
         }
-        binding.tabSent.setOnClickListener {
+        tabCurrentOrder.setOnClickListener {
             setActiveTab(false)
             lifecycleScope.launch {
                 val visitorId = mainPreferences.personnelId.first() ?: 0
                 navController.navigate(
                     R.id.onlineOrderListFragment,
                     Bundle().apply {
-                        putString("typeList",ReportFactorListType.Visitor.value)
+                        putString("typeList", ReportFactorListType.Visitor.value)
                         putInt("id", visitorId)
+                        putString("typeVisitor", ReportFactorVisitorType.CurrentDay.value)
                     },
                     navOptions {
                         launchSingleTop = true
@@ -115,38 +116,70 @@ class ReportFactorFragment : Fragment() {
         }
     }
 
-    private fun setActiveTab(unsent: Boolean) {
+    private fun setActiveTab(unsent: Boolean) = binding.apply {
         // تشخیص تم تاریک
-        val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        val isDarkMode =
+            (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
         if (isDarkMode) {
             // در تم تاریک: هر دو تب متن سفید دارند
-            binding.tabUnsent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-            binding.tabSent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            tabDraftOrder.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.white
+                )
+            )
+            tabCurrentOrder.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.white
+                )
+            )
 
             // پس‌زمینه‌ها بر اساس وضعیت فعال/غیرفعال
             if (unsent) {
-                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_active)
-                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_inactive)
+                tabDraftOrder.setBackgroundResource(R.drawable.bg_tab_active)
+                tabCurrentOrder.setBackgroundResource(R.drawable.bg_tab_inactive)
             } else {
-                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_inactive)
-                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_active)
+                tabDraftOrder.setBackgroundResource(R.drawable.bg_tab_inactive)
+                tabCurrentOrder.setBackgroundResource(R.drawable.bg_tab_active)
             }
         } else {
             // در تم روشن: رفتار قبلی
             if (unsent) {
-                binding.tabUnsent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                binding.tabSent.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_active)
-                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_inactive)
+                tabDraftOrder.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.white
+                    )
+                )
+                tabCurrentOrder.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.black
+                    )
+                )
+                tabDraftOrder.setBackgroundResource(R.drawable.bg_tab_active)
+                tabCurrentOrder.setBackgroundResource(R.drawable.bg_tab_inactive)
             } else {
-                binding.tabUnsent.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-                binding.tabSent.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                binding.tabUnsent.setBackgroundResource(R.drawable.bg_tab_inactive)
-                binding.tabSent.setBackgroundResource(R.drawable.bg_tab_active)
+                tabDraftOrder.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.black
+                    )
+                )
+                tabCurrentOrder.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.white
+                    )
+                )
+                tabDraftOrder.setBackgroundResource(R.drawable.bg_tab_inactive)
+                tabCurrentOrder.setBackgroundResource(R.drawable.bg_tab_active)
             }
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

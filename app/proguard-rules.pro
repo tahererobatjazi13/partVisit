@@ -39,3 +39,6 @@
 
 # Keep annotations
 -keepattributes *Annotation*
+
+-keep class com.google.android.material.** { *; }
+-keep class androidx.core.** { *; }

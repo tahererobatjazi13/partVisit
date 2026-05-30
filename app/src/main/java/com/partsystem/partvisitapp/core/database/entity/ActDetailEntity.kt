@@ -22,7 +22,6 @@ data class ActDetailEntity(
     var vatPercent: Float? = null,
     var tollPercent: Float? = null
 )
-
 /*{
     "id": 4305,
     "actId": 67,

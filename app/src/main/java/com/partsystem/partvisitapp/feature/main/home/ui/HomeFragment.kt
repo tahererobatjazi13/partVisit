@@ -13,6 +13,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -21,19 +22,25 @@ import com.partsystem.partvisitapp.core.database.AppDatabase
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.core.utils.AccessState
 import com.partsystem.partvisitapp.core.utils.OrderType
+import com.partsystem.partvisitapp.core.utils.ReportFactorListType
+import com.partsystem.partvisitapp.core.utils.ReportFactorVisitorType
 import com.partsystem.partvisitapp.core.utils.SnackBarType
+import com.partsystem.partvisitapp.core.utils.SyncKey
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
+import com.partsystem.partvisitapp.core.utils.extensions.showSyncRequiredMessage
 import com.partsystem.partvisitapp.core.utils.isInternetAvailable
 import com.partsystem.partvisitapp.databinding.DialogLoadingBinding
 import com.partsystem.partvisitapp.databinding.FragmentHomeBinding
+import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
 import com.partsystem.partvisitapp.feature.main.home.ui.adapter.HomeMenuAdapter
 import com.partsystem.partvisitapp.feature.splash.SplashActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -51,9 +58,11 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: HomeViewModel by viewModels()
     private var customDialog: CustomDialog? = null
+    private var customDialogAllSend: CustomDialog? = null
 
     private lateinit var loadingDialog: Dialog
     private lateinit var loadingBinding: DialogLoadingBinding
+    private val factorViewModel: FactorViewModel by viewModels()
 
     private val tasks = mutableListOf<() -> Unit>()
     private var currentTaskIndex = 0
@@ -61,6 +70,7 @@ class HomeFragment : Fragment() {
     private var customDialogForceUpdate: CustomDialog? = null
     private var syncType = ""
     private var syncFailed = false
+    private var visitorId: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -77,17 +87,19 @@ class HomeFragment : Fragment() {
         initAdapter()
         setupClicks()
         handleBackToExit()
+        observeSendAllFactor()
     }
 
     @SuppressLint("SetTextI18n")
     private fun init() {
-
         customDialog = CustomDialog()
         customDialogForceUpdate = CustomDialog()
         binding.tvDate.text = getTodayPersianDate()
 
         // جمع‌آوری دیتا از DataStore
         viewLifecycleOwner.lifecycleScope.launch {
+            visitorId = mainPreferences.personnelId.firstOrNull() ?: 0
+
             combine(
                 mainPreferences.firstName,
                 mainPreferences.lastName
@@ -212,77 +224,136 @@ class HomeFragment : Fragment() {
         }
     }
 
+
     private fun <T> observeApiSequential(
         liveData: LiveData<NetworkResult<T>>,
         loadingMsg: String,
         fetchAction: () -> Unit
     ) {
-        if (syncFailed) return
+        showOrUpdateLoading(loadingMsg)
 
-        liveData.removeObservers(viewLifecycleOwner)
-
-        liveData.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is NetworkResult.Loading -> showOrUpdateLoading(loadingMsg)
-
-                is NetworkResult.Success -> {
-                    liveData.removeObservers(viewLifecycleOwner)
-                    runNextTask()
-                }
-
-                is NetworkResult.Error -> {
-                    liveData.removeObservers(viewLifecycleOwner)
-                    syncFailed = true
-                    loadingDialog.dismiss()
-
-                    // نمایش یک پیام خطا واحد با تحلیل نوع خطا
-                    val errorMsg = when {
-                        result.message.contains("internet", ignoreCase = true) ||
-                                result.message.contains("network", ignoreCase = true) ||
-                                result.message.contains("اتصال", ignoreCase = true) ||
-                                result.message.contains("شبکه", ignoreCase = true) -> {
-                            requireContext().getString(R.string.error_internet_disconnected)
-                        }
-
-                        else -> {
-                            val safeMessage = result.message.ifEmpty { "خطای ناشناخته" }
-                            requireContext().getString(R.string.error_update_failed, safeMessage)
-                        }
+        val observer = object : Observer<NetworkResult<T>> {
+            override fun onChanged(result: NetworkResult<T>) {
+                when (result) {
+                    is NetworkResult.Loading -> {
+                        showOrUpdateLoading(loadingMsg)
                     }
 
-                    CustomSnackBar.make(
-                        requireView(),
-                        errorMsg,
-                        SnackBarType.Error.value
-                    )?.show()
+                    is NetworkResult.Success -> {
+                        liveData.removeObserver(this)
+                        currentTaskIndex++
+                        runNextTask()
+                    }
 
-                    tasks.clear()
-                    currentTaskIndex = 0
+                    is NetworkResult.Error -> {
+                        liveData.removeObserver(this)
+                        syncFailed = true
+                        loadingDialog.dismiss()
+
+                        CustomSnackBar.make(
+                            requireView(),
+                            result.message,
+                            SnackBarType.Error.value
+                        )?.show()
+                        resetSyncState()
+                    }
                 }
             }
         }
+
+        liveData.observe(viewLifecycleOwner, observer)
+
         fetchAction()
     }
 
     private fun runNextTask() {
-        if (syncFailed || currentTaskIndex >= tasks.size) {
-            if (!syncFailed) { // موفقیت کامل
-                loadingDialog.dismiss()
-                onAllDataUpdatedSuccessfully()
-                onSyncSuccess()
-            }
-            return
+        if (currentTaskIndex < tasks.size) {
+            val task = tasks[currentTaskIndex]
+            task.invoke()
+        } else {
+            loadingDialog.dismiss()
+            onAllDataUpdatedSuccessfully()
+            onSyncSuccess()
+            resetSyncState()
         }
-        tasks[currentTaskIndex].invoke()
-        currentTaskIndex++
     }
+
+    private fun resetSyncState() {
+        tasks.clear()
+        currentTaskIndex = 0
+        syncFailed = false
+    }
+    /* private fun <T> observeApiSequential(
+              liveData: LiveData<NetworkResult<T>>,
+              loadingMsg: String,
+              fetchAction: () -> Unit
+          ) {
+              if (syncFailed) return
+
+              liveData.removeObservers(viewLifecycleOwner)
+
+              liveData.observe(viewLifecycleOwner) { result ->
+                  when (result) {
+                      is NetworkResult.Loading -> showOrUpdateLoading(loadingMsg)
+
+                      is NetworkResult.Success -> {
+                          liveData.removeObservers(viewLifecycleOwner)
+                          runNextTask()
+                      }
+
+                      is NetworkResult.Error -> {
+                          liveData.removeObservers(viewLifecycleOwner)
+                          syncFailed = true
+                          loadingDialog.dismiss()
+
+                          // نمایش یک پیام خطا واحد با تحلیل نوع خطا
+                          val errorMsg = when {
+                              result.message.contains("internet", ignoreCase = true) ||
+                                      result.message.contains("network", ignoreCase = true) ||
+                                      result.message.contains("اتصال", ignoreCase = true) ||
+                                      result.message.contains("شبکه", ignoreCase = true) -> {
+                                  requireContext().getString(R.string.error_internet_disconnected)
+                              }
+
+                              else -> {
+                                  val safeMessage = result.message.ifEmpty { "خطای ناشناخته" }
+                                  requireContext().getString(R.string.error_update_failed, safeMessage)
+                              }
+                          }
+
+                          CustomSnackBar.make(
+                              requireView(),
+                              errorMsg,
+                              SnackBarType.Error.value
+                          )?.show()
+
+                          tasks.clear()
+                          currentTaskIndex = 0
+                      }
+                  }
+              }
+              fetchAction()
+          }
+
+      private fun runNextTask() {
+            if (syncFailed || currentTaskIndex >= tasks.size) {
+                if (!syncFailed) { // موفقیت کامل
+                    loadingDialog.dismiss()
+                    onAllDataUpdatedSuccessfully()
+                    onSyncSuccess()
+                }
+                return
+            }
+            tasks[currentTaskIndex].invoke()
+            currentTaskIndex++
+        }*/
 
     private fun onSyncSuccess() {
         loadingDialog.dismiss()
 
         CustomSnackBar.make(
             requireView(),
-            getString(R.string.msg_success_update),
+            getString(R.string.msg_success_download),
             SnackBarType.Success.value
         )?.show()
     }
@@ -313,58 +384,33 @@ class HomeFragment : Fragment() {
             binding.rvHomeMenu.adapter = HomeMenuAdapter(items) { item ->
                 when (item.id) {
                     1 -> { /* باز کردن صفحه کاتالوگ */
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            if (!isDatabaseReady()) {
+                        viewModel.checkDatabase { isReady ->
+                            if (isReady) {
+                                val action =
+                                    HomeFragmentDirections.actionHomeFragmentToProductListFragment(
+                                        fromFactor = false
+                                    )
+                                findNavController().navigate(action)
+                            } else {
                                 showSyncRequiredMessage()
-                                return@launch
                             }
-                            val action =
-                                HomeFragmentDirections.actionHomeFragmentToProductListFragment(
-                                    fromFactor = false
-                                )
-                            findNavController().navigate(action)
                         }
                     }
 
                     2 -> { /* باز کردن صفحه لیست کالاها */
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            if (!isDatabaseReady()) {
+                        viewModel.checkDatabase { isReady ->
+                            if (isReady) {
+                                val action =
+                                    HomeFragmentDirections.actionHomeFragmentToGroupProductFragment(
+                                        fromFactor = false
+                                    )
+                                findNavController().navigate(action)
+                            } else {
                                 showSyncRequiredMessage()
-                                return@launch
                             }
-                            val action =
-                                HomeFragmentDirections.actionHomeFragmentToGroupProductFragment(
-                                    fromFactor = false
-                                )
-                            findNavController().navigate(action)
                         }
                     }
 
-                    /*    3 -> { *//* باز کردن صفحه ثبت سفارش *//*
-                        viewLifecycleOwner.lifecycleScope.launch {
-
-                            if (!isDatabaseReady()) {
-                                showSyncRequiredMessage()
-                                return@launch
-                            }
-
-                            val canOpen = mainPreferences.hasDownloadedToday()
-                            if (canOpen) {
-                                openFactorScreen()
-                            } else {
-                                customDialogForceUpdate?.showDialog(
-                                    activity,
-                                    "",
-                                    getString(R.string.error_receiving_product_pattern_act_mandatory),
-                                    true,
-                                    getString(R.string.label_no),
-                                    getString(R.string.label_update),
-                                    showPositiveButton = true,
-                                    showNegativeButton = true
-                                )
-                            }
-                        }
-                    }*/
                     3 -> { /* ثبت سفارش */
                         viewLifecycleOwner.lifecycleScope.launch {
 
@@ -390,76 +436,163 @@ class HomeFragment : Fragment() {
                                 }
 
                                 AccessState.READY -> {
-                                    // ورود
-                                    openFactorScreen()
+                                    lifecycleScope.launch {
+
+                                        val keys = listOf(
+                                            SyncKey.ACT,
+                                            SyncKey.PATTERN,
+                                            SyncKey.PRODUCT,
+                                            SyncKey.DISCOUNT
+                                        )
+
+                                        keys.forEach {
+                                            mainPreferences.setLastUpdate(it, getTodayPersianDate())
+                                        }
+                                        openFactorScreen()
+                                    }
                                 }
                             }
                         }
                     }
 
                     4 -> { /* باز کردن صفحه مشتریان */
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            if (!isDatabaseReady()) {
+                        viewModel.checkDatabase { isReady ->
+                            if (isReady) {
+                                val action =
+                                    HomeFragmentDirections.actionHomeFragmentToCustomerListFragment()
+                                findNavController().navigate(action)
+                            } else {
                                 showSyncRequiredMessage()
-                                return@launch
                             }
-                            val action =
-                                HomeFragmentDirections.actionHomeFragmentToCustomerListFragment()
-                            findNavController().navigate(action)
                         }
                     }
 
                     5 -> { /* باز کردن صفحه گزارشات */
                         val action =
-                            HomeFragmentDirections.actionHomeFragmentToReportFragment()
+                            HomeFragmentDirections.actionHomeFragmentToOnlineOrderListFragment(
+                                ReportFactorListType.Visitor.value,
+                                visitorId,
+                                ReportFactorVisitorType.All.value
+                            )
                         findNavController().navigate(action)
                     }
 
                     6 -> { /* باز کردن صفحه سفارش‌ها */
-                        val action =
-                            HomeFragmentDirections.actionHomeFragmentToReportFactorFragment()
-                        findNavController().navigate(action)
+                        viewModel.checkDatabase { isReady ->
+                            if (isReady) {
+                                val action =
+                                    HomeFragmentDirections.actionHomeFragmentToReportFactorFragment()
+                                findNavController().navigate(action)
+                            } else {
+                                showSyncRequiredMessage()
+                            }
+                        }
                     }
-
-                    7 -> {/* خروج از حساب کاربری */
+                    /*
+                       7 -> {*//* خروج از حساب کاربری *//*
                         customDialog?.showDialog(
                             activity,
-                            "",
-                            getString(R.string.msg_log_out),
+                            getString(R.string.label_warning),
+                            getString(R.string.error_remove_cache_log_out),
                             true,
-                            getString(R.string.label_no),
-                            getString(R.string.label_ok),
+                            getString(R.string.label_close),
+                            getString(R.string.label_confirm),
                             showPositiveButton = true,
                             showNegativeButton = true
                         )
                     }
 
-                    8 -> { /* باز کردن صفحه تنظیمات */
+                    8 -> { *//* باز کردن صفحه تنظیمات *//*
                         val action =
                             HomeFragmentDirections.actionHomeFragmentToSettingFragment()
                         findNavController().navigate(action)
+                    }*/
+                    9 -> { /* ارسال اطلاعات */
+                        showAllSendDialog()
+                    }
+
+                    10 -> { /* دریافت اطلاعات */
+
+                        val action =
+                            HomeFragmentDirections.actionHomeFragmentToSyncSelectionFragment()
+                        findNavController().navigate(action)
+
+                        /*     viewLifecycleOwner.lifecycleScope.launch {
+                                 if (!isInternetAvailable(requireContext())) {
+                                     CustomSnackBar.make(
+                                         requireView(),
+                                         getString(R.string.error_network_internet),
+                                         SnackBarType.Error.value
+                                     )?.show()
+                                     return@launch
+                                 }
+
+                                 syncType =
+                                     if (isDatabaseEmpty()) "در حال دریافت" else "در حال بروزرسانی"
+                                 showOrUpdateLoading("$syncType")
+                                 setupObserver()
+                             }*/
                     }
                 }
             }
         }
     }
 
-    private fun setupClicks() {
-        binding.ivSync.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch {
-                if (!isInternetAvailable(requireContext())) {
-                    CustomSnackBar.make(
-                        requireView(),
-                        getString(R.string.error_network_internet),
-                        SnackBarType.Error.value
-                    )?.show()
-                    return@launch
-                }
+    private fun showAllSendDialog() {
+        customDialogAllSend = CustomDialog().apply {
 
-                syncType = if (isDatabaseEmpty()) "در حال دریافت" else "در حال بروزرسانی"
-                showOrUpdateLoading("$syncType")
-                setupObserver()
+            setOnClickNegativeButton {
+                hideProgress()
             }
+            setOnClickPositiveButton {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    // آیتم ارسال
+                    val menuItems = viewModel.homeMenuItems.value
+                    val sendItem = menuItems?.find { it.id == 9 }
+                    val index = menuItems?.indexOf(sendItem)
+
+                    // فعال کردن لودینگ
+                    if (sendItem != null && index != null) {
+                        sendItem.isLoading = true
+                        binding.rvHomeMenu.adapter?.notifyItemChanged(index)
+                    }
+                    delay(400)
+                    factorViewModel.sendAllRegisteredFactors()
+                }
+            }
+        }
+
+        customDialogAllSend?.showDialog(
+            requireActivity(),
+            "",
+            getString(R.string.msg_sure_send_orders),
+            true,
+            getString(R.string.label_no),
+            getString(R.string.label_ok),
+            showPositiveButton = true,
+            showNegativeButton = true
+        )
+    }
+
+    private fun setupClicks() = binding.apply {
+
+        ivSetting.setOnClickListener {
+            val action =
+                HomeFragmentDirections.actionHomeFragmentToSettingFragment()
+            findNavController().navigate(action)
+        }
+
+        ivExit.setOnClickListener {
+            customDialog?.showDialog(
+                activity,
+                "",
+                getString(R.string.msg_log_out),
+                true,
+                getString(R.string.label_close),
+                getString(R.string.label_confirm),
+                showPositiveButton = true,
+                showNegativeButton = true
+            )
         }
 
         customDialog?.apply {
@@ -509,10 +642,21 @@ class HomeFragment : Fragment() {
                         }
 
                         // تنظیم فلگ‌های حیاتی پس از موفقیت کامل
-                        mainPreferences.setActUpdated()
-                        mainPreferences.setPatternUpdated()
-                        mainPreferences.setProductUpdated()
-                        mainPreferences.setDiscountUpdated()
+                        mainPreferences.markAllAsUpdatedToday()
+                        val today = getTodayPersianDate()
+
+                        val keys = listOf(
+                            SyncKey.ACT,
+                            SyncKey.PATTERN,
+                            SyncKey.PRODUCT,
+                            SyncKey.DISCOUNT
+                        )
+
+                        keys.forEach {
+                            mainPreferences.setLastUpdate(it, today)
+                        }
+
+                        delay(200)
 
                         loadingDialog.dismiss()
 
@@ -593,6 +737,7 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             // پاک کردن اطلاعات کاربر از DataStore
             mainPreferences.clearUserInfo()
+            mainPreferences.clearFilterConditionInfo()
 
             // پاک کردن تمام جدول‌ها
             db.applicationSettingDao().clearApplicationSetting() // جدول تنظیمات
@@ -617,10 +762,10 @@ class HomeFragment : Fragment() {
             db.discountDao().clearDiscounts() // جدول تخفیف
             db.visitScheduleDao().clearVisitSchedule() // جدول برنامه ویزیت
             db.visitScheduleDao().clearVisitScheduleDetails() // جدول جزییات برنامه ویزیت
-            db.factorDao().clearFactorHeader() // جدول هدر فاکتور
-            db.factorDao().clearFactorDetails() // جدول جزییات فاکتور
-            db.factorDao().clearFactorDiscount() // جدول تخفیفات فاکتور
-            db.factorDao().clearFactorGiftInfo() // جدول جایزه فاکتور
+            // db.factorDao().clearFactorHeader() // جدول هدر فاکتور
+            // db.factorDao().clearFactorDetails() // جدول جزییات فاکتور
+            // db.factorDao().clearFactorDiscount() // جدول تخفیفات فاکتور
+            // db.factorDao().clearFactorGiftInfo() // جدول جایزه فاکتور
 
             // هدایت به صفحه Splash
             val intent = Intent(requireContext(), SplashActivity::class.java)
@@ -629,28 +774,8 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private suspend fun isDatabaseEmpty(): Boolean {
-        return db.groupProductDao().getCount() == 0 ||
-                db.productDao().getCount() == 0 ||
-                db.customerDao().getCount() == 0
-    }
-
-    private suspend fun isDatabaseReady(): Boolean {
-        // بررسی وجود داده‌های اصلی + بررسی فلگ‌های امروز
-        val hasBasicData = db.groupProductDao().getCount() > 0 &&
-                db.productDao().getCount() > 0 &&
-                db.customerDao().getCount() > 0
-
-        // اگر داده اصلی وجود دارد، بررسی فلگ‌های امروز
-        return hasBasicData /*if (hasBasicData) {
-            mainPreferences.hasDownloadedToday()
-        } else {
-            false
-        }*/
-    }
 
     private suspend fun checkAccessState(): AccessState {
-
         val hasBasicData =
             db.groupProductDao().getCount() > 0 &&
                     db.productDao().getCount() > 0 &&
@@ -669,12 +794,49 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun showSyncRequiredMessage() {
-        CustomSnackBar.make(
-            requireView(),
-            getString(R.string.error_click_sync_button_download_information),
-            SnackBarType.Warning.value
-        )?.show()
+
+    private fun observeSendAllFactor() {
+
+        factorViewModel.sendFactorResult.observe(viewLifecycleOwner) { event ->
+
+            event.getContentIfNotHandled()?.let { result ->
+
+                val menuItems = viewModel.homeMenuItems.value
+                val sendItem = menuItems?.find { it.id == 9 }
+                val index = menuItems?.indexOf(sendItem)
+
+                when (result) {
+
+                    is NetworkResult.Loading -> {}
+
+                    is NetworkResult.Success -> {
+
+                        if (sendItem != null && index != null) {
+                            sendItem.isLoading = false
+                            binding.rvHomeMenu.adapter?.notifyItemChanged(index)
+                        }
+                        CustomSnackBar.make(
+                            requireActivity().findViewById(android.R.id.content),
+                            result.message ?: getString(R.string.msg_order_successfully_sent),
+                            SnackBarType.Success.value
+                        )?.show()
+                    }
+
+                    is NetworkResult.Error -> {
+                        if (sendItem != null && index != null) {
+                            sendItem.isLoading = false
+                            binding.rvHomeMenu.adapter?.notifyItemChanged(index)
+                        }
+
+                        CustomSnackBar.make(
+                            requireActivity().findViewById(android.R.id.content),
+                            result.message,
+                            SnackBarType.Error.value
+                        )?.show()
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

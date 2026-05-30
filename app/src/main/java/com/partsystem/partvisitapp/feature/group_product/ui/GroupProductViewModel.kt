@@ -25,9 +25,4 @@ class GroupProductViewModel @Inject constructor(
     fun getProductsByCategory(categoryId: Int): LiveData<List<ProductEntity>> {
         return repository.getProductsByCategory(categoryId).asLiveData()
     }
-
-    /* fun getProductsBySubGroup(subGroupId: Int): LiveData<List<ProductEntity>> {
-         return repository.getProductsBySubGroup(subGroupId)
-     }*/
-
 }

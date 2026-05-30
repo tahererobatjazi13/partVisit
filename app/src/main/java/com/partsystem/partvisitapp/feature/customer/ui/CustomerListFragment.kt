@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.partsystem.partvisitapp.R
+import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.utils.componenet.CustomDialog
 import com.partsystem.partvisitapp.core.utils.convertNumbersToEnglish
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
@@ -32,20 +33,21 @@ import javax.inject.Inject
 @SuppressLint("UseCompatLoadingForDrawables")
 @AndroidEntryPoint
 class CustomerListFragment : Fragment() {
+
     @Inject
     lateinit var mainPreferences: MainPreferences
 
     private var _binding: FragmentCustomerListBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var customerListAdapter: CustomerListAdapter
-
-    private var customDialog: CustomDialog? = null
-
     private val customerViewModel: CustomerViewModel by viewModels()
+
+    private lateinit var customerListAdapter: CustomerListAdapter
+    private var customDialog: CustomDialog? = null
 
     private val searchIcon by lazy { requireContext().getDrawable(R.drawable.ic_search) }
     private val clearIcon by lazy { requireContext().getDrawable(R.drawable.ic_clear) }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,74 +60,68 @@ class CustomerListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupClicks()
-        initAdapter()
-        initRecyclerViews()
-        observeData()
+        setupClearIcon()
         setupSearch()
+        initAdapter()
+        initRecyclerView()
+        observeCustomers()
+        loadCustomers()
         customDialog = CustomDialog()
+    }
+
+    private fun setupClicks() = binding.apply {
+        hfCustomerList.setOnClickImgTwoListener {
+            findNavController().navigateUp()
+        }
+
+        // مدیریت رویدادهای دیالوگ
+        customDialog?.apply {
+            setOnClickNegativeButton { hideProgress() }
+            setOnClickPositiveButton {
+                hideProgress()
+            }
+        }
+
+        // دکمه افزودن مشتری
+        fabAddCustomer.setOnClickListener {
+            val dialog = AddEditCustomerDialog { _ ->
+                // materialViewModel.insert(rawMaterial)
+            }
+            dialog.show(childFragmentManager, "AddRawCustomerDialog")
+        }
 
     }
 
-    @SuppressLint("ClickableViewAccessibility", "UseCompatLoadingForDrawables")
-    private fun setupClicks() {
-        binding.apply {
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupClearIcon() = binding.apply {
+        // پاک کردن جستجو با لمس آیکون ضربدر
+        etSearch.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawableEnd =
+                    etSearch.compoundDrawablesRelative[2] ?: return@setOnTouchListener false
 
-            hfCustomerList.setOnClickImgTwoListener {
-                findNavController().navigateUp()
-            }
+                val touchAreaStart =
+                    etSearch.width - etSearch.paddingEnd - drawableEnd.intrinsicWidth
 
-            // مدیریت رویدادهای دیالوگ
-            customDialog?.apply {
-                setOnClickNegativeButton { hideProgress() }
-                setOnClickPositiveButton {
-                    hideProgress()
+                if (event.x >= touchAreaStart) {
+                    etSearch.text?.clear()
+                    v.performClick()
+                    return@setOnTouchListener true
                 }
             }
+            false
+        }
+    }
 
-            // دکمه افزودن مشتری
-            fabAddCustomer.setOnClickListener {
-                val dialog = AddEditCustomerDialog { _ ->
-                    // materialViewModel.insert(rawMaterial)
-                }
-                dialog.show(childFragmentManager, "AddRawCustomerDialog")
-            }
-
-            etSearch.addTextChangedListener { editable ->
-                val query = editable.toString()
-                if (query.isNotEmpty()) {
-                    // نمایش ضربدر و جستجو
-                    binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        null,
-                        null,
-                        clearIcon,
-                        null
-                    )
-                } else {
-                    // فقط جستجو، بدون ضربدر
-                    binding.etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        null,
-                        null,
-                        searchIcon,
-                        null
-                    )
-                }
-            }
-
-            // پاک کردن جستجو با لمس آیکون ضربدر
-            etSearch.setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_UP) {
-                    val drawableEnd = binding.etSearch.compoundDrawablesRelative[2] // drawableEnd
-                    drawableEnd?.let {
-                        val touchAreaStart =
-                            binding.etSearch.width - binding.etSearch.paddingEnd - it.intrinsicWidth
-                        if (event.rawX >= touchAreaStart) {
-                            binding.etSearch.text?.clear()
-                            return@setOnTouchListener true
-                        }
-                    }
-                }
-                false
-            }
+    private fun setupSearch() = binding.apply {
+        etSearch.addTextChangedListener { editable ->
+            val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
+            etSearch.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                null, null,
+                if (query.isEmpty()) searchIcon else clearIcon,
+                null
+            )
+            customerViewModel.filterCustomers(query)
         }
     }
 
@@ -146,15 +142,12 @@ class CustomerListFragment : Fragment() {
         )
     }
 
-    private fun initRecyclerViews() {
-        binding.rvCustomer.apply {
-            layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            adapter = customerListAdapter
-        }
+    private fun initRecyclerView() = with(binding.rvCustomer) {
+        layoutManager = LinearLayoutManager(requireContext())
+        adapter = customerListAdapter
     }
 
-    private fun observeData() {
+    private fun loadCustomers() {
         lifecycleScope.launch {
             val controlVisit = mainPreferences.controlVisitSchedule.first() ?: false
             val persianDate = getTodayPersianDateLatin()
@@ -167,24 +160,23 @@ class CustomerListFragment : Fragment() {
                 customerViewModel.loadCustomersWithoutSchedule()
             }
         }
+    }
 
-        customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { filteredProducts ->
-            if (filteredProducts.isEmpty()) {
-                binding.info.show()
-                binding.info.message(requireContext().getString(R.string.msg_no_customer))
-                binding.rvCustomer.hide()
-            } else {
-                binding.info.gone()
-                binding.rvCustomer.show()
-                customerListAdapter.setData(filteredProducts)
-            }
+    private fun observeCustomers() {
+        customerViewModel.filteredCustomers.observe(viewLifecycleOwner) { customers ->
+            showCustomerList(customers)
         }
     }
 
-    private fun setupSearch() {
-        binding.etSearch.addTextChangedListener { editable ->
-            val query = convertNumbersToEnglish(fixPersianChars(editable.toString()))
-            customerViewModel.filterCustomers(query)
+    private fun showCustomerList(list: List<CustomerEntity>) = with(binding) {
+        if (list.isEmpty()) {
+            info.show()
+            info.message(requireContext().getString(R.string.msg_no_customer))
+            rvCustomer.hide()
+        } else {
+            info.gone()
+            rvCustomer.show()
+            customerListAdapter.setData(list)
         }
     }
 

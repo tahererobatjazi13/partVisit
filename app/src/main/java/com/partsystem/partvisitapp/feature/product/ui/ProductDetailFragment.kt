@@ -68,11 +68,9 @@ class ProductDetailFragment : Fragment() {
         }
     }
 
-    private fun setupClicks() {
-        binding.apply {
-            hfProductDetail.setOnClickImgTwoListener {
-                findNavController().navigateUp()
-            }
+    private fun setupClicks() = binding.apply {
+        hfProductDetail.setOnClickImgTwoListener {
+            findNavController().navigateUp()
         }
     }
 

@@ -63,6 +63,5 @@ fun FactorDetailUiModel.getPackingValueFormatted(): String {
     } else {
         remain.toString()
     }
-
-    return "$remainText:$fullPacks"
+    return "$fullPacks:$remainText"
 }

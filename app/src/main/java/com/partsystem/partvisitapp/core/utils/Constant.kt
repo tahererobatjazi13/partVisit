@@ -10,6 +10,15 @@ enum class ReportFactorListType(val value: String) {
     Customer("customer"),
     Visitor("visitor")
 }
+enum class ProductSelectionType {
+    GROUP,
+    CATALOG
+}
+
+enum class ReportFactorVisitorType(val value: String) {
+    All("all"),
+    CurrentDay("currentDay")
+}
 
 enum class OrderType(val value: String) {
     Add("add"),
@@ -307,4 +316,64 @@ enum class ActKind {
 
     //        [Description("خرید کالا")]
     BoughtProduct,
+}
+
+enum class MessageKind {
+    Error,
+    Warning,
+}
+
+object CustomerCreditSarfaslKind {
+    const val Account: Byte = 0
+    const val AsnadDaryaftani: Byte = 1
+    const val TotalAccount: Byte = 2
+    const val AsnadVakhasti: Byte = 3
+}
+
+enum class CreditKind(val value: Int) {
+    ACCOUNT(0), // معادل CustomerCreditSarfaslKind.Account
+    ASNAD_DARYAFTANI(1), // معادل CustomerCreditSarfaslKind.AsnadDaryaftani
+    TOTAL_ACCOUNT(2), // معادل CustomerCreditSarfaslKind.TotalAccount
+    ASNAD_VAKHASTI(3); // معادل CustomerCreditSarfaslKind.AsnadVakhasti
+
+    companion object {
+        fun fromInt(value: Int) = values().firstOrNull { it.value == value }
+            ?: throw IllegalArgumentException("Unknown CreditKind value: $value")
+    }
+}
+
+
+// enum برای نوع مشتری/بازاریاب (معادل ControlCustomerCreditKind در C#)
+enum class ControlCustomerKind(val value: Byte) {
+    CUSTOMER(0), // معادل ControlCustomerCreditKind.Customer
+    MARKETER(1); // معادل ControlCustomerCreditKind.Marketer
+
+    companion object {
+        fun fromByte(value: Byte) = values().firstOrNull { it.value == value }
+            ?: throw IllegalArgumentException("Unknown ControlCustomerKind value: $value")
+    }
+}
+
+enum class CustomerCreditKind(val value: Int) {
+    Customer(0),
+}
+
+enum class SyncKey {
+    APPLICATION_SETTING,
+    VISITOR,
+    VISIT_SCHEDULE,
+    GROUP_PRODUCT,
+    PRODUCT,
+    PRODUCT_IMAGE,
+    PRODUCT_PACKING,
+    CUSTOMER,
+    CUSTOMER_DIRECTION,
+    ASSIGN_DIRECTION_CUSTOMER,
+    INVOICE_CATEGORY,
+    PATTERN,
+    PATTERN_DETAIL,
+    ACT,
+    VAT,
+    SALE_CENTER,
+    DISCOUNT
 }

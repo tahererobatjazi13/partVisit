@@ -12,9 +12,7 @@ interface VisitorDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(visitors: List<VisitorEntity>)
 
-    @Query("SELECT * FROM Visitor")
-    suspend fun getAll(): List<VisitorEntity>
-
     @Query("DELETE FROM Visitor")
     suspend fun clearVisitors()
+
 }

@@ -12,9 +12,6 @@ interface ApplicationSettingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(settings: List<ApplicationSettingEntity>)
 
-    @Query("SELECT * FROM ApplicationSetting")
-    suspend fun getAll(): List<ApplicationSettingEntity>
-
     @Query("DELETE FROM ApplicationSetting")
     suspend fun clearApplicationSetting()
 

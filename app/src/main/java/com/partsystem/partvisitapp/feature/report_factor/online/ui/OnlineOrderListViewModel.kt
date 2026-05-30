@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.partsystem.partvisitapp.core.network.NetworkResult
 import com.partsystem.partvisitapp.feature.report_factor.online.model.ReportFactorDto
 import com.partsystem.partvisitapp.core.utils.extensions.toEnglishDigits
+import com.partsystem.partvisitapp.feature.main.home.repository.AppRepository
 import com.partsystem.partvisitapp.feature.report_factor.online.repository.OnlineOrderListRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -14,8 +15,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnlineOrderListViewModel @Inject constructor(
-    private val onlineOrderListRepository: OnlineOrderListRepository
+    private val onlineOrderListRepository: OnlineOrderListRepository,
+    private val appRepository: AppRepository
 ) : ViewModel() {
+
 
     private val _visitorList = MutableLiveData<NetworkResult<List<ReportFactorDto>>>()
     val reportFactorVisitorList: LiveData<NetworkResult<List<ReportFactorDto>>> = _visitorList
@@ -26,17 +29,19 @@ class OnlineOrderListViewModel @Inject constructor(
     private var originalVisitor = emptyList<ReportFactorDto>()
     private var originalCustomer = emptyList<ReportFactorDto>()
 
-    fun fetchReportFactorVisitorList(type: Int, visitorId: Int) = viewModelScope.launch {
-        _visitorList.value = NetworkResult.Loading
-        when (val result = onlineOrderListRepository.getReportFactorVisitor(type, visitorId)) {
-            is NetworkResult.Success -> {
-                originalVisitor = result.data
-                _visitorList.value = result
-            }
+    fun fetchReportFactorVisitorList(type: Int, visitorId: Int, condition: String) =
+        viewModelScope.launch {
+            _visitorList.value = NetworkResult.Loading
+            when (val result =
+                onlineOrderListRepository.getReportFactorVisitor(type, visitorId, condition)) {
+                is NetworkResult.Success -> {
+                    originalVisitor = result.data
+                    _visitorList.value = result
+                }
 
-            else -> _visitorList.value = result
+                else -> _visitorList.value = result
+            }
         }
-    }
 
     fun fetchReportFactorCustomerList(type: Int, customerId: Int) = viewModelScope.launch {
         _customerList.value = NetworkResult.Loading
@@ -86,5 +91,10 @@ class OnlineOrderListViewModel @Inject constructor(
     private fun ReportFactorDto.matchesQuery(q: String): Boolean =
         customerName.contains(q, ignoreCase = true) || id.toString().contains(q)
 
-
+    fun checkDatabase(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = appRepository.isDatabaseReady()
+            onResult(result)
+        }
+    }
 }

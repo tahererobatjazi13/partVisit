@@ -39,69 +39,82 @@ class CustomerDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observeData()
         setupClicks()
+        setupAdapter()
+        observeCustomer()
+        observeDirections()
     }
 
-    private fun observeData() {
+    private fun setupClicks() = binding.apply {
+        hfCustomerDetail.setOnClickImgTwoListener {
+            findNavController().navigateUp()
+        }
+
+        btnOrdersList.setOnClickListener {
+            val action =
+                CustomerDetailFragmentDirections.actionCustomerDetailFragmentToOnlineOrderListFragment(
+                    ReportFactorListType.Customer.value, args.customerId
+                )
+            findNavController().navigate(action)
+        }
+
+        btRegisterOrder.setOnClickListener {
+            val action =
+                CustomerDetailFragmentDirections.actionCustomerDetailFragmentToHeaderOrderFragment(
+                    typeCustomer = true, typeOrder = OrderType.Add.value,
+                    customerId = customerId, customerName = customerName
+                )
+            findNavController().navigate(action)
+        }
+    }
+
+    private fun setupAdapter() {
+        customerDirectionAdapter = CustomerDirectionAdapter(emptyList())
+
+        binding.rvAddress.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = customerDirectionAdapter
+        }
+    }
+
+    private fun observeCustomer() = binding.apply {
         customerViewModel.getCustomerById(args.customerId).observe(viewLifecycleOwner) { customer ->
             if (customer != null) {
                 customerName = customer.name
                 customerId = customer.id
-                binding.tvCustomerName.text = customer.name
+                tvCustomerName.text = customer.name
 
                 val details = listOfNotNull(customer.tafsiliPhone1?.takeIf { it.isNotBlank() },
                     customer.tafsiliPhone2?.takeIf { it.isNotBlank() },
                     customer.tafsiliMobile?.takeIf { it.isNotBlank() })
 
                 if (details.isNotEmpty()) {
-                    binding.tvPhone.text = details.joinToString(" | ")
-                    binding.clCustomerPhone.show()
+                    tvPhone.text = details.joinToString(" | ")
+                    clCustomerPhone.show()
                 } else {
-                    binding.clCustomerPhone.gone()
+                    clCustomerPhone.gone()
                 }
             }
         }
-
-
-        headerOrderViewModel.getCustomerDirectionsByCustomer(args.customerId)
-            .observe(viewLifecycleOwner) { directions ->
-                val items = directions.mapNotNull { it.fullAddress }
-                customerDirectionAdapter = CustomerDirectionAdapter(items)
-                if (items.isNotEmpty()) {
-                    binding.clCustomerAddress.show()
-                    binding.rvAddress.adapter = customerDirectionAdapter
-                    binding.rvAddress.layoutManager = LinearLayoutManager(requireContext())
-                } else {
-                    binding.clCustomerAddress.gone()
-                }
-            }
-
     }
 
-    private fun setupClicks() {
-        binding.apply {
-            hfCustomerDetail.setOnClickImgTwoListener {
-                findNavController().navigateUp()
-            }
 
-            btnOrdersList.setOnClickListener {
-                val action =
-                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToOnlineOrderListFragment(
-                        ReportFactorListType.Customer.value, args.customerId
-                    )
-                findNavController().navigate(action)
-            }
+    private fun observeDirections() = binding.apply {
+        headerOrderViewModel.getCustomerDirectionsByCustomer(args.customerId)
+            .observe(viewLifecycleOwner) { directions ->
 
-            btRegisterOrder.setOnClickListener {
-                val action =
-                    CustomerDetailFragmentDirections.actionCustomerDetailFragmentToHeaderOrderFragment(
-                        typeCustomer = true, typeOrder = OrderType.Add.value,
-                        customerId = customerId, customerName = customerName
-                    )
-                findNavController().navigate(action)
+                val items = directions.map { it.fullAddress }
+
+                if (items.isEmpty()) {
+                    binding.clCustomerAddress.gone()
+                } else {
+                    binding.clCustomerAddress.show()
+                    customerDirectionAdapter =
+                        CustomerDirectionAdapter(items)
+
+                    binding.rvAddress.adapter = customerDirectionAdapter
+                }
             }
-        }
     }
 
     override fun onDestroyView() {

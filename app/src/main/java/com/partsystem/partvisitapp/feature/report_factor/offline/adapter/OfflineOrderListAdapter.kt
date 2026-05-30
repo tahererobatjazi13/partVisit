@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.utils.extensions.gone
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
@@ -30,7 +31,6 @@ class OfflineOrderListAdapter(
 
         @SuppressLint("SetTextI18n")
         fun bind(item: FactorHeaderUiModel) = with(binding) {
-            val context = binding.root.context
 
             if (item.isSending) {
                 tvSyncOrder.hide()
@@ -40,12 +40,13 @@ class OfflineOrderListAdapter(
                 tvSyncOrder.show()
             }
 
+            tvTitleOrderNumber.text = itemView.context.getString(R.string.label_order_draft_number)
             tvOrderNumber.text = item.factorId.toString()
             tvCustomerName.text = item.customerName ?: "-"
             tvPatternName.text = item.patternName ?: "-"
-
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
+
             ivDelete.show()
 
             // نمایش/مخفی کردن چک‌باکس ثبت بر اساس hasDetail
@@ -56,20 +57,36 @@ class OfflineOrderListAdapter(
                 cbSabt.setOnCheckedChangeListener(null)
                 cbSabt.isChecked = item.sabt == 1
                 cbSabt.setOnCheckedChangeListener { _, isChecked ->
-                    onSabtChanged(item, isChecked)
+                    if (!item.isValidateCredit) {
+                        onSabtChanged(item, isChecked)
+                    }
                 }
             } else {
                 cbSabt.hide()
                 cbSabt.setOnCheckedChangeListener(null)
             }
 
-            root.setOnClickListener { onClick(item) }
+            if (item.isValidateCredit) {
+                clProgressBar.show()
+                cbSabt.hide()
 
-            if (showSyncButton && item.hasDetail && item.sabt == 1) {
-                clSyncOrder.show()
-            } else {
                 clSyncOrder.hide()
+            } else {
+                clProgressBar.gone()
+
+                if (item.hasDetail) {
+                    cbSabt.show()
+                } else cbSabt.gone()
+
+                // اگر showSyncButton درست بود، hasDetail داشت، sabt برابر 1 بود،
+                if (showSyncButton && item.hasDetail && item.sabt == 1) {
+                    clSyncOrder.show()
+                } else {
+                    clSyncOrder.hide()
+                }
             }
+
+            root.setOnClickListener { onClick(item) }
 
             ivDelete.setOnClickListener {
                 onDelete(item)

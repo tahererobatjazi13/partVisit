@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.GroupProductEntity
+import com.partsystem.partvisitapp.core.utils.getColorAttr
 import com.partsystem.partvisitapp.databinding.ItemSubGroupBinding
 
 class SubGroupAdapter(
@@ -19,11 +20,17 @@ class SubGroupAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(subGroup: GroupProductEntity, isSelected: Boolean) = with(binding) {
+            val context = binding.root.context
+            val selectedColor = context.getColor(R.color.green_21BF73)
+            val defaultColor =
+                getColorAttr(context, com.google.android.material.R.attr.colorOnPrimarySurface)
+
             tvSubGroupName.text = subGroup.name
+            tvSubGroupName.setTextColor(if (isSelected) selectedColor else defaultColor)
 
             // تغییر بک‌گراند بر اساس انتخاب
             val backgroundRes = if (isSelected)
-                R.drawable.bg_rectangle_focused
+                R.drawable.bg_rectangle_focused_green
             else
                 R.drawable.bg_rectangle_default
 

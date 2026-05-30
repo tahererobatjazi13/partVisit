@@ -332,3 +332,7 @@
     </style>
 
 </resources>
+
+
+<!--    binding.tvPackingValue.show()-->
+<!--    binding.tvPackingValue.text = "معادل ${binding.etPackingValue.text}:${binding.etUnit1Value.text}"-->

@@ -2,6 +2,7 @@ package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,20 +10,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
+import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.AppDatabase
-import com.partsystem.partvisitapp.core.database.entity.DiscountEntity
+import com.partsystem.partvisitapp.feature.create_order.model.CustomerVisitorStatus
 import com.partsystem.partvisitapp.core.database.entity.FactorDetailEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorDiscountEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorGiftInfoEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.network.NetworkResult
+import com.partsystem.partvisitapp.core.utils.CustomerCreditKind
 import com.partsystem.partvisitapp.core.utils.DiscountApplyKind
 import com.partsystem.partvisitapp.core.utils.Event
+import com.partsystem.partvisitapp.core.utils.FactorFormKind
+import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
+import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDateLatin
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorDetailDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorDiscountDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorGiftDto
 import com.partsystem.partvisitapp.feature.create_order.model.FinalFactorRequestDto
 import com.partsystem.partvisitapp.feature.create_order.model.ProductWithPacking
+import com.partsystem.partvisitapp.feature.create_order.model.ValidateCredit
 import com.partsystem.partvisitapp.feature.create_order.repository.DiscountRepository
 import com.partsystem.partvisitapp.feature.create_order.repository.FactorRepository
 import com.partsystem.partvisitapp.feature.product.repository.ProductRepository
@@ -31,6 +38,7 @@ import com.partsystem.partvisitapp.feature.report_factor.offline.model.FactorHea
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +56,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FactorViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-
+    private val mainPreferences: MainPreferences,
     private val factorRepository: FactorRepository,
     private val discountRepository: DiscountRepository,
     private val appDatabase: AppDatabase,
@@ -140,16 +148,12 @@ class FactorViewModel @Inject constructor(
         _factorHeader.value = factorHeader.value
     }
 
-    fun loadProduct(productId: Int, actId: Int): ProductWithPacking? {
+    fun loadProductByActId(productId: Int, actId: Int): ProductWithPacking? {
         return productRepository.getProductByActId(productId, actId)
     }
 
-    fun getProductByActId(productId: Int, actId: Int): LiveData<ProductWithPacking> {
-        return productRepository.getProductByActId2(productId, actId).asLiveData()
-    }
-
-    suspend fun getProductRate(productId: Int, actId: Int): Double? {
-        return productRepository.getProductByActId2(productId, actId)
+    suspend fun getProductWithRateAct(productId: Int, actId: Int): Double? {
+        return productRepository.getProductWithRateAct(productId, actId)
             .map { it.rate }
             .firstOrNull()
     }
@@ -202,7 +206,8 @@ class FactorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            factorRepository.getAllHeaderUi().collectLatest { dbList ->
+            val visitorId = mainPreferences.personnelId.firstOrNull() ?: 0
+            factorRepository.getAllHeaderUi(visitorId).collectLatest { dbList ->
 
                 val uiList = dbList.map {
                     FactorHeaderUiModel(
@@ -215,7 +220,8 @@ class FactorViewModel @Inject constructor(
                         hasDetail = it.hasDetail,
                         actId = it.actId,
                         sabt = it.sabt,
-                        isSending = false
+                        isSending = false,
+                        isValidateCredit = false,
                     )
                 }
                 _allHeaders.value = uiList
@@ -239,6 +245,34 @@ class FactorViewModel @Inject constructor(
                         it.patternName?.contains(query, true) == true ||
                         it.factorId.toString().contains(query)
             }
+    }
+
+    // دریافت مجدد تمام سفارش‌ها از دیتابیس
+    suspend fun getAllOfflineOrders(): List<FactorHeaderUiModel> {
+        val visitorId = mainPreferences.personnelId.firstOrNull() ?: 0
+        return factorRepository.getAllHeaderUi(visitorId)
+            .firstOrNull()
+            ?.map {
+                FactorHeaderUiModel(
+                    factorId = it.factorId,
+                    customerName = it.customerName,
+                    patternName = it.patternName,
+                    persianDate = it.persianDate,
+                    createTime = it.createTime,
+                    finalPrice = it.finalPrice,
+                    hasDetail = it.hasDetail,
+                    actId = it.actId,
+                    sabt = it.sabt,
+                    isSending = false,
+                    isValidateCredit = false
+                )
+            } ?: emptyList()
+    }
+
+    // به‌روزرسانی لیست LiveData ها
+    fun setOfflineOrders(list: List<FactorHeaderUiModel>) {
+        _allHeaders.value = list
+        applyFilter(lastQuery)  // فیلتر فعلی دوباره اعمال می‌شود
     }
 
     suspend fun getFactorHeaderFromDb(factorId: Int) =
@@ -292,7 +326,7 @@ class FactorViewModel @Inject constructor(
 
             val request = buildFinalFactorRequest(factorId)
             val body = listOf(request)
-            Log.d("FINAL_json1", body.toString())
+            Log.d("FINAL_json", body.toString())
 
             when (val result = factorRepository.sendFactorToServer(body)) {
 
@@ -301,7 +335,6 @@ class FactorViewModel @Inject constructor(
                     _sendFactorResult.value = Event(
                         NetworkResult.Success(factorId, result.message)
                     )
-                    Log.d("FINAL_json2", "ok")
                 }
 
                 is NetworkResult.Error -> {
@@ -473,11 +506,11 @@ class FactorViewModel @Inject constructor(
         try {
             appDatabase.withTransaction {
 
-                //  ذخیره اولیه ردیف (بدون VAT صحیح)
+                // ذخیره اولیه ردیف (بدون VAT)
                 val savedDetailId = factorRepository.addOrUpdateDetail(detail)
                 val savedDetail = detail.copy(id = savedDetailId)
 
-                // اعمال تخفیف‌ها - این مرحله FactorDiscountها را ایجاد می‌کند
+                // اعمال تخفیف‌ها
                 discountRepository.calculateDiscountInsert(
                     applyKind = DiscountApplyKind.ProductLevel.ordinal,
                     factorHeader = factorHeader,
@@ -485,20 +518,18 @@ class FactorViewModel @Inject constructor(
                     null
                 )
 
-                // 3. محاسبه مقادیر
-
+                // محاسبه مقادیر
                 val totalDiscount = factorRepository.getTotalDiscountForDetail(savedDetail.id)
                 val totalAddition = factorRepository.getTotalAdditionForDetail(savedDetail.id)
 
-                // 4. محاسبه قیمت پس از تخفیف
+                // محاسبه قیمت پس از تخفیف
                 val priceAfterDiscount =
                     Math.round(savedDetail.price - totalDiscount + totalAddition)
 
                 val vat = Math.round(vatPercent * priceAfterDiscount).toDouble()
                 val toll = Math.round(tollPercent * priceAfterDiscount).toDouble()
 
-
-                // 4. فقط VAT را آپدیت کنید - سایر فیلدها (مثل sortCode) دست نخورده باقی می‌مانند
+                // آپدیت VAT
                 factorRepository.updateVatForDetail(savedDetailId, vat)
 
                 factorRepository.updateHasDetail(
@@ -507,7 +538,7 @@ class FactorViewModel @Inject constructor(
                 )
             }
         } finally {
-            // اتمام عملیات - اینجا تمام تغییرات یکجا کامیت شده‌اند
+            // اتمام عملیات
             _productSavingState.value = false
         }
     }
@@ -579,11 +610,31 @@ class FactorViewModel @Inject constructor(
                 factorDetail = null,
                 hasTaxConnection = hasTaxConnection
             )
+
+            val customerStatus = getCustomerErrorStatus(header.customerId!!)
+                .firstOrNull()
+
+            if (customerStatus == null) {
+                Toast.makeText(context, "Customer not found", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            val hasError = customerStatus.hasErrorOrder
+            val hasWarning = customerStatus.hasWarningOrder
+
+            if (hasError || hasWarning) {
+
+                checkCustomerCredit(
+                    customerId = header.customerId!!,
+                    persianDate = getTodayPersianDateLatin(),
+                    kind = CustomerCreditKind.Customer,
+                    formKind = FactorFormKind.Factor
+                )
+            }
         } else {
             // لغو ثبت
             removeGiftsAndDiscounts(factorId)
         }
-
 
         val details = factorRepository.getFactorDetailsRaw(factorId)
         var sumPrice = 0.0
@@ -612,5 +663,107 @@ class FactorViewModel @Inject constructor(
 
     suspend fun getHasTaxConnection(): Boolean {
         return factorRepository.getHasTaxConnection()
+    }
+
+    suspend fun getControlCustomerLocation(): Boolean {
+        return factorRepository.getControlCustomerLocation()
+    }
+
+    fun getCustomerErrorStatus(customerId: Int): Flow<CustomerVisitorStatus?> {
+        return factorRepository.getCustomerErrorStatus(customerId)
+    }
+
+
+    private val _validationCredit = MutableLiveData<Event<NetworkResult<List<ValidateCredit>>>>()
+    val validationCredit: LiveData<Event<NetworkResult<List<ValidateCredit>>>> = _validationCredit
+
+
+    fun checkCustomerCredit(
+        customerId: Int,
+        persianDate: String,
+        kind: CustomerCreditKind,
+        formKind: FactorFormKind
+    ) {
+        _validationCredit.value = Event(NetworkResult.Loading)
+
+        viewModelScope.launch {
+
+            when (val apiResult =
+                factorRepository.fetchCustomerCredit(customerId, persianDate, kind)) {
+                is NetworkResult.Success -> {
+
+                    val creditData = apiResult.data
+                    val (isValid, message) = factorRepository.validateCreditResults(
+                        creditData,
+                        kind,
+                        formKind,
+                        customerId
+                    )
+
+                    if (isValid) {
+                        // Success
+                        _validationCredit.value = Event(NetworkResult.Success(creditData, message))
+
+                    } else {
+                        // Validation failed
+                        _validationCredit.value = Event(NetworkResult.Error(message))
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    // API call failed
+                    _validationCredit.value = Event(NetworkResult.Error(apiResult.message))
+                }
+
+                NetworkResult.Loading -> {
+                }
+            }
+        }
+    }
+
+
+    fun sendAllRegisteredFactors() {
+        viewModelScope.launch {
+            _sendFactorResult.value = Event(NetworkResult.Loading)
+            try {
+                val headers = factorRepository.getAllRegisteredFactors()
+
+                if (headers.isEmpty()) {
+                    _sendFactorResult.value = Event(
+                        NetworkResult.Error(
+                            context.getString(R.string.error_not_found_register_order)
+                        )
+                    )
+                    return@launch
+                }
+
+                //  ساختن FinalFactorRequestDto برای همه فاکتورها
+                val finalRequestList = headers.map { h ->
+                    buildFinalFactorRequest(h.id)
+                }
+                Log.d("FINAL_jsonAll", finalRequestList.toString())
+
+                // ارسال لیست به سرور
+                when (val result = factorRepository.sendFactorToServer(finalRequestList)) {
+
+                    is NetworkResult.Success -> {
+                        headers.forEach { h ->
+                            factorRepository.deleteFactor(h.id)
+                            _sendFactorResult.value = Event(
+                                NetworkResult.Success(h.id, result.message)
+                            )
+                        }
+                    }
+
+                    is NetworkResult.Error -> {
+                        _sendFactorResult.value = Event(NetworkResult.Error(result.message))
+                    }
+
+                    else -> {}
+                }
+            } catch (e: Exception) {
+                _sendFactorResult.value = Event(NetworkResult.Error(e.message ?: "خطای ناشناخته"))
+            }
+        }
     }
 }

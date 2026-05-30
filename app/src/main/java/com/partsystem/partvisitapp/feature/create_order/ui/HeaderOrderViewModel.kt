@@ -8,6 +8,7 @@ import com.partsystem.partvisitapp.R
 import com.partsystem.partvisitapp.core.database.entity.ActEntity
 import com.partsystem.partvisitapp.core.database.entity.AssignDirectionCustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.CustomerDirectionEntity
+import com.partsystem.partvisitapp.core.database.entity.CustomerEntity
 import com.partsystem.partvisitapp.core.database.entity.FactorHeaderEntity
 import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
@@ -41,6 +42,8 @@ class HeaderOrderViewModel @Inject constructor(
     fun getAct(): LiveData<List<ActEntity>> {
         return repository.getAct().asLiveData()
     }
+    fun getPatternById(id: Int): LiveData<PatternEntity> =
+        repository.getPatternById(id)
 
     private val _pattern = MutableLiveData<PatternEntity?>()
     val pattern: LiveData<PatternEntity?> get() = _pattern
@@ -137,6 +140,7 @@ class HeaderOrderViewModel @Inject constructor(
         }
     }
 
+    // load product ActId
     private val _productActId = MutableLiveData<Int?>()
     val productActId: LiveData<Int?> get() = _productActId
 
@@ -167,4 +171,6 @@ class HeaderOrderViewModel @Inject constructor(
             _defaultAnbarId.value = anbarId
         }
     }
+
+
 }

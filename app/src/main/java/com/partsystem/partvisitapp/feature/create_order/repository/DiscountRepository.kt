@@ -106,7 +106,7 @@ class DiscountRepository @Inject constructor(
         // و نوعش  اضافات باشد discountkind=1
         // تخفیف اعمال نشود
 
-        if (hasTaxConnection == true) {
+       /* if (hasTaxConnection == true) {
 
             discounts = discounts.filterNot { discount ->
 
@@ -127,7 +127,7 @@ class DiscountRepository @Inject constructor(
                     else -> false
                 }
             }
-        }
+        }*/
         // Apply pattern inclusion filter
         if (discountInclusionKind == PatternInclusionKind.List.ordinal) {
             val listPatternDetail = getPatternDetailById(pattern.id)
@@ -443,10 +443,13 @@ class DiscountRepository @Inject constructor(
                 val anbarId = eshantyun.anbarId
                 val maxId = repository.getMaxFactorDetailId()
 
-                val productWithRate =
-                    productDao.getProductWithRate2(productId, factor.actId!!).map { it.rate }
-                        .firstOrNull()
+              /*  val productWithRate =
+                    productDao.getProductWithRateAct(productId, factor.actId!!).map { it.rate }
+                        .firstOrNull()*/
+                val productWithRate = productDao.getProductRate(productId, actId).firstOrNull() ?: 0.0
+
                 val productRate = productWithRate
+
 
                 // 1. ساخت detail هدیه
                 val detail = FactorDetailEntity(
@@ -462,7 +465,7 @@ class DiscountRepository @Inject constructor(
                     packingValue = 0.0,
                     packingId = packingId,
                     price = 0.0,
-                    unit1Rate = productRate!!.toDouble()
+                    unit1Rate = productRate
                 )
 
                 // تنظیم مقادیر بر اساس نوع واحد هدیه
@@ -820,10 +823,10 @@ class DiscountRepository @Inject constructor(
         factorDetailId: Int? = null,
         price: Double
     ): Double = withContext(Dispatchers.IO) {
-        // ۱. دریافت تخفیف + پله‌ها
+        // دریافت تخفیف + پله‌ها
         val discount = factorDao.getDiscountWithStairs(discountId) ?: return@withContext 0.0
 
-        // ۲. دریافت جزئیات فاکتور مطابق فیلتر
+        // دریافت جزئیات فاکتور مطابق فیلتر
         val factorDetails = when {
             factorDetailId != null -> {
                 val detail = factorDao.getDetailById(factorId, factorDetailId)
@@ -841,12 +844,12 @@ class DiscountRepository @Inject constructor(
 
         if (factorDetails.isEmpty()) return@withContext 0.0
 
-        // ۳. محاسبه مجموع مقادیر واحد (مثل جدول tbl در کوئری)
+        // محاسبه مجموع مقادیر واحد
         val totalUnit1 = factorDetails.sumOf { it.unit1Value }
         val totalUnit2 = factorDetails.sumOf { it.unit2Value }
         val totalPacking = factorDetails.sumOf { it.packingValue }
 
-        // ۴. محاسبه تخفیف بر اساس هر پله
+        // محاسبه تخفیف بر اساس هر پله
         var totalDiscount = 0.0
 
         for (stair in discount.discountStairs.orEmpty()) {
@@ -860,7 +863,7 @@ class DiscountRepository @Inject constructor(
                 else -> 0.0
             }
 
-            if (valAmount == 0.0) continue // معادل NULLIF در SQL
+            if (valAmount == 0.0) continue
 
             // تشخیص بازه مؤثر
             val effectiveRange = when {
@@ -916,22 +919,6 @@ class DiscountRepository @Inject constructor(
         )
     }
 
-    suspend fun getProduct(id: Int, includeDetail: Boolean): ProductModel? {
-        val product = productDao.getProduct(id) ?: return null
-
-        val packing = if (includeDetail) {
-            productPackingDao.getPackingsByProductId(id)
-        } else {
-            emptyList()
-        }
-
-        return ProductModel(
-            id = product.id,
-            name = product.name!!,
-            code = product.code!!,
-            productPacking = packing
-        )
-    }
 
     suspend fun getFactorDiscountCount2(factorDetailId: Int): Int {
         return discountDao.getFactorDiscountCountByFactorDetailId(factorDetailId)
@@ -1169,13 +1156,12 @@ class DiscountRepository @Inject constructor(
     }
 
     suspend fun getSumPriceByProductIds(factorId: Int, productIds: List<Int>): Double {
-        // اگر لیست خالی بود، نتیجه 0 است (مثل کد جاوا)
+        // اگر لیست خالی بود، نتیجه 0 است
         if (productIds.isEmpty()) return 0.0
 
         return factorDao.getSumPriceByProductIds(factorId, productIds) ?: 0.0
     }
 
-    // DiscountRepository.kt
     suspend fun getSumPrice(factorId: Int, productIds: List<Int> = emptyList()): Double {
         return if (productIds.isEmpty()) {
             // اگر لیست خالی است، همه ردیف‌ها را جمع کن
@@ -1208,9 +1194,6 @@ class DiscountRepository @Inject constructor(
         getSumByField(factorId, productIds) { it.unit1Value }
 
 
-    /**
-     * معادل q.getSumUnitValueFactor(factorId) در جاوا
-     */
     suspend fun getSumUnit1ValueByFactorId(factorId: Int): Double {
         return factorDao.getSumUnit1ValueByFactorId(factorId)
     }

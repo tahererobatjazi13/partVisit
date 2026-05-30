@@ -2,7 +2,6 @@ package com.partsystem.partvisitapp.feature.report_factor.offline
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +24,7 @@ import com.partsystem.partvisitapp.core.utils.extensions.gregorianToPersian
 import com.partsystem.partvisitapp.core.utils.extensions.hide
 import com.partsystem.partvisitapp.core.utils.extensions.show
 import com.partsystem.partvisitapp.feature.create_order.ui.FactorViewModel
+import com.partsystem.partvisitapp.feature.create_order.ui.HeaderOrderViewModel
 import com.partsystem.partvisitapp.feature.customer.ui.CustomerViewModel
 import com.partsystem.partvisitapp.feature.report_factor.offline.adapter.OfflineOrderDetailAdapter
 import kotlinx.coroutines.launch
@@ -34,13 +34,17 @@ class OfflineOrderDetailFragment : Fragment() {
 
     private var _binding: FragmentOrderDetailBinding? = null
     private val binding get() = _binding!!
+    private val args: OfflineOrderDetailFragmentArgs by navArgs()
+
+    private val factorViewModel: FactorViewModel by viewModels()
+    private val headerOrderViewModel: HeaderOrderViewModel by viewModels()
+    private val customerViewModel: CustomerViewModel by viewModels()
+
     private lateinit var offlineOrderDetailAdapter: OfflineOrderDetailAdapter
     private val formatter = DecimalFormat("#,###,###,###")
-    private val args: OfflineOrderDetailFragmentArgs by navArgs()
-    private val factorViewModel: FactorViewModel by viewModels()
-    private val customerViewModel: CustomerViewModel by viewModels()
-    private var currentSabt: Int = 0
-    private var hasDetails: Boolean = false
+
+    private var currentSabt = 0
+    private var hasDetails = false
     private var productSelectionType = ""
 
     override fun onCreateView(
@@ -53,28 +57,40 @@ class OfflineOrderDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initAdapter()
-        setupObserver()
-        rxBinding()
+        initRecyclerView()
+        setupClicks()
+        observeData()
         binding.svMain.gone()
     }
 
-    private fun rxBinding() {
-        binding.apply {
-            hfOrderDetail.setOnClickImgTwoListener {
-                findNavController().navigateUp()
-            }
+    private fun initRecyclerView() {
+        offlineOrderDetailAdapter = OfflineOrderDetailAdapter()
 
-            btnEditOrder.setOnClickListener {
-                when (currentSabt) {
-                    1 -> navigateToOrderFragment()    // فاکتور تکمیل شده → صفحه سفارشات
-                    else -> if (!hasDetails) {
-                        navigateToHeaderProducts()
-                    } else {
-                        navigateToProducts()
-                    }
-                }
-            }
+        binding.rvOrderDetail.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = offlineOrderDetailAdapter
+        }
+    }
+
+    private fun setupClicks() = binding.apply {
+
+        hfOrderDetail.setOnClickImgTwoListener {
+            findNavController().navigateUp()
+        }
+
+        btnEditOrder.setOnClickListener {
+            handleEditOrderClick()
+        }
+    }
+
+    private fun handleEditOrderClick() {
+
+        when {
+            currentSabt == 1 -> navigateToOrderFragment() // فاکتور تکمیل شده → صفحه سفارشات
+
+            !hasDetails -> navigateToHeaderOrderFragment()
+
+            else -> navigateToProducts()
         }
     }
 
@@ -86,12 +102,16 @@ class OfflineOrderDetailFragment : Fragment() {
             "sabt" to currentSabt,
             "isEditingCompletedOrder" to true
         )
-        val navController = requireActivity().findNavController(R.id.mainNavHost)
-        navController.navigate(R.id.action_global_to_orderFragment, bundle)
+
+        requireActivity()
+            .findNavController(R.id.mainNavHost)
+            .navigate(R.id.action_global_to_orderFragment, bundle)
+
     }
 
     // ناوبری به صفحه محصولات/هدر (برای فاکتورهای ناتمام)
-    private fun navigateToHeaderProducts() {
+    private fun navigateToHeaderOrderFragment() {
+
         val bundle = bundleOf(
             "typeCustomer" to true,
             "typeOrder" to OrderType.Edit.value,
@@ -100,100 +120,135 @@ class OfflineOrderDetailFragment : Fragment() {
             "factorId" to args.factorId
         )
 
-        val navController = requireActivity().findNavController(R.id.mainNavHost)
-        navController.navigate(R.id.action_global_to_headerOrderFragment, bundle)
+        requireActivity()
+            .findNavController(R.id.mainNavHost)
+            .navigate(R.id.action_global_to_headerOrderFragment, bundle)
     }
 
     private fun navigateToProducts() {
-        if (productSelectionType == "group"
-        ) {
-            val bundle = bundleOf(
-                "fromFactor" to true,
-                "actId" to args.actId,
-                "typeOrder" to OrderType.Edit.value,
-                "factorId" to args.factorId
-            )
+        val bundle = bundleOf(
+            "fromFactor" to true,
+            "actId" to args.actId,
+            "typeOrder" to OrderType.Edit.value,
+            "factorId" to args.factorId
+        )
 
-            requireActivity()
-                .findNavController(R.id.mainNavHost)
-                .navigate(R.id.action_global_to_groupProductFragment, bundle)
-        } else {
-            val bundle = bundleOf(
-                "fromFactor" to true,
-                "actId" to args.actId,
-                "typeOrder" to OrderType.Edit.value,
-                "factorId" to args.factorId
-            )
+        val destination =
+            if (productSelectionType == "group") {
+                R.id.action_global_to_groupProductFragment
+            } else {
+                R.id.action_global_to_productListFragment
+            }
 
-            requireActivity()
-                .findNavController(R.id.mainNavHost)
-                .navigate(R.id.action_global_to_productListFragment, bundle)
-        }
-
+        requireActivity()
+            .findNavController(R.id.mainNavHost)
+            .navigate(destination, bundle)
     }
 
-    private fun initAdapter() {
-        binding.rvOrderDetail.apply {
-            layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            offlineOrderDetailAdapter = OfflineOrderDetailAdapter()
-            adapter = offlineOrderDetailAdapter
-        }
+
+    private fun observeData() {
+
+        observeHeader()
+
+        observeDetails()
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setupObserver() {
+    private fun observeHeader() {
+
         factorViewModel.getHeaderById(args.factorId)
             .observe(viewLifecycleOwner) { header ->
-                binding.tvOrderNumber.text = args.factorId.toString()
-                // دریافت نام مشتری بر اساس ID
-                customerViewModel.getCustomerById(header.customerId!!)
-                    .observe(viewLifecycleOwner) { customer ->
-                        binding.tvCustomerName.text = customer.name
-                    }
-                binding.tvDateTime.text = gregorianToPersian(header.createDate.toString())
+                with(binding) {
+
+                    tvOrderNumber.text = args.factorId.toString()
+                    tvDateTime.text =
+                        gregorianToPersian(header.createDate.toString())
+                }
                 currentSabt = header.sabt
                 productSelectionType = header.productSelectionType
-                // نمایش وضعیت فاکتور در UI
-            }
 
-        factorViewModel.getFactorDetailUi(factorId = args.factorId)
-            .observe(viewLifecycleOwner) { details ->
-                hasDetails = !details.isNullOrEmpty()
-
-                if (details.isNullOrEmpty()) {
-                    binding.info.show()
-                    binding.info.message(requireContext().getString(R.string.msg_no_data))
-                    binding.svMain.hide()
-                } else {
-                    binding.info.gone()
-                    binding.svMain.show()
-                }
-                offlineOrderDetailAdapter.submitList(details)
-                calculateTotalPrices(details)
+                loadCustomerName(header.customerId)
+                loadPatternName(header.patternId)
             }
     }
 
+    private fun loadCustomerName(customerId: Int?) {
+        // دریافت نام مشتری بر اساس ID
+        customerId ?: return
+
+        customerViewModel.getCustomerById(customerId)
+            .observe(viewLifecycleOwner) { customer ->
+
+                binding.tvCustomerName.text = customer.name
+            }
+    }
+    private fun loadPatternName(patternName: Int?) {
+        // دریافت نام طرح فروش بر اساس ID
+        patternName ?: return
+
+        headerOrderViewModel.getPatternById(patternName)
+            .observe(viewLifecycleOwner) { pattern ->
+
+                binding.tvPatternName.text = pattern.name
+            }
+    }
+
+    private fun observeDetails() {
+
+        factorViewModel.getFactorDetailUi(args.factorId)
+            .observe(viewLifecycleOwner) { details ->
+
+                hasDetails = details.isNotEmpty()
+
+                updateEmptyState(details)
+
+                offlineOrderDetailAdapter.submitList(details)
+
+                calculateTotals(details)
+            }
+    }
+
+    private fun updateEmptyState(details: List<FactorDetailUiModel>) = with(binding) {
+
+        if (details.isEmpty()) {
+
+            info.show()
+            info.message(getString(R.string.msg_no_data))
+
+            svMain.hide()
+
+        } else {
+
+            info.gone()
+            svMain.show()
+        }
+    }
+
     @SuppressLint("SetTextI18n")
-    private fun calculateTotalPrices(items: List<FactorDetailUiModel>?) {
-        items ?: return
+    private fun calculateTotals(items: List<FactorDetailUiModel>) {
 
         // محاسبه قیمت کل و مالیات
-        val sumPrice = items.sumOf { it.unit1Rate * it.unit1Value }
-        val sumVat = items.sumOf { it.vat }
+        val totalPrice = items.sumOf {
+            it.unit1Rate * it.unit1Value
+        }
+
+        val totalVat = items.sumOf {
+            it.vat
+        }
 
         //  دریافت تخفیف کل (سطوح ردیف + فاکتور)
         lifecycleScope.launch {
             val totalDiscount = factorViewModel.getTotalDiscountForFactor(args.factorId)
-
             //  محاسبه مبلغ نهایی
-            val finalPrice = (sumPrice - totalDiscount) + sumVat
+            val finalPrice =
+                (totalPrice - totalDiscount) + totalVat
+
 
             // آپدیت UI
             with(binding) {
-                tvSumPrice.text = "${formatter.format(sumPrice)} ریال"
+                tvSumPrice.text = "${formatter.format(totalPrice)} ریال"
                 tvSumDiscountPrice.text = "${"-" + formatter.format(totalDiscount)} ریال"
-                tvSumVat.text = "${formatter.format(sumVat)} ریال"
+                tvSumVat.text = "${formatter.format(totalVat)} ریال"
                 tvFinalPrice.text = "${formatter.format(finalPrice)} ریال"
             }
 

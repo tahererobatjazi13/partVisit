@@ -2,8 +2,8 @@ package com.partsystem.partvisitapp
 
 
 import android.app.Application
-import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import com.partsystem.partvisitapp.core.network.BaseUrlProvider
 import com.partsystem.partvisitapp.feature.setting.repository.SettingsRepository
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -12,8 +12,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import javax.inject.Inject@HiltAndroidApp
+import javax.inject.Inject
+
+@HiltAndroidApp
 class MyApplication : Application() {
+
+    @Inject
+    lateinit var baseUrlProvider: BaseUrlProvider
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -23,25 +28,26 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         observeDarkMode()
-    }
 
-    private fun observeDarkMode() {
-        appScope.launch {
-            settingsRepository.darkModeFlow
-                .distinctUntilChanged() // فقط اگه واقعا تغییر کرده
-                .collectLatest { enabled ->
-                    val newMode = if (enabled)
-                        AppCompatDelegate.MODE_NIGHT_YES
-                    else
-                        AppCompatDelegate.MODE_NIGHT_NO
-
-                    val currentMode = AppCompatDelegate.getDefaultNightMode()
-
-                    if (currentMode != newMode) {
-                        AppCompatDelegate.setDefaultNightMode(newMode)
-                    } else {
-                    }
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            baseUrlProvider.init()
         }
     }
+
+    private fun observeDarkMode() = appScope.launch {
+        settingsRepository.darkModeFlow
+            .distinctUntilChanged()
+            .collectLatest { enabled ->
+
+                val newMode = if (enabled)
+                    AppCompatDelegate.MODE_NIGHT_YES
+                else
+                    AppCompatDelegate.MODE_NIGHT_NO
+
+                if (AppCompatDelegate.getDefaultNightMode() != newMode) {
+                    AppCompatDelegate.setDefaultNightMode(newMode)
+                }
+            }
+    }
+
 }

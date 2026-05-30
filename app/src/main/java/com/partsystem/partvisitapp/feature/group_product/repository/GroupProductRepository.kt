@@ -21,7 +21,4 @@ class GroupProductRepository @Inject constructor(
     fun getProductsByCategory(categoryId: Int): Flow<List<ProductEntity>> =
         productDao.getProductsByCategory(categoryId)
 
-    /*  fun getProductsBySubGroup(subGroupId: Int): LiveData<List<ProductEntity>> =
-          dao.getProductsBySubGroup(subGroupId)
-  */
 }

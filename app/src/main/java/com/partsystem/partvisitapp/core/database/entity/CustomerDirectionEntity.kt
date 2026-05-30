@@ -16,6 +16,8 @@ data class CustomerDirectionEntity(
     val fullAddress: String,
     val cityCode: String,
     val cityName: String,
+    val directionCode: String,
+    val directionName: String,
     val latitude: Double?,
     val longitude: Double?,
     val mainStreet: String,
