@@ -119,6 +119,6 @@ dependencies {
 
     implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
 
-    //implementation(libs.play.services.location)
-  //  implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

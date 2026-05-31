@@ -164,7 +164,7 @@ fun Fragment.showSyncRequiredMessage() {
 
 /*
 git add .
-git commit -m "HasTaxConnection"
+git commit -m "push unit1Value&packing in AddEditProductDialog"
 git push -u origin master
 git push
 */
