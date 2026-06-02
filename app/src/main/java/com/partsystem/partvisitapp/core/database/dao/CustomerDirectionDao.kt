@@ -23,6 +23,9 @@ interface CustomerDirectionDao {
     @Query("SELECT * FROM CustomerDirection WHERE customerId = :customerId")
     fun getCustomerDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>>
 
+    @Query("SELECT * FROM CustomerDirection WHERE directionDetailId = :directionDetailId")
+    suspend fun getCustomerDirectionsByDirectionDetailId(directionDetailId: Int): CustomerDirectionEntity?
+
     @Query("DELETE FROM CustomerDirection WHERE customerId = :customerId")
     suspend fun deleteByCustomerId(customerId: Int)
 

@@ -1,11 +1,9 @@
-/*
-package com.partsystem.partvisitapp.core.utils
+package com.partsystem.partvisitapp.core.utils.location
 
 import android.annotation.SuppressLint
 import android.location.Location
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.Tasks
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +17,7 @@ class LocationHelper @Inject constructor(
     suspend fun getCurrentLocation(): Location? {
         return try {
             fusedLocationClient.getCurrentLocation(
-                Priority.PRIORITY_HIGH_ACCURACY, 
+                Priority.PRIORITY_HIGH_ACCURACY,
                 null
             ).await()
         } catch (e: Exception) {
@@ -29,7 +27,7 @@ class LocationHelper @Inject constructor(
 
     // محاسبه فاصله به متر
     fun calculateDistance(
-        userLat: Double, userLon: Double, 
+        userLat: Double, userLon: Double,
         targetLat: Double, targetLon: Double
     ): Float {
         val userLoc = Location("").apply { latitude = userLat; longitude = userLon }
@@ -37,4 +35,3 @@ class LocationHelper @Inject constructor(
         return userLoc.distanceTo(targetLoc)
     }
 }
-*/

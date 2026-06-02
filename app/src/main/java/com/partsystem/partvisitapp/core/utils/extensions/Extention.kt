@@ -164,7 +164,7 @@ fun Fragment.showSyncRequiredMessage() {
 
 /*
 git add .
-git commit -m "push unit1Value&packing in AddEditProductDialog"
+git commit -m "get visitor location to check distance customer"
 git push -u origin master
 git push
 */

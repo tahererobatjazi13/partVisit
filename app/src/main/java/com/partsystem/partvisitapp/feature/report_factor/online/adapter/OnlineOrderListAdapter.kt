@@ -30,6 +30,7 @@ class OnlineOrderListAdapter(
 
             tvOrderNumber.text = item.code.toString()
             tvCustomerName.text = item.customerName
+            tvCustomerDirection.text = item.directionName
             tvPatternName.text = item.patternName
             tvDateTime.text = item.persianDate + " _ " + item.createTime
             tvFinalPrice.text = formatter.format(item.finalPrice) + " ریال"

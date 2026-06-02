@@ -38,6 +38,9 @@ class HeaderOrderRepository @Inject constructor(
     fun getCustomerDirectionsByCustomer(customerId: Int): Flow<List<CustomerDirectionEntity>> =
         customerDirectionDao.getCustomerDirectionsByCustomer(customerId)
 
+    suspend fun getCustomerDirectionsByDirectionDetailId(directionDetailId: Int): CustomerDirectionEntity? {
+        return customerDirectionDao.getCustomerDirectionsByDirectionDetailId(directionDetailId)
+    }
 
     fun getSaleCenters(invoiceCategoryId: Int): List<SaleCenterEntity> =
         saleCenterDao.getSaleCenters(invoiceCategoryId)

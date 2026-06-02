@@ -48,6 +48,7 @@ class OfflineOrderListAdapter(
             tvDateTime.text = "${item.persianDate} _ ${item.createTime}"
 
             ivDelete.show()
+            clCustomerDirection.gone()
 
             // نمایش/مخفی کردن چک‌باکس ثبت بر اساس hasDetail
             if (item.hasDetail) {

@@ -123,9 +123,12 @@
     <string name="label_understand">متوجه شدم</string>
     <string name="label_remove_cache">پاک کردن داده</string>
     <string name="label_warning">هشدار</string>
+    <string name="label_cancellation">انصراف</string>
+    <string name="label_open_setting">باز کردن تنظیمات</string>
     <string name="label_validate_credit">در حال بررسی اعتبار...</string>
     <string name="label_select_all">انتخاب همه</string>
     <string name="label_receive_update_information">دریافت و به روز رسانی اطلاعات</string>
+    <string name="label_location_off">لوکیشن خاموش است!</string>
 
     <!-- date picker -->
     <string name="picker_announce_current_selection">Current selection: %1$s</string>
@@ -158,6 +161,10 @@
     <string name="msg_cannot_go_back_warning">پس از زدن تیک ثبت ، امکان بازگشت به لیست محصولات وجود ندارد. برای ادامه کار، سفارش را ذخیره یا ارسال کنید.</string>
     <string name="msg_cannot_delete_when_completed">در حالت ثبت ، امکان حذف ردیف وجود ندارد. لطفاً ابتدا تیک ثبت را بردارید.</string>
     <string name="msg_select_direction">حداقل یک مسیر را انتخاب کنید</string>
+    <string name="msg_location_access_required">دسترسی لوکیشن لازم است</string>
+    <string name="msg_place_order_location_must_be_checked">
+                برای ثبت سفارش، باید موقعیت مکانی شما بررسی شود تا مشخص شود در محدوده مشتری هستید یا خیر. " +
+                        "لطفاً دسترسی لوکیشن را فعال کنید.</string>
     <!-- Errors -->
     <string name="error_enter_address_server">آدرس سرور را وارد کنید</string>
     <string name="error_network_json_response">مشکل در دریافت اطلاعات از سرور</string>
@@ -181,6 +188,7 @@
     <string name="error_insufficient_inventory">موجودی انبار کافی نیست</string>
     <string name="error_out_of_stock">این کالا در انبار موجودی ندارد</string>
     <string name="error_selecting_invoice_category_mandatory">انتخاب گروه صورت حساب اجباری است</string>
+    <string name="error_selecting_customer_direction">انتخاب مسیر مشتری اجباری است</string>
     <string name="error_selecting_pattern_mandatory">انتخاب طرح فروش اجباری است</string>
     <string name="error_selecting_act_mandatory">انتخاب مصوبه اجباری است</string>
     <string name="error_visitor_not_assigned_account">ویزیتور به این حساب کاربری تخصیص داده نشده است</string>
@@ -205,5 +213,10 @@
     <string name="error_remove_cache">اگر این گزینه را بزنید، تمام اطلاعات ذخیره‌شدهٔ محلی (local data) و سفارشات پیش‌نویس شما حذف می‌شود. آیا هنوز هم مایل به پاک کردن داده ها می باشید؟\n</string>
     <string name="error_remove_cache_log_out">اگر این گزینه را بزنید، تمام اطلاعات ذخیره‌شدهٔ محلی (local data) و سفارشات پیش‌نویس شما حذف می‌شود. آیا هنوز هم مایل به خروج از حساب کاربری خود می باشید؟\n</string>
     <string name="error_select_one_item">لطفاً حداقل یک مورد را برای دریافت اطلاعات انتخاب کنید</string>
+    <string name="error_not_possible_order_until_location_clear">تا زمانی که لوکیشن روشن نباشد، ثبت سفارش امکان‌پذیر نیست.</string>
+    <string name="error_location_service_must_turned_on">برای ثبت سفارش، باید سرویس مکان‌یابی گوشی روشن باشد. لطفاً GPS یا Location را روشن کنید و دوباره تلاش کنید.</string>
+    <string name="error_unable_get_current_location">دریافت موقعیت فعلی ممکن نشد. لطفاً دوباره تلاش کنید.</string>
+    <string name="error_location_access_not_available">دسترسی لوکیشن در دسترس نیست.</string>
+
 
 </resources>

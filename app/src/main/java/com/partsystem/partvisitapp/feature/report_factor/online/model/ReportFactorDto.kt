@@ -18,6 +18,8 @@ data class ReportFactorDto(
     val sumDiscountPrice: Double,
     val sumVat: Double,
     val finalPrice: Double,
+    val directionCode: Int?,
+    val directionName: String?,
     val anbarCode: Int?,
     val anbarName: String?,
     val productCode: Int?,

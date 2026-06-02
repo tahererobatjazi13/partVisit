@@ -97,8 +97,6 @@ class Event<out T>(private val content: T) {
             content
         }
     }
-
-    fun peekContent(): T = content
 }
 
 class ReceiptTopEdgeView @JvmOverloads constructor(
@@ -108,12 +106,6 @@ class ReceiptTopEdgeView @JvmOverloads constructor(
     private val redPaint = Paint().apply {
         color = getColorAttr(context, R.attr.colorPassive)
         style = Paint.Style.FILL
-        isAntiAlias = true
-    }
-
-    private val grayPaint = Paint().apply {
-        color = getColorAttr(context, R.attr.colorRipple)
-        style = Paint.Style.FILL_AND_STROKE
         isAntiAlias = true
     }
 

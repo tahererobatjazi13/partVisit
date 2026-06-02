@@ -1,5 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
+import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,17 +15,21 @@ import com.partsystem.partvisitapp.core.database.entity.InvoiceCategoryEntity
 import com.partsystem.partvisitapp.core.database.entity.PatternEntity
 import com.partsystem.partvisitapp.core.database.entity.SaleCenterEntity
 import com.partsystem.partvisitapp.core.utils.Event
+import com.partsystem.partvisitapp.core.utils.location.LocationHelper
+import com.partsystem.partvisitapp.core.utils.location.LocationUiState
 import com.partsystem.partvisitapp.feature.create_order.repository.HeaderOrderRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 import javax.inject.Inject
 
 @HiltViewModel
 class HeaderOrderViewModel @Inject constructor(
-    private val repository: HeaderOrderRepository
+    private val repository: HeaderOrderRepository,
+    private val locationHelper: LocationHelper
 ) : ViewModel() {
 
     private val _currentFactor = MutableLiveData<FactorHeaderEntity>()
@@ -34,6 +39,10 @@ class HeaderOrderViewModel @Inject constructor(
     fun getCustomerDirectionsByCustomer(customerId: Int): LiveData<List<CustomerDirectionEntity>> {
         return repository.getCustomerDirectionsByCustomer(customerId).asLiveData()
     }
+    
+    suspend fun getCustomerDirectionsByDirectionDetailId(directionDetailId: Int): CustomerDirectionEntity? {
+        return repository.getCustomerDirectionsByDirectionDetailId(directionDetailId)
+    }
 
     fun getInvoiceCategory(userId: Int): LiveData<List<InvoiceCategoryEntity>> {
         return repository.getInvoiceCategory(userId).asLiveData()
@@ -42,6 +51,7 @@ class HeaderOrderViewModel @Inject constructor(
     fun getAct(): LiveData<List<ActEntity>> {
         return repository.getAct().asLiveData()
     }
+
     fun getPatternById(id: Int): LiveData<PatternEntity> =
         repository.getPatternById(id)
 
@@ -172,5 +182,66 @@ class HeaderOrderViewModel @Inject constructor(
         }
     }
 
+    // Location
+    private val _uiState = MutableStateFlow<LocationUiState>(LocationUiState.Idle)
+    val uiState: StateFlow<LocationUiState> = _uiState.asStateFlow()
+
+    /**
+     * این متد فاصله بین لوکیشن ویزیتور و فروشگاه را حساب می‌کند
+     * و مشخص می‌کند آیا ثبت سفارش مجاز است یا نه.
+     */
+    fun validateVisitorLocation(
+        visitorLat: Double,
+        visitorLng: Double,
+        storeLat: Double,
+        storeLng: Double,
+        allowedRadiusMeters: Float
+    ): Boolean {
+        val results = FloatArray(1)
+        Location.distanceBetween(
+            visitorLat,
+            visitorLng,
+            storeLat,
+            storeLng,
+            results
+        )
+
+        val distanceMeters = results[0]
+
+        return if (distanceMeters <= allowedRadiusMeters) {
+            _uiState.value = LocationUiState.InsideStoreRange
+            true
+        } else {
+            _uiState.value = LocationUiState.OutsideStoreRange(
+                distanceMeters = distanceMeters,
+                allowedRadiusMeters = allowedRadiusMeters
+            )
+            false
+        }
+    }
+
+    fun setCheckingPermission() {
+        _uiState.value = LocationUiState.CheckingPermission
+    }
+
+    fun setCheckingLocationSettings() {
+        _uiState.value = LocationUiState.CheckingLocationSettings
+    }
+
+    fun setFetchingLocation() {
+        _uiState.value = LocationUiState.FetchingLocation
+    }
+
+    fun setError(message: String) {
+        _uiState.value = LocationUiState.Error(message)
+    }
+
+    fun resetState() {
+        _uiState.value = LocationUiState.Idle
+    }
+
+    fun setInsideRange() {
+        _uiState.value = LocationUiState.InsideStoreRange
+    }
 
 }

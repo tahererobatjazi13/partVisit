@@ -1,7 +1,6 @@
 package com.partsystem.partvisitapp.feature.create_order.ui
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Spinner
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -34,7 +32,6 @@ import com.partsystem.partvisitapp.core.utils.componenet.CustomSnackBar
 import com.partsystem.partvisitapp.core.utils.datastore.MainPreferences
 import com.partsystem.partvisitapp.core.utils.extensions.getCurrentTime
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayGregorian
-import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDate
 import com.partsystem.partvisitapp.core.utils.extensions.getTodayPersianDateLatin
 import com.partsystem.partvisitapp.core.utils.extensions.gregorianToPersian
 import com.partsystem.partvisitapp.core.utils.extensions.persianToGregorian
@@ -61,7 +58,27 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.IntentSender
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
+import android.provider.Settings
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.Lifecycle
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textview.MaterialTextView
+import com.partsystem.partvisitapp.core.utils.location.LocationUiState
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 
 @AndroidEntryPoint
 class HeaderOrderFragment : Fragment() {
@@ -101,6 +118,40 @@ class HeaderOrderFragment : Fragment() {
     private val persianDate: String = getTodayPersianDateLatin()
     private var isCustomerListBottomSheetOpen = false
 
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var settingsClient: SettingsClient
+
+    /**
+     * شعاع مجاز بر حسب متر
+     *  100 متر
+     */
+    private val allowedRadiusMeters = 100f
+
+    private val locationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+            val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+            if (fineGranted || coarseGranted) {
+                checkLocationSettingsAndFetchLocation()
+            } else {
+                showLocationPermissionDeniedDialog()
+            }
+        }
+
+    private val locationSettingsLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                fetchCurrentLocationAndValidate()
+            } else {
+                // مهم: نگذار لودینگ گیر کند
+                headerOrderViewModel.resetState()
+                showEnableLocationManuallyDialog()
+            }
+        }
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -112,6 +163,10 @@ class HeaderOrderFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
         setupSpinners()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        settingsClient = LocationServices.getSettingsClient(requireActivity())
+        observeUiState()
+
         isFromCustomerDetail = args.typeCustomer && args.customerId != 0
 
         // اگر از دیتیل مشتری آمده‌ایم، همین الان isCustomerLoaded را true کن
@@ -751,7 +806,14 @@ class HeaderOrderFragment : Fragment() {
         // دریافت نتیجه اعتبارسنجی
         headerOrderViewModel.validationEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
-                showChooseDialog()
+                lifecycleScope.launch {
+                    val controlCustomerLocation = factorViewModel.getControlCustomerLocation()
+                    if (controlCustomerLocation) {
+                        startOrderValidationFlow()
+                    } else {
+                        showChooseDialog()
+                    }
+                }
             }
         }
 
@@ -885,7 +947,7 @@ class HeaderOrderFragment : Fragment() {
             customerListBottomSheet.show(parentFragmentManager, "CustomerListBottomSheet")
         }
 
-        btnContinue.setOnClickBtnOneListener {
+        bmbContinue.setOnClickBtnOneListener {
 
             if (isEditMode) {
 
@@ -974,6 +1036,23 @@ class HeaderOrderFragment : Fragment() {
     private fun validateHeader() {
         factorViewModel.factorHeader.value?.let { factor ->
 
+            // بررسی Customer Direction
+            val customerDirectionCard = binding.cvCustomerDirection
+            val customerDirectionPosition = binding.spCustomerDirection.selectedItemPosition
+
+            if (customerDirectionPosition == 0) {
+                showError(R.string.error_selecting_customer_direction)
+                customerDirectionCard.strokeColor =
+                    getColorAttr(requireContext(), R.attr.colorError)
+                customerDirectionCard.strokeWidth =
+                    resources.getDimensionPixelSize(R.dimen.bit_size)
+                return@let
+            } else {
+                customerDirectionCard.strokeColor =
+                    ContextCompat.getColor(requireContext(), android.R.color.transparent)
+                customerDirectionCard.strokeWidth = 0
+            }
+
             // بررسی Invoice Category
             val invoiceCategoryCard = binding.cvInvoiceCategory
             val invoiceCategoryPosition = binding.spInvoiceCategory.selectedItemPosition
@@ -1059,6 +1138,7 @@ class HeaderOrderFragment : Fragment() {
         }
     }
 
+    @SuppressLint("NewApi")
     private fun String.toLocalDateOrNull(): LocalDate? {
         return try {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
@@ -1318,6 +1398,7 @@ class HeaderOrderFragment : Fragment() {
         isBottomSheetShowing = true
         dialog.setOnDismissListener {
             isBottomSheetShowing = false
+            headerOrderViewModel.resetState()
         }
     }
 
@@ -1384,5 +1465,268 @@ class HeaderOrderFragment : Fragment() {
         }
 
         _binding = null
+    }
+
+
+    private fun observeUiState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                headerOrderViewModel.uiState.collect { state ->
+                    when (state) {
+                        is LocationUiState.Idle -> {
+                            setLoading(false)
+                        }
+
+                        is LocationUiState.CheckingPermission,
+                        is LocationUiState.CheckingLocationSettings,
+                        is LocationUiState.FetchingLocation -> {
+                            setLoading(true)
+                        }
+
+                        is LocationUiState.InsideStoreRange -> {
+                            setLoading(false)
+                            showChooseDialog()
+                        }
+
+                        is LocationUiState.OutsideStoreRange -> {
+                            setLoading(false)
+                            CustomSnackBar.make(
+                                requireView(),
+                                "شما خارج از محدوده مشتری هستید.\n" +
+                                        "فاصله شما تا مشتری: ${state.distanceMeters.toInt()} متر\n" +
+                                        "حداکثر فاصله مجاز: ${state.allowedRadiusMeters.toInt()} متر",
+                                SnackBarType.Error.value
+                            )?.show()
+                        }
+
+                        is LocationUiState.Error -> {
+                            setLoading(false)
+                            CustomSnackBar.make(
+                                requireView(),
+                                state.message,
+                                SnackBarType.Error.value
+                            )?.show()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun startOrderValidationFlow() {
+        headerOrderViewModel.resetState()
+        checkLocationSettingsAndFetchLocation()
+    }
+
+
+    private fun hasLocationPermission(): Boolean {
+        val fine = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val coarse = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        return fine || coarse
+    }
+
+    private fun requestLocationPermission() {
+        locationPermissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun getBestEffortLocation(): Location? {
+        val highAcc = withTimeoutOrNull(4000L) {
+            val token = CancellationTokenSource().token
+            fusedLocationClient.getCurrentLocation(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                token
+            ).await()
+        }
+        if (highAcc != null) return highAcc
+
+        return withTimeoutOrNull(1000L) {
+            fusedLocationClient.lastLocation.await()
+        }
+    }
+
+    private val openLocationSettingsLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            startOrderValidationFlow()
+        }
+
+    /**
+     * بررسی می‌کند GPS/Location روشن باشد.
+     * اگر خاموش باشد دیالوگ رسمی گوگل برای روشن کردن لوکیشن نمایش داده می‌شود.
+     */
+    private fun checkLocationSettingsAndFetchLocation() {
+        headerOrderViewModel.setCheckingLocationSettings()
+
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            5000L
+        ).apply { setMinUpdateIntervalMillis(2000L) }.build()
+
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .setAlwaysShow(true)
+
+        settingsClient.checkLocationSettings(builder.build())
+            .addOnSuccessListener {
+                fetchCurrentLocationAndValidate()
+            }
+            .addOnFailureListener { exception ->
+                headerOrderViewModel.resetState()
+
+                when (exception) {
+                    is ResolvableApiException -> {
+                        try {
+                            val intentSenderRequest =
+                                IntentSenderRequest.Builder(exception.resolution).build()
+                            locationSettingsLauncher.launch(intentSenderRequest)
+                        } catch (_: IntentSender.SendIntentException) {
+                            showEnableLocationManuallyDialog()
+                        }
+                    }
+
+                    else -> showEnableLocationManuallyDialog()
+                }
+            }
+    }
+
+    /**
+     * گرفتن لوکیشن فعلی دستگاه
+     */
+    @SuppressLint("MissingPermission")
+    private fun fetchCurrentLocationAndValidate() {
+        if (!hasLocationPermission()) {
+            headerOrderViewModel.setError(getString(R.string.error_location_access_not_available))
+            return
+        }
+
+        if (!isLocationEnabled()) {
+            headerOrderViewModel.resetState()
+            showEnableLocationManuallyDialog()
+            return
+        }
+
+        headerOrderViewModel.setFetchingLocation()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val location = getBestEffortLocation()
+                if (location == null) {
+                    headerOrderViewModel.setError(getString(R.string.error_unable_get_current_location))
+                    return@launch
+                }
+
+                val directionDetail =
+                    headerOrderViewModel.getCustomerDirectionsByDirectionDetailId(
+                        factorViewModel.factorHeader.value?.directionDetailId!!
+                    )
+
+                val destLat = directionDetail?.latitude
+                val destLng = directionDetail?.longitude
+                if (destLat == null || destLng == null) {
+                    headerOrderViewModel.setInsideRange()
+                    return@launch
+                }
+
+                headerOrderViewModel.validateVisitorLocation(
+                    visitorLat = location.latitude,
+                    visitorLng = location.longitude,
+                    storeLat = destLat,
+                    storeLng = destLng,
+                    allowedRadiusMeters = allowedRadiusMeters
+                )
+
+            } catch (e: Exception) {
+                headerOrderViewModel.setError(e.message ?: "خطا در پردازش")
+            }
+        }
+    }
+
+    /**
+     * چک دستی روشن بودن لوکیشن
+     */
+    private fun isLocationEnabled(): Boolean {
+        val locationManager = requireContext().getSystemService(LocationManager::class.java)
+        return locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true ||
+                locationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true
+    }
+
+    /**
+     * دیالوگ وقتی کاربر permission را رد کرده
+     */
+    private fun showLocationPermissionDeniedDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.msg_location_access_required))
+            .setMessage(
+                getString(R.string.msg_place_order_location_must_be_checked)
+            )
+            .setPositiveButton(getString(R.string.label_retry)) { _, _ ->
+                requestLocationPermission()
+            }
+            .setNegativeButton(getString(R.string.label_cancellation), null)
+            .show()
+    }
+
+    private var enableLocationDialog: AlertDialog? = null
+
+    /**
+     * دیالوگ کامل برای روشن کردن Location
+     * اگر دیالوگ رسمی گوگل باز نشد یا کاربر رد کرد، این دیالوگ نمایش داده می‌شود.
+     */
+    private fun showEnableLocationManuallyDialog() {
+        if (enableLocationDialog?.isShowing == true) return
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_custom_location, null, false)
+        val btnCancel = dialogView.findViewById<MaterialTextView>(R.id.btnCancel)
+        val btnOpenSettings = dialogView.findViewById<MaterialTextView>(R.id.btnOpenSettings)
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+            headerOrderViewModel.setError(getString(R.string.error_not_possible_order_until_location_clear))
+        }
+
+        btnOpenSettings.setOnClickListener {
+            dialog.dismiss()
+
+            headerOrderViewModel.resetState()
+
+            openLocationSettingsLauncher.launch(
+                Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            )
+        }
+
+        dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        }
+
+        dialog.setOnDismissListener { enableLocationDialog = null }
+        enableLocationDialog = dialog
+        dialog.show()
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        if (isLoading) {
+            binding.bmbContinue.checkShowPbOne(true)
+        } else {
+            binding.bmbContinue.checkShowPbOne(false)
+        }
+        binding.bmbContinue.isEnabled = !isLoading
     }
 }

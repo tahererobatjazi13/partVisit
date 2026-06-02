@@ -132,6 +132,19 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvRequiredCustomerDirection"
+                        style="@style/MediumBoldTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="@dimen/xxx_small_size"
+                        android:text="@string/label_star"
+                        android:textColor="?attr/colorError"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/tvTitleCustomerDirection"
+                        app:layout_constraintStart_toEndOf="@id/spCustomerDirection"
+                        app:layout_constraintTop_toTopOf="parent" />
+
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/ivCustomerDirection"
                         android:layout_width="wrap_content"
@@ -152,7 +165,7 @@
                         android:spinnerMode="dropdown"
                         android:textDirection="rtl"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvTitleCustomerDirection"
+                        app:layout_constraintEnd_toStartOf="@+id/tvRequiredCustomerDirection"
                         app:layout_constraintStart_toEndOf="@+id/ivCustomerDirection"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -472,7 +485,7 @@
     </androidx.core.widget.NestedScrollView>
 
     <com.partsystem.partvisitapp.core.utils.componenet.BottomMain
-        android:id="@+id/btnContinue"
+        android:id="@+id/bmbContinue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/medium_size"
